@@ -7,7 +7,7 @@
 #include "Misc/SecureHash.h"
 
 
-struct FImportImage
+struct FRuntimeImageData
 {
     TArray<uint8> RawData;
     ETextureSourceFormat Format = TSF_Invalid;

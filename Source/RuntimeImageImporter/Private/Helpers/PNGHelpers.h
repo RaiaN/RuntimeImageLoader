@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/Texture.h"
 
-#include "ImportImage.h"
+#include "RuntimeImageData.h"
 
 
 namespace FPNGHelpers

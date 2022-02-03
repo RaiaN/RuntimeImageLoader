@@ -307,7 +307,7 @@ namespace FTGAHelpers
         return true;
     }
 
-    bool DecompressTGA(const FTGAFileHeader* TGA, FImportImage& OutImage, FString& OutError)
+    bool DecompressTGA(const FTGAFileHeader* TGA, FRuntimeImageData& OutImage, FString& OutError)
     {
         if (TGA->ColorMapType == 1 && TGA->ImageTypeCode == 1 && TGA->BitsPerPixel == 8)
         {

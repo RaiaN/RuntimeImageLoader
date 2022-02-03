@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Serialization/Archive.h"
 
-#include "ImportImage.h"
+#include "RuntimeImageData.h"
 
 
 namespace FTGAHelpers
@@ -39,6 +39,6 @@ namespace FTGAHelpers
     #pragma pack(pop)
 
     bool DecompressTGA_helper(const FTGAFileHeader* TGA, uint32*& TextureData, const int32 TextureDataSize, FString& OutError);
-    bool DecompressTGA(const FTGAFileHeader* TGA, FImportImage& OutImage, FString& OutError);
+    bool DecompressTGA(const FTGAFileHeader* TGA, FRuntimeImageData& OutImage, FString& OutError);
 
 }

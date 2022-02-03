@@ -1,6 +1,6 @@
 // Copyright Peter Leontev
 
-#include "ImportImage.h"
+#include "RuntimeImageData.h"
 
 // Duplicate the code in "int32 FTextureSource::GetBytesPerPixel(ETextureSourceFormat Format)"
 // Because that was Editor only code
@@ -22,7 +22,7 @@ int32 GetBytesPerPixel(ETextureSourceFormat Format)
 
 
 
-void FImportImage::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InFormat, const void* InData)
+void FRuntimeImageData::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InFormat, const void* InData)
 {
     SizeX = InSizeX;
     SizeY = InSizeY;
@@ -35,7 +35,7 @@ void FImportImage::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InF
     }
 }
 
-void FImportImage::Init2DWithMips(int32 InSizeX, int32 InSizeY, int32 InNumMips, ETextureSourceFormat InFormat, const void* InData)
+void FRuntimeImageData::Init2DWithMips(int32 InSizeX, int32 InSizeY, int32 InNumMips, ETextureSourceFormat InFormat, const void* InData)
 {
     SizeX = InSizeX;
     SizeY = InSizeY;
@@ -55,7 +55,7 @@ void FImportImage::Init2DWithMips(int32 InSizeX, int32 InSizeY, int32 InNumMips,
     }
 }
 
-int32 FImportImage::GetMipSize(int32 InMipIndex) const
+int32 FRuntimeImageData::GetMipSize(int32 InMipIndex) const
 {
     check(InMipIndex >= 0);
     check(InMipIndex < NumMips);
@@ -64,7 +64,7 @@ int32 FImportImage::GetMipSize(int32 InMipIndex) const
     return MipSizeX * MipSizeY * GetBytesPerPixel(Format);
 }
 
-void* FImportImage::GetMipData(int32 InMipIndex)
+void* FRuntimeImageData::GetMipData(int32 InMipIndex)
 {
     int32 Offset = 0;
     for (int32 MipIndex = 0; MipIndex < InMipIndex; ++MipIndex)

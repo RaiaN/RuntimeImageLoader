@@ -55,7 +55,7 @@ namespace FRuntimeImageUtils
         return bValid;
     }
 
-    bool ImportBufferAsImage(const uint8* Buffer, int32 Length, FImportImage& OutImage, FString& OutError)
+    bool ImportBufferAsImage(const uint8* Buffer, int32 Length, FRuntimeImageData& OutImage, FString& OutError)
     {
         QUICK_SCOPE_CYCLE_COUNTER(STAT_EvoImageUtils_ImportFileAsTexture_ImportBufferAsImage);
         
@@ -286,7 +286,7 @@ namespace FRuntimeImageUtils
         return true;
     }
 
-    void ImportFileAsImage(const FString& ImageFilename, FImportImage& OutImage, FString& OutError)
+    void ImportFileAsImage(const FString& ImageFilename, FRuntimeImageData& OutImage, FString& OutError)
     {
         QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageUtils_ImportFileAsTexture);
 
