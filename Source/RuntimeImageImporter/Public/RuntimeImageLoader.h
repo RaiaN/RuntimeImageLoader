@@ -11,10 +11,38 @@
 #include "Materials/MaterialInterface.h"
 #include "Subsystems/EngineSubsystem.h"
 
+#include "RuntimeImageReader.h"
+
 #include "RuntimeImageLoader.generated.h"
 
 
 class URuntimeImageReader;
+
+
+struct FLoadImageRequestParams
+{
+    FString ImageFilename;
+};
+
+DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
+
+struct FLoadImageRequest
+{
+public:
+    void Invalidate()
+    {
+        Params = FLoadImageRequestParams();
+    }
+
+    bool IsRequestValid() const 
+    {
+        return Params.ImageFilename.Len() > 0;
+    }
+
+public:
+    FLoadImageRequestParams Params;
+    FOnRequestCompleted OnRequestCompleted;
+};
 
 /**
  * 
@@ -34,26 +62,21 @@ public:
 public:
     //------------------ Images --------------------
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadImageAsync(const FName& ImageName, bool& Success, UTexture2D*& OutLoadedImage, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
+    void LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutLoadedImage, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
     
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter")
-    void LoadImageSync(const FName& ImageName, bool& Success, UTexture2D*& OutLoadedImage, FString& OutError);
- 
-    UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadImagesAsync(const TArray<FName>& ImageNames, TMap<FName, UTexture2D*>& OutLoadedImages, TArray<FString>& OutErrors, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
-
-public:
-    // DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRequestCompleted);
-    // UPROPERTY(BlueprintAssignable, Category = "EvoAssetManager")
-    // FOnRequestCompleted OnRequestCompleted;
+    void LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture);
 
 private:
     void Tick(float DeltaTime) override;
     TStatId GetStatId() const override;
 
-private:
-    TMap<FName, TWeakObjectPtr<UTexture2D>> LoadedImages;
+    URuntimeImageReader* InitializeImageReader();
 
+private:
     UPROPERTY()
     URuntimeImageReader* ImageReader = nullptr;
+
+    TQueue<FLoadImageRequest> Requests;
+    FLoadImageRequest ActiveRequest;
 };

@@ -34,7 +34,6 @@ void URuntimeImageReader::Cleanup()
 bool URuntimeImageReader::Init()
 {
     ThreadSemaphore = FGenericPlatformProcess::GetSynchEventFromPool(false);
-
     return true;
 }
 
@@ -61,8 +60,6 @@ void URuntimeImageReader::AddRequest(const FImageReadRequest& Request)
 {
     Requests.Enqueue(Request);
 
-    PendingTextures.Add(Request.InOutTexture);
-
     bCompletedWork.AtomicSet(false);
 }
 
@@ -75,7 +72,7 @@ void URuntimeImageReader::Clear()
 {
     Requests.Empty();
     Results.Empty();
-    PendingTextures.Empty();
+    CachedTextures.Empty();
 }
 
 void URuntimeImageReader::Reset()
@@ -88,7 +85,7 @@ bool URuntimeImageReader::HasRequests() const
     return !Requests.IsEmpty();
 }
 
-bool URuntimeImageReader::CompletedWork() const
+bool URuntimeImageReader::IsWorkCompleted() const
 {
     return bCompletedWork;
 }
@@ -137,8 +134,6 @@ void URuntimeImageReader::ReadImage(FImageReadRequest& Request, FImageReadResult
         FRuntimeImageUtils::ImportFileAsImage(Request.ImageFilename, ReadResult.OutImage, OutError);
 
         ReadResult.ImageFilename = Request.ImageFilename;
-        ReadResult.AssetName = Request.AssetName;
-        ReadResult.OutTexture = Request.InOutTexture;
         ReadResult.OutError = OutError;
     }    
 }
@@ -152,8 +147,14 @@ void URuntimeImageReader::InitializeTexture(FImageReadResult& ReadResult)
         return;
     }
 
+    ReadResult.OutTexture = NewObject<UTexture2D>(this, *FPaths::GetBaseFilename(ReadResult.ImageFilename));
+
+    // TODO: notify cache?
+    CachedTextures.Add(ReadResult.ImageFilename, ReadResult.OutTexture);
+
     FRuntimeImageData& Image = ReadResult.OutImage;
     UTexture2D* NewTexture = ReadResult.OutTexture;
+
     {
         QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
 

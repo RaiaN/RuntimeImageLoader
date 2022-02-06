@@ -21,8 +21,6 @@ struct FImageReadRequest
     GENERATED_BODY()
 
     FString ImageFilename = TEXT("");
-    FString AssetName = TEXT("");
-    UTexture2D* InOutTexture = nullptr;
 };
 
 USTRUCT()
@@ -31,7 +29,7 @@ struct FImageReadResult
     GENERATED_BODY()
 
     FString ImageFilename = TEXT("");
-    FString AssetName = TEXT("");
+    // FIXME: Remove OutImage
     FRuntimeImageData OutImage;
     UTexture2D* OutTexture = nullptr;
     FString OutError = TEXT("");
@@ -52,6 +50,7 @@ public:
     bool Init() override;
     uint32 Run() override;
     void Exit() override;
+    /* ~FRunnable interface */
 
 public:
     void AddRequest(const FImageReadRequest& Request);
@@ -59,7 +58,7 @@ public:
     void Clear();
     void Reset();
     bool HasRequests() const;
-    bool CompletedWork() const;
+    bool IsWorkCompleted() const;
 
     void Trigger();
     void BlockTillAllRequestsFinished();
@@ -76,7 +75,7 @@ private:
 
 private:
     UPROPERTY()
-    TArray<UTexture2D*> PendingTextures;
+    TMap<FString, UTexture2D*> CachedTextures;
 
 private:
     FRunnableThread* Thread = nullptr;
