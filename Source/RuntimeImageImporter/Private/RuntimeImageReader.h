@@ -62,7 +62,7 @@ public:
     void BlockTillAllRequestsFinished();
 
 private:
-    UTexture2D* CreateTexture(FImageReadResult& ReadResult, const FRuntimeImageData& ImageData);
+    UTexture2D* CreateTexture(const FString& TextureName, const FRuntimeImageData& ImageData);
 
 private:
     TQueue<FImageReadRequest> Requests;

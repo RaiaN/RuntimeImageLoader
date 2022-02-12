@@ -16,12 +16,9 @@
 
 #include "RuntimeImageUtils.h"
 
-
-
-
 void URuntimeImageReader::Initialize()
 {
-    Thread = FRunnableThread::Create(this, TEXT("RuntimeImageReader"));
+    Thread = FRunnableThread::Create(this, TEXT("RuntimeImageReader"), 0, TPri_SlightlyBelowNormal);
 }
 
 void URuntimeImageReader::Cleanup()
@@ -118,7 +115,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             if (IsInGameThread())
             {
-                ReadResult.OutTexture = CreateTexture(ReadResult, ImageData);
+                ReadResult.OutTexture = CreateTexture(Request.ImageFilename, ImageData);
             }
             else
             {
@@ -126,12 +123,14 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                     EAsyncExecution::TaskGraphMainThread,
                     [this, &ReadResult, &ImageData]
                     {
-                        ReadResult.OutTexture = CreateTexture(ReadResult, ImageData);
+                        ReadResult.OutTexture = CreateTexture(ReadResult.ImageFilename, ImageData);
                     }
                 );
 
                 Result.Wait();
             }
+
+            Results.Add(ReadResult);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -139,17 +138,12 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 }
 
 
-UTexture2D* URuntimeImageReader::CreateTexture(FImageReadResult& ReadResult, const FRuntimeImageData& ImageData)
+UTexture2D* URuntimeImageReader::CreateTexture(const FString& TextureName, const FRuntimeImageData& ImageData)
 {
-    if (ReadResult.OutError.Len() > 0)
-    {
-        return nullptr;
-    }
-
-    UTexture2D* NewTexture = NewObject<UTexture2D>(this, *FPaths::GetBaseFilename(ReadResult.ImageFilename));
+    UTexture2D* NewTexture = NewObject<UTexture2D>(this, *FPaths::GetBaseFilename(TextureName));
 
     // TODO: notify cache? use method?
-    CachedTextures.Add(ReadResult.ImageFilename, NewTexture);
+    CachedTextures.Add(TextureName, NewTexture);
 
     {
         QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
@@ -184,16 +178,16 @@ UTexture2D* URuntimeImageReader::CreateTexture(FImageReadResult& ReadResult, con
             const uint32 MipBytes = Mip->SizeX * Mip->SizeY * GPixelFormats[PixelFormat].BlockBytes;
 
             Mip->BulkData.Lock(LOCK_READ_WRITE);
-            void* TextureData = Mip->BulkData.Realloc(MipBytes);
-            FMemory::Memcpy(TextureData, ImageData.RawData.GetData(), MipBytes);
+            {
+                void* TextureData = Mip->BulkData.Realloc(MipBytes);
+                FMemory::Memcpy(TextureData, ImageData.RawData.GetData(), MipBytes);
+            }
             Mip->BulkData.Unlock();
         }
 
         NewTexture->UpdateResource();
 
         FlushRenderingCommands();
-
-        Results.Add(ReadResult);
     }
 
     return NewTexture;
