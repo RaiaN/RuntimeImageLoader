@@ -2,8 +2,6 @@
 
 #include "RuntimeImageReader.h"
 
-#include "Engine/Texture.h"
-#include "GenericPlatform/GenericPlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "HAL/Event.h"
 #include "RHI.h"
@@ -11,6 +9,11 @@
 #include "RHICommandList.h"
 #include "RHIDefinitions.h"
 #include "RenderUtils.h"
+#include "RenderCommandFence.h"
+#include "Engine/Texture.h"
+#include "GenericPlatform/GenericPlatformProcess.h"
+#include "PixelFormat.h"
+#include "Containers/ResourceArray.h"
 #include "Serialization/BulkData.h"
 #include "TextureResource.h"
 
@@ -129,10 +132,41 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
     }
 }
 
-
-UTexture2D* URuntimeImageReader::CreateTexture(const FString& TextureName, const FRuntimeImageData& ImageData)
+class FTextureMips : public FResourceBulkDataInterface
 {
+
+public:
+    FTextureMips(TArray<uint8>&& InMipsData, int32 InSizeX, int32 InSizeY)
+    : MipsData(MoveTemp(InMipsData)), SizeX(InSizeX), SizeY(InSizeY)
+    {}
+
+    const void* GetResourceBulkData() const override
+    {
+        return MipsData.GetData();
+    }
+
+    uint32 GetResourceBulkDataSize() const override
+    {
+        return MipsData.Num();
+    }
+
+    void Discard() override
+    {
+        MipsData.Empty();
+    }
+
+private:
+    TArray<uint8> MipsData;
+    int32 SizeX;
+    int32 SizeY;
+};
+
+UTexture2D* URuntimeImageReader::CreateTexture(const FString& TextureName, FRuntimeImageData& ImageData)
+{
+    check (IsInGameThread());
+    
     UTexture2D* NewTexture = NewObject<UTexture2D>(this, NAME_None, RF_Transient);
+    NewTexture->NeverStream = true;
 
     // TODO: notify cache? use method?
     // CachedTextures.Add(TextureName, NewTexture);
@@ -157,14 +191,14 @@ UTexture2D* URuntimeImageReader::CreateTexture(const FString& TextureName, const
         // TODO: Rework & Optimize
 
         NewTexture->PlatformData = new FTexturePlatformData();
-        NewTexture->PlatformData->SizeX = ImageData.SizeX;
-        NewTexture->PlatformData->SizeY = ImageData.SizeX;
+        NewTexture->PlatformData->SizeX = 1;
+        NewTexture->PlatformData->SizeY = 1;
         NewTexture->PlatformData->PixelFormat = PixelFormat;
 
         FTexture2DMipMap* Mip = new FTexture2DMipMap();
         NewTexture->PlatformData->Mips.Add(Mip);
-        Mip->SizeX = ImageData.SizeX;
-        Mip->SizeY = ImageData.SizeY;
+        Mip->SizeX = 1;
+        Mip->SizeY = 1;
 
         {
             const uint32 MipBytes = Mip->SizeX * Mip->SizeY * GPixelFormats[PixelFormat].BlockBytes;
@@ -179,7 +213,48 @@ UTexture2D* URuntimeImageReader::CreateTexture(const FString& TextureName, const
 
         NewTexture->UpdateResource();
 
-        FlushRenderingCommands();
+        ENQUEUE_RENDER_COMMAND(CreateRHITexture)(
+            [NewTexture, &ImageData, PixelFormat](FRHICommandListImmediate& RHICmdList)
+            {
+                FTextureMips TextureMips(CopyTemp(ImageData.RawData), ImageData.SizeY, ImageData.SizeY);
+                FRHIResourceCreateInfo RHICreateInfo(&TextureMips);
+
+                /*FTexture2DRHIRef RHITexture2D = RHICreateTexture2D(
+                    ImageData.SizeX, ImageData.SizeY,
+                    PF_R8G8B8A8, 
+                    NumMips, NumSamples, 
+                    TexCreate_ShaderResource, RHICreateInfo
+                );*/
+
+                FTexture2DRHIRef RHITexture2D;
+
+                auto Result = Async(
+                    EAsyncExecution::Thread,
+                    [&ImageData, NewTexture, &RHITexture2D]()
+                    {
+                        uint32 NumMips = 1;
+                        uint32 NumSamples = 1;
+                        void* Mip0Data = ImageData.RawData.GetData();
+
+                        RHITexture2D = RHIAsyncCreateTexture2D(
+                            ImageData.SizeX, ImageData.SizeY,
+                            PF_R8G8B8A8,
+                            NumMips,
+                            TexCreate_ShaderResource, &Mip0Data, 1
+                        );
+                    }
+                );
+
+                Result.Wait();
+
+                RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
+                NewTexture->RefreshSamplerStates();
+            }
+        );
+
+        FRenderCommandFence Fence;
+        Fence.BeginFence();
+        Fence.Wait(true);
     }
 
     return NewTexture;
