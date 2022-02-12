@@ -103,19 +103,30 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
         while (Requests.Dequeue(Request))
         {
             FImageReadResult ReadResult;
-            ReadImage(Request, ReadResult);
+            {
+                ReadResult.ImageFilename = Request.ImageFilename;
+            }
+
+            FRuntimeImageData ImageData;
+            FRuntimeImageUtils::ImportFileAsImage(Request.ImageFilename, ImageData, ReadResult.OutError);
+
+            if (ReadResult.OutError.Len() > 0)
+            {
+                Results.Add(ReadResult);
+                continue;
+            }
 
             if (IsInGameThread())
             {
-                InitializeTexture(ReadResult);
+                ReadResult.OutTexture = CreateTexture(ReadResult, ImageData);
             }
             else
             {
                 auto Result = Async(
                     EAsyncExecution::TaskGraphMainThread,
-                    [this, &ReadResult]
+                    [this, &ReadResult, &ImageData]
                     {
-                        InitializeTexture(ReadResult);
+                        ReadResult.OutTexture = CreateTexture(ReadResult, ImageData);
                     }
                 );
 
@@ -127,33 +138,18 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
     }
 }
 
-void URuntimeImageReader::ReadImage(FImageReadRequest& Request, FImageReadResult& ReadResult)
+
+UTexture2D* URuntimeImageReader::CreateTexture(FImageReadResult& ReadResult, const FRuntimeImageData& ImageData)
 {
-    FString OutError;
+    if (ReadResult.OutError.Len() > 0)
     {
-        FRuntimeImageUtils::ImportFileAsImage(Request.ImageFilename, ReadResult.OutImage, OutError);
-
-        ReadResult.ImageFilename = Request.ImageFilename;
-        ReadResult.OutError = OutError;
-    }    
-}
-
-
-void URuntimeImageReader::InitializeTexture(FImageReadResult& ReadResult)
-{
-    if (ReadResult.OutError.Len() != 0)
-    {
-        Results.Add(ReadResult);
-        return;
+        return nullptr;
     }
 
-    ReadResult.OutTexture = NewObject<UTexture2D>(this, *FPaths::GetBaseFilename(ReadResult.ImageFilename));
+    UTexture2D* NewTexture = NewObject<UTexture2D>(this, *FPaths::GetBaseFilename(ReadResult.ImageFilename));
 
-    // TODO: notify cache?
-    CachedTextures.Add(ReadResult.ImageFilename, ReadResult.OutTexture);
-
-    FRuntimeImageData& Image = ReadResult.OutImage;
-    UTexture2D* NewTexture = ReadResult.OutTexture;
+    // TODO: notify cache? use method?
+    CachedTextures.Add(ReadResult.ImageFilename, NewTexture);
 
     {
         QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
@@ -161,7 +157,7 @@ void URuntimeImageReader::InitializeTexture(FImageReadResult& ReadResult)
         check(IsValid(NewTexture));
 
         EPixelFormat PixelFormat;
-        switch (ReadResult.OutImage.Format)
+        switch (ImageData.Format)
         {
             case TSF_G8:            PixelFormat = PF_G8; break;
             case TSF_G16:           PixelFormat = PF_G16; break;
@@ -172,24 +168,24 @@ void URuntimeImageReader::InitializeTexture(FImageReadResult& ReadResult)
             default:                PixelFormat = PF_B8G8R8A8; break;
         }
 
-        // REWORK THIS CODE
+        // TODO: Rework & Optimize
 
         NewTexture->PlatformData = new FTexturePlatformData();
-        NewTexture->PlatformData->SizeX = ReadResult.OutImage.SizeX;
-        NewTexture->PlatformData->SizeY = ReadResult.OutImage.SizeX;
+        NewTexture->PlatformData->SizeX = ImageData.SizeX;
+        NewTexture->PlatformData->SizeY = ImageData.SizeX;
         NewTexture->PlatformData->PixelFormat = PixelFormat;
 
         FTexture2DMipMap* Mip = new FTexture2DMipMap();
         NewTexture->PlatformData->Mips.Add(Mip);
-        Mip->SizeX = ReadResult.OutImage.SizeX;
-        Mip->SizeY = ReadResult.OutImage.SizeY;
+        Mip->SizeX = ImageData.SizeX;
+        Mip->SizeY = ImageData.SizeY;
 
         {
             const uint32 MipBytes = Mip->SizeX * Mip->SizeY * GPixelFormats[PixelFormat].BlockBytes;
 
             Mip->BulkData.Lock(LOCK_READ_WRITE);
             void* TextureData = Mip->BulkData.Realloc(MipBytes);
-            FMemory::Memcpy(TextureData, Image.RawData.GetData(), MipBytes);
+            FMemory::Memcpy(TextureData, ImageData.RawData.GetData(), MipBytes);
             Mip->BulkData.Unlock();
         }
 
@@ -199,4 +195,6 @@ void URuntimeImageReader::InitializeTexture(FImageReadResult& ReadResult)
 
         Results.Add(ReadResult);
     }
+
+    return NewTexture;
 }

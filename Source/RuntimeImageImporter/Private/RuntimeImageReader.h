@@ -29,8 +29,6 @@ struct FImageReadResult
     GENERATED_BODY()
 
     FString ImageFilename = TEXT("");
-    // FIXME: Remove OutImage
-    FRuntimeImageData OutImage;
     UTexture2D* OutTexture = nullptr;
     FString OutError = TEXT("");
 };
@@ -64,8 +62,7 @@ public:
     void BlockTillAllRequestsFinished();
 
 private:
-    void ReadImage(FImageReadRequest& Request, FImageReadResult& ReadResult);
-    void InitializeTexture(FImageReadResult& ReadResult);
+    UTexture2D* CreateTexture(FImageReadResult& ReadResult, const FRuntimeImageData& ImageData);
 
 private:
     TQueue<FImageReadRequest> Requests;
