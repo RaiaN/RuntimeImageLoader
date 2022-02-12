@@ -69,8 +69,8 @@ private:
     TArray<FImageReadResult> Results;
 
 private:
-    UPROPERTY()
-    TMap<FString, UTexture2D*> CachedTextures;
+    // UPROPERTY()
+    // TMap<FString, UTexture2D*> CachedTextures;
 
 private:
     FRunnableThread* Thread = nullptr;

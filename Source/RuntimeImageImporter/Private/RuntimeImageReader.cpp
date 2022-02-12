@@ -71,7 +71,7 @@ void URuntimeImageReader::Clear()
 {
     Requests.Empty();
     Results.Empty();
-    CachedTextures.Empty();
+    // CachedTextures.Empty();
 }
 
 bool URuntimeImageReader::IsWorkCompleted() const
@@ -135,7 +135,7 @@ UTexture2D* URuntimeImageReader::CreateTexture(const FString& TextureName, const
     UTexture2D* NewTexture = NewObject<UTexture2D>(this, NAME_None, RF_Transient);
 
     // TODO: notify cache? use method?
-    CachedTextures.Add(TextureName, NewTexture);
+    // CachedTextures.Add(TextureName, NewTexture);
 
     {
         QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
