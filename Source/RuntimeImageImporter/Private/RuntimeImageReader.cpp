@@ -140,7 +140,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
 UTexture2D* URuntimeImageReader::CreateTexture(const FString& TextureName, const FRuntimeImageData& ImageData)
 {
-    UTexture2D* NewTexture = NewObject<UTexture2D>(this, *FPaths::GetBaseFilename(TextureName));
+    UTexture2D* NewTexture = NewObject<UTexture2D>(this, NAME_None, RF_Transient);
 
     // TODO: notify cache? use method?
     CachedTextures.Add(TextureName, NewTexture);

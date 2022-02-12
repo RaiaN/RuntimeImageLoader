@@ -9,7 +9,7 @@
 #include "Containers/Queue.h"
 #include "Tickable.h"
 #include "Materials/MaterialInterface.h"
-#include "Subsystems/EngineSubsystem.h"
+#include "Subsystems/WorldSubsystem.h"
 
 #include "RuntimeImageReader.h"
 
@@ -48,14 +48,11 @@ public:
  * 
  */
 UCLASS(BlueprintType)
-class RUNTIMEIMAGEIMPORTER_API URuntimeImageLoader : public UEngineSubsystem, public FTickableGameObject
+class RUNTIMEIMAGEIMPORTER_API URuntimeImageLoader : public UWorldSubsystem, public FTickableGameObject
 {    
     GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintPure, Category = "RuntimeImageLoader")
-	static URuntimeImageLoader* GetRuntimeImageLoader();
-
     void Initialize(FSubsystemCollectionBase& Collection) override;
     void Deinitialize() override;
 

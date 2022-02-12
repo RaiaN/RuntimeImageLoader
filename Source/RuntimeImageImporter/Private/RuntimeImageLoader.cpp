@@ -1,16 +1,9 @@
 // Copyright Peter Leontev
 
 #include "RuntimeImageLoader.h"
+#include "Subsystems/SubsystemBlueprintLibrary.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
-
-URuntimeImageLoader* URuntimeImageLoader::GetRuntimeImageLoader()
-{
-    URuntimeImageLoader* RuntimeImageLoader = GEngine->GetEngineSubsystem<URuntimeImageLoader>();
-    ensure(IsValid(RuntimeImageLoader));
-
-    return RuntimeImageLoader;
-}
 
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
