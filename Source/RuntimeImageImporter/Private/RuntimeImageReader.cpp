@@ -60,9 +60,11 @@ void URuntimeImageReader::AddRequest(const FImageReadRequest& Request)
     bCompletedWork.AtomicSet(false);
 }
 
-void URuntimeImageReader::GetResults(TArray<FImageReadResult>& OutResults) const
+void URuntimeImageReader::GetResult(FImageReadResult& OutResult)
 {
-    OutResults.Append(Results);
+    ensure(Results.Num() > 0);
+
+    OutResult = Results.Pop();
 }
 
 void URuntimeImageReader::Clear()
@@ -70,16 +72,6 @@ void URuntimeImageReader::Clear()
     Requests.Empty();
     Results.Empty();
     CachedTextures.Empty();
-}
-
-void URuntimeImageReader::Reset()
-{
-    Clear();
-}
-
-bool URuntimeImageReader::HasRequests() const
-{
-    return !Requests.IsEmpty();
 }
 
 bool URuntimeImageReader::IsWorkCompleted() const

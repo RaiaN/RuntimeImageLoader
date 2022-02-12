@@ -52,10 +52,8 @@ public:
 
 public:
     void AddRequest(const FImageReadRequest& Request);
-    void GetResults(TArray<FImageReadResult>& OutResults) const;
+    void GetResult(FImageReadResult& OutResult);
     void Clear();
-    void Reset();
-    bool HasRequests() const;
     bool IsWorkCompleted() const;
 
     void Trigger();

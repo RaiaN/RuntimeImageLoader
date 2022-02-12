@@ -59,10 +59,10 @@ public:
 public:
     //------------------ Images --------------------
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutLoadedImage, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
+    void LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
     
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter")
-    void LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture);
+    void LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError);
 
 private:
     void Tick(float DeltaTime) override;

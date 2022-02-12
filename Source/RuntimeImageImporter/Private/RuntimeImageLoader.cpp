@@ -15,21 +15,18 @@ void URuntimeImageLoader::Deinitialize()
     ImageReader = nullptr;
 }
 
-void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutLoadedImage, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
+void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
 {
     if (!IsValid(WorldContextObject))
     {
         return;
     }
-    
-    FLoadImageRequestParams RequestParams;
-    RequestParams.ImageFilename = ImageFilename;
 
     FLoadImageRequest Request;
     {
-        Request.Params = RequestParams;
+        Request.Params.ImageFilename = ImageFilename;
         Request.OnRequestCompleted.BindLambda(
-            [this, &OutLoadedImage, &OutError, LatentInfo](const FImageReadResult& ReadResult)
+            [this, &OutTexture, &OutError, LatentInfo](const FImageReadResult& ReadResult)
             {
                 if (UObject* CallbackTarget = LatentInfo.CallbackTarget)
                 {
@@ -37,7 +34,7 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2
                     {
                         int32 Linkage = LatentInfo.Linkage;
 
-                        OutLoadedImage = ReadResult.OutTexture;
+                        OutTexture = ReadResult.OutTexture;
                         OutError = ReadResult.OutError;
 
                         CallbackTarget->ProcessEvent(ExecutionFunction, &Linkage);
@@ -50,9 +47,20 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture)
+void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError)
 {
-    
+    FImageReadRequest ReadRequest;
+    ReadRequest.ImageFilename = ImageFilename;
+
+    ImageReader->BlockTillAllRequestsFinished();
+    ImageReader->AddRequest(ReadRequest);
+    ImageReader->BlockTillAllRequestsFinished();
+
+    FImageReadResult ReadResult;
+    ImageReader->GetResult(ReadResult);
+
+    OutTexture = ReadResult.OutTexture;
+    OutError = ReadResult.OutError;
 }
 
 void URuntimeImageLoader::Tick(float DeltaTime)
@@ -72,17 +80,12 @@ void URuntimeImageLoader::Tick(float DeltaTime)
 
     if (ActiveRequest.IsRequestValid() && ImageReader->IsWorkCompleted())
     {
-        TArray<FImageReadResult> OutResults;
-        ImageReader->GetResults(OutResults);
-
-        if (OutResults.Num() == 0)
-        {
-            return;
-        }
+        FImageReadResult ReadResult;
+        ImageReader->GetResult(ReadResult);
 
         ensure(ActiveRequest.OnRequestCompleted.IsBound());
 
-        ActiveRequest.OnRequestCompleted.Execute(OutResults[0]);
+        ActiveRequest.OnRequestCompleted.Execute(ReadResult);
 
         ActiveRequest.Invalidate();
     }
@@ -90,14 +93,14 @@ void URuntimeImageLoader::Tick(float DeltaTime)
 
 TStatId URuntimeImageLoader::GetStatId() const
 {
-    return TStatId();
+    RETURN_QUICK_DECLARE_CYCLE_STAT(URuntimeImageLoader, STATGROUP_Tickables);
 }
 
 URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
 {
     if (!IsValid(ImageReader))
     {
-        ImageReader = NewObject<URuntimeImageReader>();
+        ImageReader = NewObject<URuntimeImageReader>(this);
         ImageReader->Initialize();
     }
 
