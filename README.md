@@ -7,7 +7,7 @@
   <h3 align="center">Runtime Image Importer</h3>
 
   <p align="center">
-    Importing images into Unreal at runtime
+    Load images into Unreal at runtime
     <br/>
     <br/>
   </p>
