@@ -3,6 +3,8 @@
 #include "RuntimeImageUtils.h"
 
 #include "Engine/Texture2D.h"
+#include "TextureResource.h"
+#include "PixelFormat.h"
 #include "HAL/FileManager.h"
 #include "HAL/UnrealMemory.h"
 #include "Serialization/BulkData.h"
@@ -12,7 +14,6 @@
 #include "IImageWrapper.h"
 #include "RHI.h"
 #include "RenderUtils.h"
-#include "Async/Async.h"
 
 #include "Helpers/TGAHelpers.h"
 #include "Helpers/PNGHelpers.h"
@@ -330,5 +331,65 @@ namespace FRuntimeImageUtils
         {
             return;
         }
+    }
+
+    UTexture2D* CreateDummyTexture(const FString& ImageFilename, ETextureSourceFormat ImageFormat)
+    {
+        check(IsInGameThread());
+
+        const FString& BaseFilename = FPaths::GetBaseFilename(ImageFilename);
+
+        UTexture2D* NewTexture = NewObject<UTexture2D>(
+            GetTransientPackage(), 
+            MakeUniqueObjectName(GetTransientPackage(), UTexture2D::StaticClass(), *BaseFilename),
+            RF_Transient
+        );
+        NewTexture->NeverStream = true;
+
+        {
+            QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
+
+            check(IsValid(NewTexture));
+
+            EPixelFormat PixelFormat;
+            switch (ImageFormat)
+            {
+                case TSF_G8:            PixelFormat = PF_G8; break;
+                case TSF_G16:           PixelFormat = PF_G16; break;
+                case TSF_BGRA8:         PixelFormat = PF_B8G8R8A8; break;
+                case TSF_BGRE8:         PixelFormat = PF_B8G8R8A8; break;
+                case TSF_RGBA16:        PixelFormat = PF_R16G16B16A16_SINT; break;
+                case TSF_RGBA16F:       PixelFormat = PF_FloatRGBA; break;
+                default:                PixelFormat = PF_B8G8R8A8; break;
+            }
+
+            NewTexture->PlatformData = new FTexturePlatformData();
+            NewTexture->PlatformData->SizeX = 1;
+            NewTexture->PlatformData->SizeY = 1;
+            NewTexture->PlatformData->PixelFormat = PixelFormat;
+
+            FTexture2DMipMap* Mip = new FTexture2DMipMap();
+            NewTexture->PlatformData->Mips.Add(Mip);
+            Mip->SizeX = 1;
+            Mip->SizeY = 1;
+
+            const uint32 MipBytes = Mip->SizeX * Mip->SizeY * GPixelFormats[PixelFormat].BlockBytes;
+            {
+                Mip->BulkData.Lock(LOCK_READ_WRITE);
+
+                void* TextureData = Mip->BulkData.Realloc(MipBytes);
+
+                static TArray<uint8> DummyBytes;
+                DummyBytes.SetNum(MipBytes);
+
+                FMemory::Memcpy(TextureData, DummyBytes.GetData(), MipBytes);
+
+                Mip->BulkData.Unlock();
+            }
+
+            NewTexture->UpdateResource();
+        }
+
+        return NewTexture;
     }
 }

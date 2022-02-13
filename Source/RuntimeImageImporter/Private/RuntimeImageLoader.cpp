@@ -3,16 +3,20 @@
 #include "RuntimeImageLoader.h"
 #include "Subsystems/SubsystemBlueprintLibrary.h"
 
-PRAGMA_DISABLE_OPTIMIZATION
-
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
-    ImageReader = InitializeImageReader();
+    InitializeImageReader();
 }
 
 void URuntimeImageLoader::Deinitialize()
 {
+    ImageReader->Deinitialize();
     ImageReader = nullptr;
+}
+
+bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
+{
+    return WorldType == EWorldType::PIE || WorldType == EWorldType::Game;
 }
 
 void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
@@ -65,7 +69,7 @@ void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, UTexture2D
 
 void URuntimeImageLoader::Tick(float DeltaTime)
 {
-    InitializeImageReader();
+    ensure(IsValid(ImageReader));
     
     if (!ActiveRequest.IsRequestValid() && !Requests.IsEmpty())
     {
@@ -96,6 +100,11 @@ TStatId URuntimeImageLoader::GetStatId() const
     RETURN_QUICK_DECLARE_CYCLE_STAT(URuntimeImageLoader, STATGROUP_Tickables);
 }
 
+bool URuntimeImageLoader::IsAllowedToTick() const
+{
+    return !IsTemplate();
+}
+
 URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
 {
     if (!IsValid(ImageReader))
@@ -107,5 +116,3 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
     ensure(IsValid(ImageReader));
     return ImageReader;
 }
-
-PRAGMA_ENABLE_OPTIMIZATION

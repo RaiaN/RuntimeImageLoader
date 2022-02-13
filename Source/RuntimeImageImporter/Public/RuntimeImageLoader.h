@@ -53,10 +53,6 @@ class RUNTIMEIMAGEIMPORTER_API URuntimeImageLoader : public UWorldSubsystem, pub
     GENERATED_BODY()
 
 public:
-    void Initialize(FSubsystemCollectionBase& Collection) override;
-    void Deinitialize() override;
-
-public:
     //------------------ Images --------------------
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
@@ -64,9 +60,15 @@ public:
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter")
     void LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError);
 
+protected:
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+    virtual void Deinitialize() override;
+    virtual bool DoesSupportWorldType(EWorldType::Type WorldType) const override;
+
 private:
     void Tick(float DeltaTime) override;
     TStatId GetStatId() const override;
+    virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
 
