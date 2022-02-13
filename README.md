@@ -14,7 +14,7 @@
 </p>
 
 ## Features
-- Fast & hitch-less & no-freezes texture creation for up to 8k resolution!
+- Up to 8k resolution fast & hitch-less & zero-freeze texture creation!
 - Blueprint friendly!
 - Support for the following image formats: PNG, JPEG, BMP, TGA
 - Only supported format is RGBA8 
