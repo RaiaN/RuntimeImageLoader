@@ -20,7 +20,7 @@
 - Supports 8, 16, 24 and 32-bit color depth 
 - Unreal texture format is RGBA8 
 - No static libraries or external dependencies
-- Only tested on Windows and Unreal Engine 4.27+
+- Tested on Windows, DirectX 11 and Unreal Engine 4.27+ 
 
 # Blueprints
 
