@@ -14,9 +14,10 @@
 </p>
 
 ## Features
-- Fast & hitch-less & zero-freeze runtime texture loading up to 8k resolution!
-- Blueprint friendly!
-- Support for the following image formats: PNG, JPEG, BMP, TGA
-- Only supported format is RGBA8 
-- No any static libraries or external dependencies
-- Only tested on Windows
+- Fast & hitch-less & zero-freeze runtime texture loading up to 8k resolution
+- Blueprint friendly (see below)
+- Supports PNG, JPEG, BMP and TGA
+- Supports 8, 16, 24 and 32-bit color depth 
+- Unreal texture format is RGBA8 
+- No static libraries or external dependencies
+- Only tested on Windows and Unreal Engine 4.27+
