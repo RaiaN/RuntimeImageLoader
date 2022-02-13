@@ -60,8 +60,6 @@ namespace FRuntimeImageUtils
     {
         QUICK_SCOPE_CYCLE_COUNTER(STAT_EvoImageUtils_ImportFileAsTexture_ImportBufferAsImage);
         
-        //TODO: Support 16bit bit depth images later on
-        
         IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
 
         //
