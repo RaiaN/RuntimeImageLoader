@@ -21,3 +21,9 @@
 - Unreal texture format is RGBA8 
 - No static libraries or external dependencies
 - Only tested on Windows and Unreal Engine 4.27+
+
+# Blueprints
+
+Below is the example of how to use this plugin for loading images from your blueprints/scripts:
+
+<img src="Resources/Blueprint_node.JPG.png" alt="Logo" width="80" height="80">
