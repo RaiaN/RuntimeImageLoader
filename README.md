@@ -1,10 +1,10 @@
 <br/>
 <p align="center">
-  <a href="https://github.com/RaiaN/ue4_runtimeimageimporter">
+  <a href="https://github.com/RaiaN/ue4_runtimeimageloader">
     <img src="Resources/Icon128.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Runtime Image Importer</h3>
+  <h3 align="center">Runtime Image Loader</h3>
 
   <p align="center">
     Load images into Unreal at runtime
