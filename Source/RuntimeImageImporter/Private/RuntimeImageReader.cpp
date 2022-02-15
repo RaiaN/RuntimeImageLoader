@@ -103,10 +103,8 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
         FImageReadRequest Request;
         while (Requests.Dequeue(Request))
         {
-            FImageReadResult ReadResult;
-            {
-                ReadResult.ImageFilename = Request.ImageFilename;
-            }
+            FImageReadResult& ReadResult = Results.Emplace_GetRef();
+            ReadResult.ImageFilename = Request.ImageFilename;
 
             FRuntimeImageData ImageData;
             FRuntimeImageUtils::ImportFileAsImage(Request.ImageFilename, ImageData, ReadResult.OutError);
@@ -117,25 +115,30 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 continue;
             }
 
-            FConstructTextureTask Task;
+            if (IsInGameThread())
             {
-                Task.ImageFilename = Request.ImageFilename;
-                Task.TextureFormat = ImageData.Format;
+                ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Request.ImageFilename, ImageData.Format));
             }
-            ConstructTasks.Enqueue(Task);
+            else
+            {
+                FConstructTextureTask Task;
+                {
+                    Task.ImageFilename = Request.ImageFilename;
+                    Task.TextureFormat = ImageData.Format;
+                }
 
-            while (!TextureConstructedSemaphore->Wait(0.5f) && !bStopThread) {}
+                ConstructTasks.Enqueue(Task);
+                while (!TextureConstructedSemaphore->Wait(0.5f) && !bStopThread) {}
+            }
 
-            if (ConstructedTextures.IsEmpty())
+            if (ConstructedTextures.Num() == 0)
             {
                 return;
             }
 
-            ConstructedTextures.Dequeue(ReadResult.OutTexture);
+            ReadResult.OutTexture = ConstructedTextures.Pop();
 
             AsyncReallocateTexture(ReadResult.OutTexture, ImageData);
-
-            Results.Add(ReadResult);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -172,7 +175,7 @@ void URuntimeImageReader::Tick(float DeltaTime)
     FConstructTextureTask Task;
     while (!bStopThread && ConstructTasks.Dequeue(Task))
     {
-        ConstructedTextures.Enqueue(FRuntimeImageUtils::CreateDummyTexture(Task.ImageFilename, Task.TextureFormat));
+        ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Task.ImageFilename, Task.TextureFormat));
         TextureConstructedSemaphore->Trigger();
     }
 }

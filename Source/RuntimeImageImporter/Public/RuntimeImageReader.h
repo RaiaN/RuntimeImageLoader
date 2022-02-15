@@ -26,6 +26,7 @@ struct FImageReadResult
     GENERATED_BODY()
 
     FString ImageFilename = TEXT("");
+    UPROPERTY()
     UTexture2D* OutTexture = nullptr;
     FString OutError = TEXT("");
 };
@@ -78,7 +79,10 @@ private:
 
 private:
     TQueue<FConstructTextureTask, EQueueMode::Mpsc> ConstructTasks;
-    TQueue<UTexture2D*> ConstructedTextures;
+
+    UPROPERTY()
+    TArray<UTexture2D*> ConstructedTextures;
+
     FEvent* TextureConstructedSemaphore = nullptr;
 
 private:
