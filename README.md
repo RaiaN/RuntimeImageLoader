@@ -21,6 +21,7 @@
 - Unreal texture format is RGBA8 
 - No static libraries or external dependencies
 - Tested on Windows, DirectX 11 and Unreal Engine 4.27+ 
+- Tested in GC-intensive environment
 
 # Blueprints
 
