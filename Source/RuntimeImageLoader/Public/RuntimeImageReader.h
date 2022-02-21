@@ -38,7 +38,7 @@ struct FConstructTextureTask
 };
 
 UCLASS()
-class RUNTIMEIMAGEIMPORTER_API URuntimeImageReader : public UObject, public FRunnable, public FTickableGameObject
+class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable, public FTickableGameObject
 {
     GENERATED_BODY()
 
