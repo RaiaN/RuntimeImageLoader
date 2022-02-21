@@ -23,9 +23,6 @@ namespace FRuntimeImageUtils
 {
     bool IsImportResolutionValid(int32 Width, int32 Height, bool bAllowNonPowerOfTwo)
     {
-        // const UEvoAssetManagerSettings* EvoAssetManagerSettings = GetDefault<UEvoAssetManagerSettings>();
-        // check(IsValid(EvoAssetManagerSettings));
-
         // TODO: 
         const int32 MAX_TEXTURE_SIZE = 8192;
 
