@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "RuntimeImageImporter",
+	"FriendlyName": "RuntimeImageLoader",
 	"Description": "",
 	"Category": "Other",
 	"CreatedBy": "Peter Leontev",
@@ -16,7 +16,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "RuntimeImageImporter",
+			"Name": "RuntimeImageLoader",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}

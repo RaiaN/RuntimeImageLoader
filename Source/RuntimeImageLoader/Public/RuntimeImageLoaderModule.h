@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FRuntimeImageImporterModule : public IModuleInterface
+class FRuntimeImageLoaderModule : public IModuleInterface
 {
 public:
 

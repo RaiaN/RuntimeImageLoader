@@ -1,8 +1,8 @@
 // Copyright Peter Leontev
 
-#include "RuntimeImageImporterModule.h"
+#include "RuntimeImageLoaderModule.h"
 
-#define LOCTEXT_NAMESPACE "FRuntimeImageImporterModule"
+#define LOCTEXT_NAMESPACE "FRuntimeImageLoaderModule"
 
 void FRuntimeImageImporterModule::StartupModule()
 {
@@ -17,4 +17,4 @@ void FRuntimeImageImporterModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FRuntimeImageImporterModule, RuntimeImageImporter)
+IMPLEMENT_MODULE(FRuntimeImageLoaderModule, RuntimeImageLoader)

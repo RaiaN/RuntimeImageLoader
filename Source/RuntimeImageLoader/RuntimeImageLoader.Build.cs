@@ -2,13 +2,18 @@
 
 using UnrealBuildTool;
 
-public class RuntimeImageImporter : ModuleRules
+public class RuntimeImageLoader : ModuleRules
 {
-	public RuntimeImageImporter(ReadOnlyTargetRules Target) : base(Target)
+	public RuntimeImageLoader(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
+        {
+            bEnforceIWYU = true;
+            bUseUnity = false;
+
+            PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        }
+
+        PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
 			}
