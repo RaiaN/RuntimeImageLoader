@@ -48,7 +48,7 @@ public:
  * 
  */
 UCLASS(BlueprintType)
-class RUNTIMEIMAGEIMPORTER_API URuntimeImageLoader : public UWorldSubsystem, public FTickableGameObject
+class RUNTIMEIMAGELOADER_API URuntimeImageLoader : public UWorldSubsystem, public FTickableGameObject
 {    
     GENERATED_BODY()
 
