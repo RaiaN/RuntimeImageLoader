@@ -11,6 +11,7 @@
 #include "RHIDefinitions.h"
 #include "RenderUtils.h"
 #include "Engine/Texture.h"
+#include "Engine/Texture2D.h"
 #include "PixelFormat.h"
 #include "TextureResource.h"
 
