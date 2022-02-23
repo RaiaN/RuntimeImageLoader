@@ -18,7 +18,7 @@
 - Blueprint friendly (see below)
 - Supports PNG, JPEG, BMP and TGA
 - Supports 8, 16, 24 and 32-bit color depth 
-- Unreal texture format is RGBA8 
+- Output texture is in R8G8B8A8 format
 - No static libraries or external dependencies
 - Tested on Windows, DirectX 11 and Unreal Engine 4.27+ 
 - Tested in GC-intensive environment

@@ -1,4 +1,4 @@
-// Copyright Peter Leontev
+// Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #pragma once
 
@@ -6,6 +6,7 @@
 #include "Engine/Texture.h"
 #include "Tickable.h"
 #include "Misc/ScopedEvent.h"
+#include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
 #include "RuntimeImageData.h"
 #include "RuntimeImageReader.generated.h"
@@ -36,6 +37,8 @@ struct FConstructTextureTask
     FString ImageFilename;
     ETextureSourceFormat TextureFormat;
 };
+
+class UTexture2D;
 
 UCLASS()
 class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable, public FTickableGameObject

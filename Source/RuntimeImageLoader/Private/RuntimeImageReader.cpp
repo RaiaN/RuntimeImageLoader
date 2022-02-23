@@ -1,4 +1,4 @@
-// Copyright Peter Leontev
+// Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #include "RuntimeImageReader.h"
 
@@ -11,6 +11,7 @@
 #include "RHIDefinitions.h"
 #include "RenderUtils.h"
 #include "Engine/Texture.h"
+#include "Engine/Texture2D.h"
 #include "PixelFormat.h"
 #include "TextureResource.h"
 

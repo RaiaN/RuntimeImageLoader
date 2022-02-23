@@ -2,14 +2,14 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "RuntimeImageLoader",
-	"Description": "",
-	"Category": "Other",
+	"FriendlyName": "Runtime Image Loader",
+	"Description": "Load high-resolution images at runtime without hitches",
+	"Category": "Code Plugins",
 	"CreatedBy": "Peter Leontev",
-	"CreatedByURL": "",
+	"CreatedByURL": "https://peterleontev.com/",
 	"DocsURL": "",
-	"MarketplaceURL": "",
-	"SupportURL": "",
+	"MarketplaceURL" : "com.epicgames.launcher://ue/marketplace/product/e8d4771b882343199acaf995c32a5fea",
+	"SupportURL": "raianknight@gmail.com",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -20,5 +20,6 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
-	]
+	],
+	"WhitelistPlatforms": [ "Win64", "Win32",  ]
 }
