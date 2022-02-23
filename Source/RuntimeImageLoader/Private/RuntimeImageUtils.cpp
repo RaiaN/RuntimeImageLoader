@@ -1,4 +1,4 @@
-// Copyright Peter Leontev
+// Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #include "RuntimeImageUtils.h"
 
