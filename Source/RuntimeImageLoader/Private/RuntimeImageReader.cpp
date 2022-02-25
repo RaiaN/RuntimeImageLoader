@@ -129,7 +129,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 }
 
                 ConstructTasks.Enqueue(Task);
-                while (!TextureConstructedSemaphore->Wait(0.5f) && !bStopThread) {}
+                while (!TextureConstructedSemaphore->Wait(100) && !bStopThread) {}
             }
 
             if (ConstructedTextures.Num() == 0)
