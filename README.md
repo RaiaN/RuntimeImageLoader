@@ -13,6 +13,8 @@
   </p>
 </p>
 
+Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader !
+
 ## Features
 - Fast & hitch-less & zero-freeze runtime texture loading up to 8k resolution
 - Blueprint friendly (see below)
