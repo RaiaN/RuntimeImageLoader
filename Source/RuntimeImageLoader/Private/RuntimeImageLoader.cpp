@@ -38,8 +38,11 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2
                     {
                         int32 Linkage = LatentInfo.Linkage;
 
-                        // Make sure our texture was not destroyed by GC 
-                        ensure(IsValid(ReadResult.OutTexture));
+                        // Make sure the texture was not destroyed by GC 
+                        if (ReadResult.OutError.Len() == 0)
+                        {
+                            ensure(IsValid(ReadResult.OutTexture));
+                        }
 
                         OutTexture = ReadResult.OutTexture;
                         OutError = ReadResult.OutError;

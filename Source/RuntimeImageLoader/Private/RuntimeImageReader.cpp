@@ -112,7 +112,6 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             if (ReadResult.OutError.Len() > 0)
             {
-                Results.Add(ReadResult);
                 continue;
             }
 
