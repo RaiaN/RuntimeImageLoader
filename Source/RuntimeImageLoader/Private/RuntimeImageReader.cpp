@@ -139,6 +139,11 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             ReadResult.OutTexture = ConstructedTextures.Pop();
 
             AsyncReallocateTexture(ReadResult.OutTexture, ImageData);
+
+            ReadResult.OutTexture->PlatformData->SizeX = ImageData.SizeX;
+            ReadResult.OutTexture->PlatformData->SizeY = ImageData.SizeY;
+
+            // TODO: Fill the rest of PlatformData later on
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());

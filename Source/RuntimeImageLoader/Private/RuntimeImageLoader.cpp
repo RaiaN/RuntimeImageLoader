@@ -19,7 +19,7 @@ bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
     return WorldType == EWorldType::PIE || WorldType == EWorldType::Game;
 }
 
-void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
+void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
 {
     if (!IsValid(WorldContextObject))
     {
@@ -30,7 +30,7 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2
     {
         Request.Params.ImageFilename = ImageFilename;
         Request.OnRequestCompleted.BindLambda(
-            [this, &OutTexture, &OutError, LatentInfo](const FImageReadResult& ReadResult)
+            [this, &OutTexture, &bSuccess, &OutError, LatentInfo](const FImageReadResult& ReadResult)
             {
                 if (UObject* CallbackTarget = LatentInfo.CallbackTarget)
                 {
@@ -38,12 +38,15 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2
                     {
                         int32 Linkage = LatentInfo.Linkage;
 
+#if (UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT)
                         // Make sure the texture was not destroyed by GC 
-                        if (ReadResult.OutError.Len() == 0)
+                        if (ReadResult.OutError.IsEmpty())
                         {
                             ensure(IsValid(ReadResult.OutTexture));
                         }
+#endif
 
+                        bSuccess = ReadResult.OutError.IsEmpty();
                         OutTexture = ReadResult.OutTexture;
                         OutError = ReadResult.OutError;
 
@@ -57,7 +60,7 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, UTexture2
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture, FString& OutError)
+void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
 {
     FImageReadRequest ReadRequest;
     ReadRequest.ImageFilename = ImageFilename;
@@ -69,6 +72,7 @@ void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, UTexture2D
     FImageReadResult ReadResult;
     ImageReader->GetResult(ReadResult);
 
+    bSuccess = ReadResult.OutError.IsEmpty();
     OutTexture = ReadResult.OutTexture;
     OutError = ReadResult.OutError;
 }
