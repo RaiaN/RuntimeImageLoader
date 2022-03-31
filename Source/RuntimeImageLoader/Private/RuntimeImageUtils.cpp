@@ -329,7 +329,7 @@ namespace FRuntimeImageUtils
         }
     }
 
-    UTexture2D* CreateDummyTexture(const FString& ImageFilename, ETextureSourceFormat ImageFormat)
+    UTexture2D* CreateDummyTexture(const FString& ImageFilename, EPixelFormat PixelFormat)
     {
         check(IsInGameThread());
 
@@ -346,18 +346,6 @@ namespace FRuntimeImageUtils
             QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
 
             check(IsValid(NewTexture));
-
-            EPixelFormat PixelFormat;
-            switch (ImageFormat)
-            {
-                case TSF_G8:            PixelFormat = PF_G8; break;
-                case TSF_G16:           PixelFormat = PF_G16; break;
-                case TSF_BGRA8:         PixelFormat = PF_B8G8R8A8; break;
-                case TSF_BGRE8:         PixelFormat = PF_B8G8R8A8; break;
-                case TSF_RGBA16:        PixelFormat = PF_R16G16B16A16_SINT; break;
-                case TSF_RGBA16F:       PixelFormat = PF_FloatRGBA; break;
-                default:                PixelFormat = PF_B8G8R8A8; break;
-            }
 
             NewTexture->PlatformData = new FTexturePlatformData();
             NewTexture->PlatformData->SizeX = 1;

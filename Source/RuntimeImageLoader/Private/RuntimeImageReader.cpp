@@ -115,16 +115,36 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 continue;
             }
 
+            EPixelFormat PixelFormat = PF_Unknown;
+
+            // determine pixel format
+            switch (ImageData.Format)
+            {
+                case TSF_G8:            PixelFormat = PF_G8; break;
+                case TSF_G16:           PixelFormat = PF_G16; break;
+                case TSF_BGRA8:         PixelFormat = PF_B8G8R8A8; break;
+                case TSF_BGRE8:         PixelFormat = PF_B8G8R8A8; break;
+                case TSF_RGBA16:        PixelFormat = PF_R16G16B16A16_SINT; break;
+                case TSF_RGBA16F:       PixelFormat = PF_FloatRGBA; break;
+                default:                PixelFormat = PF_Unknown; break;
+            }
+
+            if (PixelFormat == PF_Unknown)
+            {
+                ReadResult.OutError = TEXT("Image data is corrupted. Please contact devs");
+                continue;
+            }
+
             if (IsInGameThread())
             {
-                ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Request.ImageFilename, ImageData.Format));
+                ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Request.ImageFilename, PixelFormat));
             }
             else
             {
                 FConstructTextureTask Task;
                 {
                     Task.ImageFilename = Request.ImageFilename;
-                    Task.TextureFormat = ImageData.Format;
+                    Task.PixelFormat = PixelFormat;
                 }
 
                 ConstructTasks.Enqueue(Task);
@@ -138,19 +158,61 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             ReadResult.OutTexture = ConstructedTextures.Pop();
 
-            AsyncReallocateTexture(ReadResult.OutTexture, ImageData);
-
             ReadResult.OutTexture->PlatformData->SizeX = ImageData.SizeX;
             ReadResult.OutTexture->PlatformData->SizeY = ImageData.SizeY;
 
-            // TODO: Fill the rest of PlatformData later on
+            AsyncReallocateTexture(ReadResult.OutTexture, ImageData, PixelFormat);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
     }
 }
 
-void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData)
+/**
+ * The rendering resource which represents a runtime texture.
+ */
+class FRuntimeTextureResource : public FTextureResource
+{
+public:
+    FRuntimeTextureResource(UTexture2D* InOwner)
+        : Owner(InOwner), SizeX(InOwner->GetSizeX()), SizeY(InOwner->GetSizeY())
+    {
+        bSRGB = true;
+        bGreyScaleFormat = false;
+    }
+
+    virtual ~FRuntimeTextureResource() {}
+
+    uint32 GetSizeX() const override
+    {
+        return SizeX;
+    }
+
+    uint32 GetSizeY() const override
+    {
+        return SizeY;
+    }
+
+    void InitRHI() override
+    {
+        FSamplerStateInitializerRHI SamplerStateInitializer(SF_Trilinear, AM_Wrap, AM_Wrap, AM_Wrap);
+        SamplerStateRHI = RHICreateSamplerState(SamplerStateInitializer);
+        DeferredPassSamplerStateRHI = RHICreateSamplerState(SamplerStateInitializer);
+    }
+
+    void ReleaseRHI() override
+    {
+        RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+        FTextureResource::ReleaseRHI();
+    }
+
+private:
+    UTexture2D* Owner;
+    uint32 SizeX;
+    uint32 SizeY;
+};
+
+void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData, EPixelFormat PixelFormat)
 {
     uint32 NumMips = 1;
     uint32 NumSamples = 1;
@@ -158,29 +220,42 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
 
     FTexture2DRHIRef RHITexture2D = RHIAsyncCreateTexture2D(
         ImageData.SizeX, ImageData.SizeY,
-        PF_R8G8B8A8,
+        PixelFormat,
         NumMips,
-        TexCreate_ShaderResource, &Mip0Data, 1
+        TexCreate_ShaderResource | TexCreate_SRGB, &Mip0Data, 1
     );
 
     FGraphEventRef UpdateTextureReferenceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [NewTexture, RHITexture2D]()
         {
             RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
-            NewTexture->RefreshSamplerStates();
+
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
     );
-
     UpdateTextureReferenceTask->Wait();
-}
 
+    // Create proper texture resource so UMG can display runtime texture
+    FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture);
+    NewTextureResource->TextureRHI = RHITexture2D;
+
+    FGraphEventRef InitTextureResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
+        [&NewTextureResource]()
+        {
+            NewTextureResource->InitRHI();
+
+        }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
+    );
+    InitTextureResourceTask->Wait();
+
+    NewTexture->SetResource(NewTextureResource);
+}
 
 void URuntimeImageReader::Tick(float DeltaTime)
 {
     FConstructTextureTask Task;
     while (!bStopThread && ConstructTasks.Dequeue(Task))
     {
-        ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Task.ImageFilename, Task.TextureFormat));
+        ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Task.ImageFilename, Task.PixelFormat));
         TextureConstructedSemaphore->Trigger();
     }
 }

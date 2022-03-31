@@ -35,7 +35,7 @@ struct FImageReadResult
 struct FConstructTextureTask
 {
     FString ImageFilename;
-    ETextureSourceFormat TextureFormat;
+    EPixelFormat PixelFormat;
 };
 
 class UTexture2D;
@@ -72,7 +72,7 @@ protected:
     // ~FTickableGameObject
 
 private:
-    void AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData);
+    void AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData, EPixelFormat PixelFormat);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;
