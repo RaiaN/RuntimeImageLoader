@@ -19,6 +19,7 @@ class FEvent;
 struct FImageReadRequest
 {
     FString ImageFilename = TEXT("");
+    bool bForUI = false;
 };
 
 USTRUCT()

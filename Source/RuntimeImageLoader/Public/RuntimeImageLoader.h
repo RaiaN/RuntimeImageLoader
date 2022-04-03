@@ -19,11 +19,6 @@
 class URuntimeImageReader;
 
 
-struct FLoadImageRequestParams
-{
-    FString ImageFilename;
-};
-
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
 struct FLoadImageRequest
@@ -31,7 +26,7 @@ struct FLoadImageRequest
 public:
     void Invalidate()
     {
-        Params = FLoadImageRequestParams();
+        Params = FImageReadRequest();
     }
 
     bool IsRequestValid() const 
@@ -40,7 +35,7 @@ public:
     }
 
 public:
-    FLoadImageRequestParams Params;
+    FImageReadRequest Params;
     FOnRequestCompleted OnRequestCompleted;
 };
 
@@ -55,10 +50,10 @@ class RUNTIMEIMAGELOADER_API URuntimeImageLoader : public UWorldSubsystem, publi
 public:
     //------------------ Images --------------------
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadImageAsync(const FString& ImageFilename, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
+    void LoadImageAsync(const FString& ImageFilename, bool bForUI, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
     
     UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter")
-    void LoadImageSync(const FString& ImageFilename, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
+    void LoadImageSync(const FString& ImageFilename, bool bForUI, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;

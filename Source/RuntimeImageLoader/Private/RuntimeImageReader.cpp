@@ -17,6 +17,7 @@
 
 #include "RuntimeImageUtils.h"
 
+
 void URuntimeImageReader::Initialize()
 {
     ThreadSemaphore = FPlatformProcess::GetSynchEventFromPool(false);
@@ -84,7 +85,7 @@ void URuntimeImageReader::Stop()
 
     Thread->WaitForCompletion();
 
-    FGenericPlatformProcess::ReturnSynchEventToPool(ThreadSemaphore);
+    FPlatformProcess::ReturnSynchEventToPool(ThreadSemaphore);
 }
 
 bool URuntimeImageReader::IsWorkCompleted() const
@@ -120,7 +121,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             // determine pixel format
             switch (ImageData.Format)
             {
-                case TSF_G8:            PixelFormat = PF_G8; break;
+                case TSF_G8:            PixelFormat = (Request.bForUI) ? PF_B8G8R8A8 : PF_G8; break;
                 case TSF_G16:           PixelFormat = PF_G16; break;
                 case TSF_BGRA8:         PixelFormat = PF_B8G8R8A8; break;
                 case TSF_BGRE8:         PixelFormat = PF_B8G8R8A8; break;
@@ -161,6 +162,27 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             ReadResult.OutTexture->PlatformData->SizeX = ImageData.SizeX;
             ReadResult.OutTexture->PlatformData->SizeY = ImageData.SizeY;
 
+            if (Request.bForUI)
+            {
+                TArray<uint8> RGBAData;
+                RGBAData.Reserve(ImageData.SizeX * ImageData.SizeY * 4);
+
+                for (int32 PixelX = 0; PixelX < ImageData.SizeY; ++PixelX)
+                {
+                    for (int32 PixelY = 0; PixelY < ImageData.SizeX; ++PixelY)
+                    {
+                        uint8 ColorValue = ImageData.RawData[PixelY + PixelX * ImageData.SizeX];
+
+                        RGBAData.Add(ColorValue);
+                        RGBAData.Add(ColorValue);
+                        RGBAData.Add(ColorValue);
+                        RGBAData.Add(255);
+                    }
+                }
+
+                ImageData.RawData = MoveTemp(RGBAData);
+            }
+
             AsyncReallocateTexture(ReadResult.OutTexture, ImageData, PixelFormat);
         }
 
@@ -174,11 +196,13 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 class FRuntimeTextureResource : public FTextureResource
 {
 public:
-    FRuntimeTextureResource(UTexture2D* InOwner)
-        : Owner(InOwner), SizeX(InOwner->GetSizeX()), SizeY(InOwner->GetSizeY())
+    FRuntimeTextureResource(FTexture2DRHIRef RHITexture2D)
+        : SizeX(RHITexture2D->GetSizeX()), SizeY(RHITexture2D->GetSizeY())
     {
-        bSRGB = true;
-        bGreyScaleFormat = false;
+        TextureRHI = RHITexture2D;
+        bSRGB = (TextureRHI->GetFlags() & TexCreate_SRGB) != TexCreate_None;
+        bIgnoreGammaConversions = !bSRGB;
+        bGreyScaleFormat = (TextureRHI->GetFormat() == PF_G8) || (TextureRHI->GetFormat() == PF_BC4);
     }
 
     virtual ~FRuntimeTextureResource() {}
@@ -202,12 +226,11 @@ public:
 
     void ReleaseRHI() override
     {
-        RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+        // RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
         FTextureResource::ReleaseRHI();
     }
 
 private:
-    UTexture2D* Owner;
     uint32 SizeX;
     uint32 SizeY;
 };
@@ -218,16 +241,25 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
     uint32 NumSamples = 1;
     void* Mip0Data = ImageData.RawData.GetData();
 
+    ETextureCreateFlags TextureFlags = TexCreate_ShaderResource;
+    if (ImageData.SRGB)
+    {
+        TextureFlags |= TexCreate_SRGB;
+    }
+
     FTexture2DRHIRef RHITexture2D = RHIAsyncCreateTexture2D(
         ImageData.SizeX, ImageData.SizeY,
         PixelFormat,
         NumMips,
-        TexCreate_ShaderResource | TexCreate_SRGB, &Mip0Data, 1
+        TextureFlags, 
+        &Mip0Data, 
+        1
     );
 
     FGraphEventRef UpdateTextureReferenceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [NewTexture, RHITexture2D]()
         {
+            NewTexture->TextureReference.TextureReferenceRHI->SetReferencedTexture(RHITexture2D);
             RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
 
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
@@ -235,8 +267,7 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
     UpdateTextureReferenceTask->Wait();
 
     // Create proper texture resource so UMG can display runtime texture
-    FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture);
-    NewTextureResource->TextureRHI = RHITexture2D;
+    FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(RHITexture2D);
 
     FGraphEventRef InitTextureResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [&NewTextureResource]()
