@@ -63,6 +63,7 @@ namespace FRuntimeImageUtils
         //
         // PNG
         //
+        // PNG support both 8 and 16 bit depth images (24 and 48 bits per pixel respectively or 32 and 64 bits when alpha channel is used) 
         TSharedPtr<IImageWrapper> PngImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
         if (PngImageWrapper.IsValid() && PngImageWrapper->SetCompressed(Buffer, Length))
         {
@@ -109,9 +110,9 @@ namespace FRuntimeImageUtils
                 }
             }
 
-            if (TextureFormat == TSF_Invalid)
+            if (BitDepth > 16)
             {
-                OutError = TEXT("PNG file contains data in an unsupported format.");
+                OutError = TEXT("Only 8 and 16 bit depth PNG images are currently supported.");
                 return false;
             }
 
@@ -140,6 +141,8 @@ namespace FRuntimeImageUtils
         //
         // JPEG
         //
+        // JPEG can only be 8-bit depth
+
         TSharedPtr<IImageWrapper> JpegImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::JPEG);
         if (JpegImageWrapper.IsValid() && JpegImageWrapper->SetCompressed(Buffer, Length))
         {
@@ -175,7 +178,7 @@ namespace FRuntimeImageUtils
 
             if (TextureFormat == TSF_Invalid)
             {
-                OutError = TEXT("JPEG file contains data in an unsupported format.");
+                OutError = FString::Printf(TEXT("JPEG file contains data in an unsupported format. Bit depth: %d"), BitDepth);
                 return false;
             }
 
@@ -188,11 +191,11 @@ namespace FRuntimeImageUtils
                     TextureFormat,
                     RawJPEG.GetData()
                 );
-                OutImage.SRGB = BitDepth < 16;
+                OutImage.SRGB = true;
             }
             else
             {
-                OutError = TEXT("Failed to decode JPEG.");
+                OutError = TEXT("Failed to decode JPEG. Please contact devs");
                 return false;
             }
 
@@ -227,7 +230,7 @@ namespace FRuntimeImageUtils
             }
             else
             {
-                OutError = TEXT("Failed to decode BMP.");
+                OutError = FString::Printf(TEXT("Failed to decode BMP. Bit depth: %d"), BmpImageWrapper->GetBitDepth());
                 return false;
             }
 
@@ -265,13 +268,13 @@ namespace FRuntimeImageUtils
             }
             else
             {
-                OutError = TEXT("Failed to decompress TGA.");
+                OutError = TEXT("Failed to decompress TGA. Please contact devs");
                 return false;
             }
         }
         else
         {
-            OutError = TEXT("TGA file contains data in an unsupported format.");
+            OutError = TEXT("TGA file contains data in an unsupported format. Please contact devs");
             return false;
         }
 

@@ -48,8 +48,8 @@ void FRuntimeImageData::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceForma
     Format = ToRawImageFormat(InFormat);
 
     RawData.AddUninitialized(SizeX * SizeY * GetBytesPerPixel());
-    ensure(InData != nullptr);
 
+    if (InData)
     {
         FMemory::Memcpy(RawData.GetData(), InData, RawData.Num());
     }
