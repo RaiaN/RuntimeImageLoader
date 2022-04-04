@@ -28,4 +28,4 @@ Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/
 
 Below is the example of how to use this plugin for loading images from your blueprints/scripts:
 
-<img src="Resources/Blueprint_node.PNG" width="1161" height="546">
+<img src="Resources/Blueprint_node.PNG">
