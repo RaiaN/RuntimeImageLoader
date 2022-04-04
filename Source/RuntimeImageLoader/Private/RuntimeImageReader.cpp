@@ -121,13 +121,13 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             // determine pixel format
             switch (ImageData.Format)
             {
-                case TSF_G8:            PixelFormat = (Request.bForUI) ? PF_B8G8R8A8 : PF_G8; break;
-                case TSF_G16:           PixelFormat = PF_G16; break;
-                case TSF_BGRA8:         PixelFormat = PF_B8G8R8A8; break;
-                case TSF_BGRE8:         PixelFormat = PF_B8G8R8A8; break;
-                case TSF_RGBA16:        PixelFormat = PF_R16G16B16A16_SINT; break;
-                case TSF_RGBA16F:       PixelFormat = PF_FloatRGBA; break;
-                default:                PixelFormat = PF_Unknown; break;
+                case ERawImageFormat::G8:            PixelFormat = (Request.bForUI) ? PF_B8G8R8A8 : PF_G8; break;
+                case ERawImageFormat::G16:           PixelFormat = PF_G16; break;
+                case ERawImageFormat::BGRA8:         PixelFormat = PF_B8G8R8A8; break;
+                case ERawImageFormat::BGRE8:         PixelFormat = PF_B8G8R8A8; break;
+                case ERawImageFormat::RGBA16:        PixelFormat = (Request.bForUI) ? PF_B8G8R8A8 : PF_R16G16B16A16_SINT; break;
+                case ERawImageFormat::RGBA16F:       PixelFormat = PF_FloatRGBA; break;
+                default:                             PixelFormat = PF_Unknown; break;
             }
 
             if (PixelFormat == PF_Unknown)
@@ -162,25 +162,15 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             ReadResult.OutTexture->PlatformData->SizeX = ImageData.SizeX;
             ReadResult.OutTexture->PlatformData->SizeY = ImageData.SizeY;
 
+
             if (Request.bForUI)
             {
-                TArray<uint8> RGBAData;
-                RGBAData.Reserve(ImageData.SizeX * ImageData.SizeY * 4);
-
-                for (int32 PixelX = 0; PixelX < ImageData.SizeY; ++PixelX)
-                {
-                    for (int32 PixelY = 0; PixelY < ImageData.SizeX; ++PixelY)
-                    {
-                        uint8 ColorValue = ImageData.RawData[PixelY + PixelX * ImageData.SizeX];
-
-                        RGBAData.Add(ColorValue);
-                        RGBAData.Add(ColorValue);
-                        RGBAData.Add(ColorValue);
-                        RGBAData.Add(255);
-                    }
-                }
-
-                ImageData.RawData = MoveTemp(RGBAData);
+                FImage BGRAImage;
+                BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);
+                ImageData.CopyTo(BGRAImage, ERawImageFormat::BGRA8, EGammaSpace::Linear);
+                
+                ImageData.RawData = MoveTemp(BGRAImage.RawData);
+                ImageData.SRGB = true;
             }
 
             AsyncReallocateTexture(ReadResult.OutTexture, ImageData, PixelFormat);

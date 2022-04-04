@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/Texture.h"
-
+#include "ImageCore.h"
 #include "RuntimeImageData.h"
 
 class UTexture2D;

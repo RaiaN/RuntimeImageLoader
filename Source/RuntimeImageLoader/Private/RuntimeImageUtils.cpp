@@ -109,12 +109,6 @@ namespace FRuntimeImageUtils
                 }
             }
 
-            if (BitDepth == 16)
-            {
-                OutError = TEXT("16bit PNG file is not supported");
-                return false;
-            }
-
             if (TextureFormat == TSF_Invalid)
             {
                 OutError = TEXT("PNG file contains data in an unsupported format.");
@@ -132,11 +126,11 @@ namespace FRuntimeImageUtils
                 );
                 OutImage.SRGB = BitDepth < 16;
 
-                FPNGHelpers::FillZeroAlphaPNGData(OutImage.SizeX, OutImage.SizeY, OutImage.Format, OutImage.RawData.GetData());
+                FPNGHelpers::FillZeroAlphaPNGData(OutImage.SizeX, OutImage.SizeY, OutImage.TextureSourceFormat, OutImage.RawData.GetData());
             }
             else
             {
-                OutError = TEXT("Failed to decode PNG.");
+                OutError = FString::Printf(TEXT("Failed to decode PNG. Bit depth: %d"), BitDepth);
                 return false;
             }
 
@@ -229,6 +223,7 @@ namespace FRuntimeImageUtils
                     RawBMP.GetData()
                 );
                 
+                OutImage.SRGB = true;
             }
             else
             {
@@ -321,7 +316,6 @@ namespace FRuntimeImageUtils
 
         const FFileStatData ImageFileStatData = FileManager.GetStatData(*ImageFilename);
         OutImage.ModificationTime = FMath::Max(ImageFileStatData.CreationTime, ImageFileStatData.ModificationTime);
-
 
         if (!ImportBufferAsImage(ImageBuffer.GetData(), ImageBuffer.Num() - 1, OutImage, OutError))
         {
