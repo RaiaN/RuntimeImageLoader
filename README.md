@@ -19,7 +19,7 @@ Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/
 - Fast & hitch-less & zero-freeze runtime texture loading up to 8k resolution
 - Blueprint friendly (see below)
 - Supports PNG, JPEG, BMP and TGA
-- Supports 8 and 16 bit depth images (or up to 64 *pixel depth* images)
+- Supports 8 and 16 bit depth images (or up to 64 bit *pixel depth* images)
 - Output texture is in R8G8B8A8 format if option bForUI = true
 - No static libraries or external dependencies
 - Tested on Windows, DirectX 11 and Unreal Engine 4.27+ 
