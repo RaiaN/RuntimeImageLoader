@@ -22,7 +22,7 @@ Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/
 - Supports 8 and 16 bit depth per channel images  (or up to 64 bit *pixel depth* images)
 - Output texture is in R8G8B8A8 format if option bForUI = true
 - No static libraries or external dependencies
-- Tested on Windows, DirectX 11 and Unreal Engine 4.27+ 
+- Tested on Windows, DirectX 11 and Unreal Engine 4.27 and 5.0
 
 # Blueprints
 
