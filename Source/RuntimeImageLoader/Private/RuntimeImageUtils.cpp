@@ -344,13 +344,14 @@ namespace FRuntimeImageUtils
 
             check(IsValid(NewTexture));
 
-            NewTexture->PlatformData = new FTexturePlatformData();
-            NewTexture->PlatformData->SizeX = 1;
-            NewTexture->PlatformData->SizeY = 1;
-            NewTexture->PlatformData->PixelFormat = PixelFormat;
+            
+            NewTexture->SetPlatformData(new FTexturePlatformData());
+            NewTexture->GetPlatformData()->SizeX = 1;
+            NewTexture->GetPlatformData()->SizeY = 1;
+            NewTexture->GetPlatformData()->PixelFormat = PixelFormat;
 
             FTexture2DMipMap* Mip = new FTexture2DMipMap();
-            NewTexture->PlatformData->Mips.Add(Mip);
+            NewTexture->GetPlatformData()->Mips.Add(Mip);
             Mip->SizeX = 1;
             Mip->SizeY = 1;
 
