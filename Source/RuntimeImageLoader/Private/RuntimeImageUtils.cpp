@@ -15,6 +15,7 @@
 #include "IImageWrapper.h"
 #include "RHI.h"
 #include "RenderUtils.h"
+#include "Misc/EngineVersionComparison.h"
 
 #include "Helpers/TGAHelpers.h"
 #include "Helpers/PNGHelpers.h"
@@ -344,14 +345,20 @@ namespace FRuntimeImageUtils
 
             check(IsValid(NewTexture));
 
-            
-            NewTexture->SetPlatformData(new FTexturePlatformData());
-            NewTexture->GetPlatformData()->SizeX = 1;
-            NewTexture->GetPlatformData()->SizeY = 1;
-            NewTexture->GetPlatformData()->PixelFormat = PixelFormat;
+            FTexturePlatformData* PlatformData = nullptr;
+#if ENGINE_MAJOR_VERSION < 5
+            PlatformData = NewTexture->PlatformData;
+#else
+            PlatformData = new FTexturePlatformData();
+            NewTexture->SetPlatformData(PlatformData);
+#endif
+
+            PlatformData->SizeX = 1;
+            PlatformData->SizeY = 1;
+            PlatformData->PixelFormat = PixelFormat;
 
             FTexture2DMipMap* Mip = new FTexture2DMipMap();
-            NewTexture->GetPlatformData()->Mips.Add(Mip);
+            PlatformData->Mips.Add(Mip);
             Mip->SizeX = 1;
             Mip->SizeY = 1;
 

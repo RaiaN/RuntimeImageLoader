@@ -159,9 +159,15 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             ReadResult.OutTexture = ConstructedTextures.Pop();
 
-            ReadResult.OutTexture->GetPlatformData()->SizeX = ImageData.SizeX;
-            ReadResult.OutTexture->GetPlatformData()->SizeY = ImageData.SizeY;
+            FTexturePlatformData* PlatformData = nullptr;
+#if ENGINE_MAJOR_VERSION < 5
+            PlatformData = ReadResult.OutTexture->PlatformData;
+#else
+            PlatformData = ReadResult.OutTexture->GetPlatformData();
+#endif
 
+            PlatformData->SizeX = ImageData.SizeX;
+            PlatformData->SizeY = ImageData.SizeY;
 
             if (Request.bForUI)
             {
