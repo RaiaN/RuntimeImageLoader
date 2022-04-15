@@ -23,10 +23,10 @@ struct FTransformImageParams
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bForUI = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
     int32 SizeX = 0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
     int32 SizeY = 0;
 };
 
