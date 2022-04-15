@@ -17,6 +17,7 @@
 
 #include "RuntimeImageUtils.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
 
 void URuntimeImageReader::Initialize()
 {
@@ -24,7 +25,7 @@ void URuntimeImageReader::Initialize()
     TextureConstructedSemaphore = FPlatformProcess::GetSynchEventFromPool(false);
     Thread = FRunnableThread::Create(this, TEXT("RuntimeImageReader"), 0, TPri_SlightlyBelowNormal);
 
-    UE_LOG(LogTemp, Log, TEXT("Image reader thread started!"))
+    UE_LOG(LogRuntimeImageReader, Log, TEXT("Image reader thread started!"))
 }
 
 void URuntimeImageReader::Deinitialize()
@@ -32,7 +33,7 @@ void URuntimeImageReader::Deinitialize()
     Clear();
     Stop();
 
-    UE_LOG(LogTemp, Log, TEXT("Image reader thread exited!"))
+    UE_LOG(LogRuntimeImageReader, Log, TEXT("Image reader thread exited!"))
 }
 
 bool URuntimeImageReader::Init()
@@ -277,8 +278,15 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
     NewTexture->SetResource(NewTextureResource);
 }
 
-void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, const FTransformImageParams& TransformParams)
+void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams)
 {
+    if (TransformParams.SizeX <= 0 || TransformParams.SizeX > 8192 || TransformParams.SizeY <= 0 || TransformParams.SizeY > 8192)
+    {
+        UE_LOG(LogRuntimeImageReader, Log, TEXT("Supplied transform params are not valid! SizeX, SizeY: (%d, %d)"), TransformParams.SizeX, TransformParams.SizeY);
+        TransformParams.SizeX = -1;
+        TransformParams.SizeY = -1;
+    }
+    
     if (TransformParams.SizeX > 0 && TransformParams.SizeY > 0)
     {
         FImage TransformedImage;

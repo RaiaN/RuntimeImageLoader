@@ -90,7 +90,7 @@ private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
     void AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData, EPixelFormat PixelFormat);
 
-    void ApplyTransformations(FRuntimeImageData& ImageData, const FTransformImageParams& TransformParams);
+    void ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;
