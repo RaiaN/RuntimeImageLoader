@@ -345,11 +345,11 @@ namespace FRuntimeImageUtils
 
             check(IsValid(NewTexture));
 
-            FTexturePlatformData* PlatformData = nullptr;
+            FTexturePlatformData* PlatformData = new FTexturePlatformData();
+
 #if ENGINE_MAJOR_VERSION < 5
-            PlatformData = NewTexture->PlatformData;
+            NewTexture->PlatformData = PlatformData;
 #else
-            PlatformData = new FTexturePlatformData();
             NewTexture->SetPlatformData(PlatformData);
 #endif
 

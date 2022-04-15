@@ -255,9 +255,6 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
     FGraphEventRef UpdateTextureReferenceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [NewTexture, RHITexture2D]()
         {
-            // GetImmediateCommandList_ForRenderCommand().UpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
-            // GRHICommandListImmediate::UpdateTextureReference()
-            // NewTexture->TextureReference.TextureReferenceRHI->SetReferencedTexture(RHITexture2D);
             RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
 
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
