@@ -116,20 +116,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 continue;
             }
 
-            EPixelFormat PixelFormat = PF_Unknown;
-
-            // determine pixel format
-            switch (ImageData.Format)
-            {
-                case ERawImageFormat::G8:            PixelFormat = (Request.bForUI) ? PF_B8G8R8A8 : PF_G8; break;
-                case ERawImageFormat::G16:           PixelFormat = PF_G16; break;
-                case ERawImageFormat::BGRA8:         PixelFormat = PF_B8G8R8A8; break;
-                case ERawImageFormat::BGRE8:         PixelFormat = PF_B8G8R8A8; break;
-                case ERawImageFormat::RGBA16:        PixelFormat = (Request.bForUI) ? PF_B8G8R8A8 : PF_R16G16B16A16_SINT; break;
-                case ERawImageFormat::RGBA16F:       PixelFormat = PF_FloatRGBA; break;
-                default:                             PixelFormat = PF_Unknown; break;
-            }
-
+            EPixelFormat PixelFormat = DeterminePixelFormat(ImageData.Format, Request.TransformParams);
             if (PixelFormat == PF_Unknown)
             {
                 ReadResult.OutError = TEXT("Image data is corrupted. Please contact devs");
@@ -159,27 +146,22 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             ReadResult.OutTexture = ConstructedTextures.Pop();
 
+            // set up texture platform data
             FTexturePlatformData* PlatformData = nullptr;
+            {
 #if ENGINE_MAJOR_VERSION < 5
-            PlatformData = ReadResult.OutTexture->PlatformData;
+                PlatformData = ReadResult.OutTexture->PlatformData;
 #else
-            PlatformData = ReadResult.OutTexture->GetPlatformData();
+                PlatformData = ReadResult.OutTexture->GetPlatformData();
 #endif
+            }
+
+            ApplyTransformations(ImageData, Request.TransformParams);
+
+            AsyncReallocateTexture(ReadResult.OutTexture, ImageData, PixelFormat);
 
             PlatformData->SizeX = ImageData.SizeX;
             PlatformData->SizeY = ImageData.SizeY;
-
-            if (Request.bForUI)
-            {
-                FImage BGRAImage;
-                BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);
-                ImageData.CopyTo(BGRAImage, ERawImageFormat::BGRA8, EGammaSpace::Linear);
-                
-                ImageData.RawData = MoveTemp(BGRAImage.RawData);
-                ImageData.SRGB = true;
-            }
-
-            AsyncReallocateTexture(ReadResult.OutTexture, ImageData, PixelFormat);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -231,6 +213,25 @@ private:
     uint32 SizeY;
 };
 
+EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const
+{
+    EPixelFormat PixelFormat;
+    
+    // determine pixel format
+    switch (ImageFormat)
+    {
+        case ERawImageFormat::G8:            PixelFormat = (Params.bForUI) ? PF_B8G8R8A8 : PF_G8; break;
+        case ERawImageFormat::G16:           PixelFormat = PF_G16; break;
+        case ERawImageFormat::BGRA8:         PixelFormat = PF_B8G8R8A8; break;
+        case ERawImageFormat::BGRE8:         PixelFormat = PF_B8G8R8A8; break;
+        case ERawImageFormat::RGBA16:        PixelFormat = (Params.bForUI) ? PF_B8G8R8A8 : PF_R16G16B16A16_SINT; break;
+        case ERawImageFormat::RGBA16F:       PixelFormat = PF_FloatRGBA; break;
+        default:                             PixelFormat = PF_Unknown; break;
+    }
+
+    return PixelFormat;
+}
+
 void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData, EPixelFormat PixelFormat)
 {
     uint32 NumMips = 1;
@@ -274,6 +275,31 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
     InitTextureResourceTask->Wait();
 
     NewTexture->SetResource(NewTextureResource);
+}
+
+void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, const FTransformImageParams& TransformParams)
+{
+    if (TransformParams.SizeX > 0 && TransformParams.SizeY > 0)
+    {
+        FImage TransformedImage;
+        TransformedImage.Init(TransformParams.SizeX, TransformParams.SizeY, ImageData.Format);
+
+        ImageData.ResizeTo(TransformedImage, TransformedImage.SizeX, TransformedImage.SizeY, ImageData.Format, EGammaSpace::Linear);
+
+        ImageData.RawData = MoveTemp(TransformedImage.RawData);
+        ImageData.SizeX = TransformParams.SizeX;
+        ImageData.SizeY = TransformParams.SizeY;
+    }
+
+    if (TransformParams.bForUI)
+    {
+        FImage BGRAImage;
+        BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);
+        ImageData.CopyTo(BGRAImage, ERawImageFormat::BGRA8, EGammaSpace::Linear);
+
+        ImageData.RawData = MoveTemp(BGRAImage.RawData);
+        ImageData.SRGB = true;
+    }
 }
 
 void URuntimeImageReader::Tick(float DeltaTime)

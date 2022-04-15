@@ -15,11 +15,25 @@
 class FRunnableThread;
 class FEvent;
 
+USTRUCT(BlueprintType)
+struct FTransformImageParams
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bForUI = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 SizeX = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 SizeY = 0;
+};
 
 struct FImageReadRequest
 {
     FString ImageFilename = TEXT("");
-    bool bForUI = false;
+    FTransformImageParams TransformParams;
 };
 
 USTRUCT()
@@ -73,7 +87,10 @@ protected:
     // ~FTickableGameObject
 
 private:
+    EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
     void AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData, EPixelFormat PixelFormat);
+
+    void ApplyTransformations(FRuntimeImageData& ImageData, const FTransformImageParams& TransformParams);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;

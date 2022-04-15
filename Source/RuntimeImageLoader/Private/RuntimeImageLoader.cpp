@@ -19,7 +19,7 @@ bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
     return WorldType == EWorldType::PIE || WorldType == EWorldType::Game;
 }
 
-void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, bool bForUI, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
+void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
 {
     if (!IsValid(WorldContextObject))
     {
@@ -29,7 +29,7 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, bool bFor
     FLoadImageRequest Request;
     {
         Request.Params.ImageFilename = ImageFilename;
-        Request.Params.bForUI = bForUI;
+        Request.Params.TransformParams = TransformParams;
 
         Request.OnRequestCompleted.BindLambda(
             [this, &OutTexture, &bSuccess, &OutError, LatentInfo](const FImageReadResult& ReadResult)
@@ -62,12 +62,12 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, bool bFor
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, bool bForUI, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
+void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
 {
     FImageReadRequest ReadRequest;
     {
         ReadRequest.ImageFilename = ImageFilename;
-        ReadRequest.bForUI = bForUI;
+        ReadRequest.TransformParams = TransformParams;
     }
 
     ImageReader->BlockTillAllRequestsFinished();

@@ -6,7 +6,6 @@
 #include "Engine/Texture.h"
 #include "ImageCore.h"
 
-
 struct FRuntimeImageData : public FImage
 {
     void Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InFormat, const void* InData = nullptr);
