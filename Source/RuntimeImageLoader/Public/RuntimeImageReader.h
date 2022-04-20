@@ -20,13 +20,13 @@ struct FTransformImageParams
 {
     GENERATED_BODY()
     
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     bool bForUI = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
     int32 SizeX = 0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
     int32 SizeY = 0;
 };
 
