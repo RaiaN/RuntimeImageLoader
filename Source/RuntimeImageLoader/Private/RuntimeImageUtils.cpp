@@ -15,7 +15,7 @@
 #include "IImageWrapper.h"
 #include "RHI.h"
 #include "RenderUtils.h"
-#include "Misc/EngineVersionComparison.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 #include "Helpers/TGAHelpers.h"
 #include "Helpers/PNGHelpers.h"

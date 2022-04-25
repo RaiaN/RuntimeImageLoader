@@ -14,6 +14,7 @@
 #include "Engine/Texture2D.h"
 #include "PixelFormat.h"
 #include "TextureResource.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 #include "RuntimeImageUtils.h"
 

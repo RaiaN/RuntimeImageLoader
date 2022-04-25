@@ -18,8 +18,8 @@
 		{
 			"Name": "RuntimeImageLoader",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Win32" ]
 		}
-	],
-	"WhitelistPlatforms": [ "Win64", "Win32" ]
+	]
 }
