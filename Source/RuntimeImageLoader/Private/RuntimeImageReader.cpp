@@ -281,23 +281,24 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
 
 void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams)
 {
-    if (TransformParams.SizeX <= 0 || TransformParams.SizeX > 8192 || TransformParams.SizeY <= 0 || TransformParams.SizeY > 8192)
+    if (!TransformParams.IsPercentSizeValid())
     {
-        UE_LOG(LogRuntimeImageReader, Log, TEXT("Supplied transform params are not valid! SizeX, SizeY: (%d, %d)"), TransformParams.SizeX, TransformParams.SizeY);
-        TransformParams.SizeX = -1;
-        TransformParams.SizeY = -1;
+        UE_LOG(LogRuntimeImageReader, Log, TEXT("Supplied transform params are not valid! PercentSizeX, PercentSizeX: (%d, %d)"), TransformParams.PercentSizeX, TransformParams.PercentSizeY);
     }
     
-    if (TransformParams.SizeX > 0 && TransformParams.SizeY > 0)
+    if (TransformParams.IsPercentSizeValid())
     {
+        const int32 TransformedSizeX = FMath::Floor(ImageData.SizeX * TransformParams.PercentSizeX * 0.01f);
+        const int32 TransformedSizeY = FMath::Floor(ImageData.SizeY * TransformParams.PercentSizeY * 0.01f);
+        
         FImage TransformedImage;
-        TransformedImage.Init(TransformParams.SizeX, TransformParams.SizeY, ImageData.Format);
+        TransformedImage.Init(TransformedSizeX, TransformedSizeY, ImageData.Format);
 
         ImageData.ResizeTo(TransformedImage, TransformedImage.SizeX, TransformedImage.SizeY, ImageData.Format, EGammaSpace::Linear);
 
         ImageData.RawData = MoveTemp(TransformedImage.RawData);
-        ImageData.SizeX = TransformParams.SizeX;
-        ImageData.SizeY = TransformParams.SizeY;
+        ImageData.SizeX = TransformedImage.SizeX;
+        ImageData.SizeY = TransformedImage.SizeY;
     }
 
     if (TransformParams.bForUI)

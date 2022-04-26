@@ -20,7 +20,7 @@ class URuntimeImageReader;
 
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
-struct FLoadImageRequest
+struct RUNTIMEIMAGELOADER_API FLoadImageRequest
 {
 public:
     void Invalidate()

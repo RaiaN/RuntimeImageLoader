@@ -16,28 +16,33 @@ class FRunnableThread;
 class FEvent;
 
 USTRUCT(BlueprintType)
-struct FTransformImageParams
+struct RUNTIMEIMAGELOADER_API FTransformImageParams
 {
     GENERATED_BODY()
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     bool bForUI = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
-    int32 SizeX = 0;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
+    int32 PercentSizeX = 0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 8192, ClampMin = 0, ClampMax = 8192))
-    int32 SizeY = 0;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
+    int32 PercentSizeY = 0;
+
+    bool IsPercentSizeValid() const
+    {
+        return (PercentSizeX > 0 || PercentSizeX <= 100 || PercentSizeY > 0 || PercentSizeY <= 100);
+    }
 };
 
-struct FImageReadRequest
+struct RUNTIMEIMAGELOADER_API FImageReadRequest
 {
     FString ImageFilename = TEXT("");
     FTransformImageParams TransformParams;
 };
 
 USTRUCT()
-struct FImageReadResult
+struct RUNTIMEIMAGELOADER_API FImageReadResult
 {
     GENERATED_BODY()
 
@@ -47,7 +52,7 @@ struct FImageReadResult
     FString OutError = TEXT("");
 };
 
-struct FConstructTextureTask
+struct RUNTIMEIMAGELOADER_API FConstructTextureTask
 {
     FString ImageFilename;
     EPixelFormat PixelFormat;
