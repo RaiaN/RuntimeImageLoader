@@ -18,6 +18,7 @@
 
 #include "RuntimeImageUtils.h"
 
+
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
 
 void URuntimeImageReader::Initialize()
@@ -176,8 +177,8 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 class FRuntimeTextureResource : public FTextureResource
 {
 public:
-    FRuntimeTextureResource(FTexture2DRHIRef RHITexture2D)
-        : SizeX(RHITexture2D->GetSizeX()), SizeY(RHITexture2D->GetSizeY())
+    FRuntimeTextureResource(UTexture2D* InTexture, FTexture2DRHIRef RHITexture2D)
+        : Owner(InTexture), SizeX(RHITexture2D->GetSizeX()), SizeY(RHITexture2D->GetSizeY())
     {
         TextureRHI = RHITexture2D;
         bSRGB = (TextureRHI->GetFlags() & TexCreate_SRGB) != TexCreate_None;
@@ -185,7 +186,12 @@ public:
         bGreyScaleFormat = (TextureRHI->GetFormat() == PF_G8) || (TextureRHI->GetFormat() == PF_BC4);
     }
 
-    virtual ~FRuntimeTextureResource() {}
+    virtual ~FRuntimeTextureResource() 
+    {
+        Owner->SetResource(nullptr);
+       
+        UE_LOG(LogRuntimeImageReader, Log, TEXT("RuntimeTextureResource has been destroyed!"))
+    }
 
     uint32 GetSizeX() const override
     {
@@ -206,11 +212,12 @@ public:
 
     void ReleaseRHI() override
     {
-        // RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+        RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
         FTextureResource::ReleaseRHI();
     }
 
 private:
+    UTexture2D* Owner;
     uint32 SizeX;
     uint32 SizeY;
 };
@@ -270,12 +277,12 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
     UpdateTextureReferenceTask->Wait();
 
     // Create proper texture resource so UMG can display runtime texture
-    FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(RHITexture2D);
+    FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);
 
     FGraphEventRef InitTextureResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [&NewTextureResource]()
         {
-            NewTextureResource->InitRHI();
+            NewTextureResource->InitResource();
 
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
     );
@@ -288,7 +295,7 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
 {
     if (!TransformParams.IsPercentSizeValid())
     {
-        UE_LOG(LogRuntimeImageReader, Log, TEXT("Supplied transform params are not valid! PercentSizeX, PercentSizeX: (%d, %d)"), TransformParams.PercentSizeX, TransformParams.PercentSizeY);
+        UE_LOG(LogRuntimeImageReader, Verbose, TEXT("Supplied transform params are not valid! PercentSizeX, PercentSizeX: (%d, %d)"), TransformParams.PercentSizeX, TransformParams.PercentSizeY);
     }
     
     if (TransformParams.IsPercentSizeValid())
