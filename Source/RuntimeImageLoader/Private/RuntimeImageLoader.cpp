@@ -52,7 +52,10 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, const FTr
                         OutTexture = ReadResult.OutTexture;
                         OutError = ReadResult.OutError;
 
-                        CallbackTarget->ProcessEvent(ExecutionFunction, &Linkage);
+                        if (Linkage != -1)
+                        {
+                            CallbackTarget->ProcessEvent(ExecutionFunction, &Linkage);
+                        }
                     }
                 }
             }
