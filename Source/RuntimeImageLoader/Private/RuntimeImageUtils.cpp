@@ -336,7 +336,7 @@ namespace FRuntimeImageUtils
         UTexture2D* NewTexture = NewObject<UTexture2D>(
             GetTransientPackage(), 
             MakeUniqueObjectName(GetTransientPackage(), UTexture2D::StaticClass(), *BaseFilename),
-            RF_Transient
+            RF_Public
         );
         NewTexture->NeverStream = true;
 

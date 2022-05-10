@@ -21,7 +21,7 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
     GENERATED_BODY()
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
-    bool bForUI = false;
+    bool bForUI = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
     int32 PercentSizeX = 0;
@@ -31,7 +31,7 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
 
     bool IsPercentSizeValid() const
     {
-        return (PercentSizeX > 0 || PercentSizeX <= 100 || PercentSizeY > 0 || PercentSizeY <= 100);
+        return PercentSizeX > 0 && PercentSizeX <= 100 && PercentSizeY > 0 && PercentSizeY <= 100;
     }
 };
 

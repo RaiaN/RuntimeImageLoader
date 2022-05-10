@@ -246,12 +246,17 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
         TextureFlags |= TexCreate_SRGB;
     }
 
-    FTexture2DRHIRef RHITexture2D = RHIAsyncCreateTexture2D(
+    FTexture2DRHIRef RHITexture2D = nullptr;
+
+    ensureMsgf(ImageData.SizeX > 0, TEXT("ImageData.SizeX must be > 0"));
+    ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
+
+    RHITexture2D = RHIAsyncCreateTexture2D(
         ImageData.SizeX, ImageData.SizeY,
         PixelFormat,
         NumMips,
-        TextureFlags, 
-        &Mip0Data, 
+        TextureFlags,
+        &Mip0Data,
         1
     );
 
