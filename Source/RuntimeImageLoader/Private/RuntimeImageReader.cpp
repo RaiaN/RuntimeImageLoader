@@ -165,6 +165,9 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             PlatformData->SizeX = ImageData.SizeX;
             PlatformData->SizeY = ImageData.SizeY;
+
+            PlatformData->Mips[0].SizeX = ImageData.SizeX;
+            PlatformData->Mips[0].SizeY = ImageData.SizeY;
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
