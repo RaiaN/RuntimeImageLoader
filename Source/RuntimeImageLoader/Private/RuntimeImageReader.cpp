@@ -61,6 +61,20 @@ void URuntimeImageReader::Exit()
     // 
 }
 
+void URuntimeImageReader::Tick(float DeltaTime)
+{
+    FConstructTextureTask Task;
+    while (!bStopThread && ConstructTasks.Dequeue(Task))
+    {
+        ConstructedTextures.Add(FRuntimeImageUtils::CreateTexture(Task.ImageFilename, *Task.ImageData));
+        TextureConstructedSemaphore->Trigger();
+    }
+}
+
+TStatId URuntimeImageReader::GetStatId() const
+{
+    RETURN_QUICK_DECLARE_CYCLE_STAT(URuntimeImageReader, STATGROUP_Tickables);
+}
 
 void URuntimeImageReader::AddRequest(const FImageReadRequest& Request)
 {
@@ -135,13 +149,14 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             }
             else
             {
-                Async(
-                    EAsyncExecution::TaskGraphMainThread,
-                    [&, this]()
-                    {
-                        ConstructedTextures.Add(FRuntimeImageUtils::CreateTexture(Request.ImageFilename, ImageData));
-                    }
-                ).Wait();
+                FConstructTextureTask Task;
+                {
+                    Task.ImageFilename = Request.ImageFilename;
+                    Task.ImageData = &ImageData;
+                }
+                ConstructTasks.Enqueue(Task);
+
+                while (!TextureConstructedSemaphore->Wait(100) && !bStopThread);
             }
 
             if (ConstructedTextures.Num() == 0)

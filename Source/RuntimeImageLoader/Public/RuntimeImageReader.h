@@ -55,13 +55,13 @@ struct RUNTIMEIMAGELOADER_API FImageReadResult
 struct RUNTIMEIMAGELOADER_API FConstructTextureTask
 {
     FString ImageFilename;
-    EPixelFormat PixelFormat;
+    FRuntimeImageData* ImageData;
 };
 
 class UTexture2D;
 
 UCLASS()
-class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable
+class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable, public FTickableGameObject
 {
     GENERATED_BODY()
 
@@ -85,6 +85,9 @@ protected:
     uint32 Run() override;
     void Exit() override;
     /* ~FRunnable interface */
+
+    void Tick(float DeltaTime) override;
+    TStatId GetStatId() const override;
 
 private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
