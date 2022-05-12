@@ -15,6 +15,7 @@
 #include "PixelFormat.h"
 #include "TextureResource.h"
 #include "Runtime/Launch/Resources/Version.h"
+#include "Async/Async.h"
 
 #include "RuntimeImageUtils.h"
 
