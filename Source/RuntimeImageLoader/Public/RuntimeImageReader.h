@@ -31,7 +31,7 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
 
     bool IsPercentSizeValid() const
     {
-        return PercentSizeX > 0 && PercentSizeX <= 100 && PercentSizeY > 0 && PercentSizeY <= 100;
+        return PercentSizeX > 0 && PercentSizeX < 100 && PercentSizeY > 0 && PercentSizeY < 100;
     }
 };
 
@@ -61,7 +61,7 @@ struct RUNTIMEIMAGELOADER_API FConstructTextureTask
 class UTexture2D;
 
 UCLASS()
-class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable, public FTickableGameObject
+class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable
 {
     GENERATED_BODY()
 
@@ -86,16 +86,10 @@ protected:
     void Exit() override;
     /* ~FRunnable interface */
 
-    // FTickableGameObject
-    void Tick(float DeltaTime) override;
-    TStatId GetStatId() const override;
-    // ~FTickableGameObject
-
 private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
-    void AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData, EPixelFormat PixelFormat);
-
     void ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams);
+    void AsyncReallocateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;

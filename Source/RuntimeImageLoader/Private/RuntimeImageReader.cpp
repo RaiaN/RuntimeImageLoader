@@ -119,27 +119,28 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 continue;
             }
 
-            EPixelFormat PixelFormat = DeterminePixelFormat(ImageData.Format, Request.TransformParams);
-            if (PixelFormat == PF_Unknown)
+            ImageData.PixelFormat = DeterminePixelFormat(ImageData.Format, Request.TransformParams);
+            if (ImageData.PixelFormat == PF_Unknown)
             {
                 ReadResult.OutError = TEXT("Image data is corrupted. Please contact devs");
                 continue;
             }
 
+            ApplyTransformations(ImageData, Request.TransformParams);
+
             if (IsInGameThread())
             {
-                ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Request.ImageFilename, PixelFormat));
+                ConstructedTextures.Add(FRuntimeImageUtils::CreateTexture(Request.ImageFilename, ImageData));
             }
             else
             {
-                FConstructTextureTask Task;
-                {
-                    Task.ImageFilename = Request.ImageFilename;
-                    Task.PixelFormat = PixelFormat;
-                }
-
-                ConstructTasks.Enqueue(Task);
-                while (!TextureConstructedSemaphore->Wait(100) && !bStopThread) {}
+                Async(
+                    EAsyncExecution::TaskGraphMainThread,
+                    [&, this]()
+                    {
+                        ConstructedTextures.Add(FRuntimeImageUtils::CreateTexture(Request.ImageFilename, ImageData));
+                    }
+                ).Wait();
             }
 
             if (ConstructedTextures.Num() == 0)
@@ -149,25 +150,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             ReadResult.OutTexture = ConstructedTextures.Pop();
 
-            // set up texture platform data
-            FTexturePlatformData* PlatformData = nullptr;
-            {
-#if ENGINE_MAJOR_VERSION < 5
-                PlatformData = ReadResult.OutTexture->PlatformData;
-#else
-                PlatformData = ReadResult.OutTexture->GetPlatformData();
-#endif
-            }
-
-            ApplyTransformations(ImageData, Request.TransformParams);
-
-            AsyncReallocateTexture(ReadResult.OutTexture, ImageData, PixelFormat);
-
-            PlatformData->SizeX = ImageData.SizeX;
-            PlatformData->SizeY = ImageData.SizeY;
-
-            PlatformData->Mips[0].SizeX = ImageData.SizeX;
-            PlatformData->Mips[0].SizeY = ImageData.SizeY;
+            AsyncReallocateTexture(ReadResult.OutTexture, ImageData);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -208,9 +191,26 @@ public:
 
     void InitRHI() override
     {
-        FSamplerStateInitializerRHI SamplerStateInitializer(SF_Trilinear, AM_Wrap, AM_Wrap, AM_Wrap);
-        SamplerStateRHI = RHICreateSamplerState(SamplerStateInitializer);
-        DeferredPassSamplerStateRHI = RHICreateSamplerState(SamplerStateInitializer);
+        // Create the sampler state RHI resource.
+        FSamplerStateInitializerRHI SamplerStateInitializer(SF_Trilinear);
+        SamplerStateRHI = GetOrCreateSamplerState(SamplerStateInitializer);
+
+        // Create a custom sampler state for using this texture in a deferred pass, where ddx / ddy are discontinuous
+        FSamplerStateInitializerRHI DeferredPassSamplerStateInitializer(
+            SF_Trilinear,
+            AM_Wrap,
+            AM_Wrap,
+            AM_Wrap,
+            0,
+            // Disable anisotropic filtering, since aniso doesn't respect MaxLOD
+            1,
+            0,
+            // Prevent the less detailed mip levels from being used, which hides artifacts on silhouettes due to ddx / ddy being very large
+            // This has the side effect that it increases minification aliasing on light functions
+            2
+        );
+
+        DeferredPassSamplerStateRHI = GetOrCreateSamplerState(DeferredPassSamplerStateInitializer);
     }
 
     void ReleaseRHI() override
@@ -244,11 +244,11 @@ EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type Ima
     return PixelFormat;
 }
 
-void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntimeImageData& ImageData, EPixelFormat PixelFormat)
+void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     uint32 NumMips = 1;
     uint32 NumSamples = 1;
-    void* Mip0Data = ImageData.RawData.GetData();
+    void* Mip0Data = (void*)ImageData.RawData.GetData();
 
     ETextureCreateFlags TextureFlags = TexCreate_ShaderResource;
     if (ImageData.SRGB)
@@ -263,35 +263,27 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, FRuntim
 
     RHITexture2D = RHIAsyncCreateTexture2D(
         ImageData.SizeX, ImageData.SizeY,
-        PixelFormat,
-        NumMips,
+        ImageData.PixelFormat,
+        ImageData.NumMips,
         TextureFlags,
         &Mip0Data,
         1
     );
 
-    FGraphEventRef UpdateTextureReferenceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-        [NewTexture, RHITexture2D]()
-        {
-            RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
-
-        }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
-    );
-    UpdateTextureReferenceTask->Wait();
-
     // Create proper texture resource so UMG can display runtime texture
     FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);
+    NewTexture->SetResource(NewTextureResource);
 
-    FGraphEventRef InitTextureResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-        [&NewTextureResource]()
+    FGraphEventRef UpdateResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
+        [&NewTextureResource, &NewTexture, &RHITexture2D]()
         {
             NewTextureResource->InitResource();
+            RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
+            NewTextureResource->SetTextureReference(NewTexture->TextureReference.TextureReferenceRHI);
 
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
     );
-    InitTextureResourceTask->Wait();
-
-    NewTexture->SetResource(NewTextureResource);
+    UpdateResourceTask->Wait();
 }
 
 void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams)
@@ -320,25 +312,9 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
     {
         FImage BGRAImage;
         BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);
-        ImageData.CopyTo(BGRAImage, ERawImageFormat::BGRA8, EGammaSpace::Linear);
+        ImageData.CopyTo(BGRAImage, ERawImageFormat::BGRA8, EGammaSpace::sRGB);
 
         ImageData.RawData = MoveTemp(BGRAImage.RawData);
         ImageData.SRGB = true;
     }
-}
-
-void URuntimeImageReader::Tick(float DeltaTime)
-{
-    FConstructTextureTask Task;
-    while (!bStopThread && ConstructTasks.Dequeue(Task))
-    {
-        ConstructedTextures.Add(FRuntimeImageUtils::CreateDummyTexture(Task.ImageFilename, Task.PixelFormat));
-        TextureConstructedSemaphore->Trigger();
-    }
-}
-
-
-TStatId URuntimeImageReader::GetStatId() const
-{
-    RETURN_QUICK_DECLARE_CYCLE_STAT(URuntimeImageReader, STATGROUP_Tickables);
 }

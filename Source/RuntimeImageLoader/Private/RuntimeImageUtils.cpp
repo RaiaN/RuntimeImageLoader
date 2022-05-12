@@ -127,6 +127,7 @@ namespace FRuntimeImageUtils
                     RawPNG.GetData()
                 );
                 OutImage.SRGB = BitDepth < 16;
+                OutImage.GammaSpace = OutImage.SRGB ? EGammaSpace::sRGB : EGammaSpace::Linear; 
 
                 FPNGHelpers::FillZeroAlphaPNGData(OutImage.SizeX, OutImage.SizeY, OutImage.TextureSourceFormat, OutImage.RawData.GetData());
             }
@@ -193,6 +194,7 @@ namespace FRuntimeImageUtils
                     RawJPEG.GetData()
                 );
                 OutImage.SRGB = true;
+                OutImage.GammaSpace = OutImage.SRGB ? EGammaSpace::sRGB : EGammaSpace::Linear;
             }
             else
             {
@@ -228,6 +230,7 @@ namespace FRuntimeImageUtils
                 );
                 
                 OutImage.SRGB = true;
+                OutImage.GammaSpace = OutImage.SRGB ? EGammaSpace::sRGB : EGammaSpace::Linear;
             }
             else
             {
@@ -265,7 +268,10 @@ namespace FRuntimeImageUtils
                 {
                     // default grayscales to linear as they wont get compression otherwise and are commonly used as masks
                     OutImage.SRGB = false;
+                    
                 }
+
+                OutImage.GammaSpace = OutImage.SRGB ? EGammaSpace::sRGB : EGammaSpace::Linear;
             }
             else
             {
@@ -327,7 +333,7 @@ namespace FRuntimeImageUtils
         }
     }
 
-    UTexture2D* CreateDummyTexture(const FString& ImageFilename, EPixelFormat PixelFormat)
+    UTexture2D* CreateTexture(const FString& ImageFilename, const FRuntimeImageData& ImageData)
     {
         check(IsInGameThread());
 
@@ -339,6 +345,7 @@ namespace FRuntimeImageUtils
             RF_Public | RF_Transient
         );
         NewTexture->NeverStream = true;
+        NewTexture->SRGB = ImageData.SRGB;
 
         {
             QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
@@ -353,16 +360,16 @@ namespace FRuntimeImageUtils
             NewTexture->SetPlatformData(PlatformData);
 #endif
 
-            PlatformData->SizeX = 1;
-            PlatformData->SizeY = 1;
-            PlatformData->PixelFormat = PixelFormat;
+            PlatformData->SizeX = ImageData.SizeX;
+            PlatformData->SizeY = ImageData.SizeY;
+            PlatformData->PixelFormat = ImageData.PixelFormat;
 
             FTexture2DMipMap* Mip = new FTexture2DMipMap();
             PlatformData->Mips.Add(Mip);
-            Mip->SizeX = 1;
-            Mip->SizeY = 1;
+            Mip->SizeX = ImageData.SizeX;
+            Mip->SizeY = ImageData.SizeY;
 
-            const uint32 MipBytes = Mip->SizeX * Mip->SizeY * GPixelFormats[PixelFormat].BlockBytes;
+            /*const uint32 MipBytes = Mip->SizeX * Mip->SizeY * GPixelFormats[PixelFormat].BlockBytes;
             {
                 Mip->BulkData.Lock(LOCK_READ_WRITE);
 
@@ -374,9 +381,9 @@ namespace FRuntimeImageUtils
                 FMemory::Memcpy(TextureData, DummyBytes.GetData(), MipBytes);
 
                 Mip->BulkData.Unlock();
-            }
+            }*/
 
-            NewTexture->UpdateResource();
+            // NewTexture->UpdateResource();
         }
 
         return NewTexture;
