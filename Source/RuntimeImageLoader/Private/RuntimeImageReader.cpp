@@ -317,7 +317,7 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
         FImage TransformedImage;
         TransformedImage.Init(TransformedSizeX, TransformedSizeY, ImageData.Format);
 
-        ImageData.ResizeTo(TransformedImage, TransformedImage.SizeX, TransformedImage.SizeY, ImageData.Format, EGammaSpace::Linear);
+        ImageData.ResizeTo(TransformedImage, TransformedImage.SizeX, TransformedImage.SizeY, ImageData.Format, ImageData.GammaSpace);
 
         ImageData.RawData = MoveTemp(TransformedImage.RawData);
         ImageData.SizeX = TransformedImage.SizeX;
@@ -332,5 +332,6 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
 
         ImageData.RawData = MoveTemp(BGRAImage.RawData);
         ImageData.SRGB = true;
+        ImageData.GammaSpace = EGammaSpace::sRGB;
     }
 }
