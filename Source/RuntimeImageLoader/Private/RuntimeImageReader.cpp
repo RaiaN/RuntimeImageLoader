@@ -16,6 +16,7 @@
 #include "TextureResource.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include "Async/Async.h"
+#include "Containers/ResourceArray.h"
 
 #include "RuntimeImageUtils.h"
 
@@ -260,6 +261,22 @@ EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type Ima
     return PixelFormat;
 }
 
+struct FTextureDataResource : public FResourceBulkDataInterface
+{
+public:
+    FTextureDataResource(void* InMipData, int32 InDataSize)
+        : MipData(InMipData), DataSize(InDataSize)
+    {}
+
+    const void* GetResourceBulkData() const override { return MipData; }
+    uint32 GetResourceBulkDataSize() const override { return DataSize; }
+    void Discard() override {}
+
+private:
+    void* MipData;
+    int32 DataSize;
+};
+
 void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     uint32 NumMips = 1;
@@ -277,14 +294,41 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const F
     ensureMsgf(ImageData.SizeX > 0, TEXT("ImageData.SizeX must be > 0"));
     ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
 
-    RHITexture2D = RHIAsyncCreateTexture2D(
-        ImageData.SizeX, ImageData.SizeY,
-        ImageData.PixelFormat,
-        ImageData.NumMips,
-        TextureFlags,
-        &Mip0Data,
-        1
-    );
+    // RHIAsyncReallocateTexture2D()
+
+    if (GRHISupportsAsyncTextureCreation)
+    {
+        RHITexture2D = RHIAsyncCreateTexture2D(
+            ImageData.SizeX, ImageData.SizeY,
+            ImageData.PixelFormat,
+            ImageData.NumMips,
+            TextureFlags,
+            &Mip0Data,
+            1
+        );
+    }
+    else
+    {
+        FTextureDataResource TextureData(Mip0Data, ImageData.RawData.Num());
+
+        FRHIResourceCreateInfo CreateInfo(&TextureData);
+        
+        FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
+            [&RHITexture2D, &CreateInfo, &ImageData, &TextureFlags]()
+            {
+                RHITexture2D = RHICreateTexture2D(
+                    ImageData.SizeX, ImageData.SizeY,
+                    ImageData.PixelFormat,
+                    ImageData.NumMips,
+                    1,
+                    TextureFlags,
+                    CreateInfo
+                );
+
+            }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
+        );
+        CreateTextureTask->Wait();
+    }
 
     // Create proper texture resource so UMG can display runtime texture
     FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);
