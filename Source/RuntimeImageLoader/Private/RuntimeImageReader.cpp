@@ -294,8 +294,6 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const F
     ensureMsgf(ImageData.SizeX > 0, TEXT("ImageData.SizeX must be > 0"));
     ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
 
-    // RHIAsyncReallocateTexture2D()
-
     if (GRHISupportsAsyncTextureCreation)
     {
         RHITexture2D = RHIAsyncCreateTexture2D(
