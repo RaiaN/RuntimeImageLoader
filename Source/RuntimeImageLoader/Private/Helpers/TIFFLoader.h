@@ -20,8 +20,6 @@ public:
 
 	bool Load(const uint8 * Buffer, uint32 Length);
 
-	bool ConvertToRGBA16();
-
 	void SetError(const FString& InErrorMessage);
 
 	int32 GetBitDepth() const;
@@ -29,6 +27,7 @@ public:
 
 	bool IsValid();
 
+public:
 	// Resulting image data and properties
 	TArray<uint8> RawData;
 	int32 Width;
@@ -36,6 +35,10 @@ public:
 	ETextureSourceFormat TextureSourceFormat = TSF_Invalid;
 	TextureCompressionSettings CompressionSettings = TC_Default;
 	bool bSRGB = true;
+
+private:
+	bool ConvertToRGBA16();
+	bool ConvertHighBPPGrayscaleToBGRA();
 
 private:
 	bool bIsValid = false;

@@ -369,7 +369,7 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
     if (TransformParams.bForUI)
     {
         // no need to convert float RGBA
-        if (ImageData.TextureSourceFormat != TSF_RGBA16F)
+        if (ImageData.TextureSourceFormat != TSF_RGBA16F && false)
         {
             FImage BGRAImage;
             BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);

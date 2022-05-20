@@ -218,8 +218,18 @@ bool FRuntimeTiffLoadHelper::Load(const uint8 * Buffer, uint32 Length)
 		// Grayscale images converted to either G8 or RGBA16
 		if (bIsSource16BitsPerChannel)
 		{
-			ConvertToRGBA16();
+			// TODO: support 16bit per channel grayscale
+			// TODO: support 32bit per channel grayscale
+			if (ImageType == FIT_UINT32)
+			{
+				ConvertHighBPPGrayscaleToBGRA();
+			}
+			else
+			{
+				ConvertToRGBA16();
+			}
 		}
+		else
 		{
 			RawData.SetNumUninitialized(Height * Width * 4);
 
@@ -333,6 +343,47 @@ bool FRuntimeTiffLoadHelper::ConvertToRGBA16()
 		return true;
 	}
 	return false;
+}
+
+bool FRuntimeTiffLoadHelper::ConvertHighBPPGrayscaleToBGRA()
+{
+    // Floating point images converted to RGBA
+    RawData.SetNumUninitialized(Height * Width * 4);
+
+    TextureSourceFormat = TSF_BGRA8;
+    CompressionSettings = TC_EditorIcon;
+    bSRGB = true;
+
+    typedef struct tagU32 {
+        BYTE byte1;
+        BYTE byte2;
+        BYTE byte3;
+        BYTE byte4;
+    } FUINT32;
+	
+    BYTE* Bits = FreeImage_GetBits(Bitmap);
+    int32 Pitch = FreeImage_GetPitch(Bitmap);
+
+    for (int Y = 0; Y < Height; ++Y)
+    {
+        BYTE* ScanLine = Bits + Pitch * Y;
+        FUINT32* SrcPixels = (FUINT32*)ScanLine;
+
+        for (int X = 0; X < Width; ++X)
+        {
+            FUINT32 P = SrcPixels[X];
+
+            uint8_t* TargetPixel = ((uint8_t*)RawData.GetData()) + (X + Y * Width) * 4;
+            {
+                TargetPixel[0] = P.byte1;
+                TargetPixel[1] = P.byte2;
+                TargetPixel[2] = P.byte3;
+                TargetPixel[3] = P.byte4;
+            }
+        }
+    }
+
+    return true;
 }
 
 void FRuntimeTiffLoadHelper::SetError(const FString& InErrorMessage)
