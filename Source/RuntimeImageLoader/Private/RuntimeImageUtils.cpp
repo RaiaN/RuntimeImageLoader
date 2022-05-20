@@ -19,6 +19,7 @@
 
 #include "Helpers/TGAHelpers.h"
 #include "Helpers/PNGHelpers.h"
+#include "Helpers/TIFFLoader.h"
 
 
 namespace FRuntimeImageUtils
@@ -279,10 +280,92 @@ namespace FRuntimeImageUtils
                 return false;
             }
         }
-        else
+        /*else
         {
             OutError = TEXT("TGA file contains data in an unsupported format. Please contact devs");
             return false;
+        }*/
+
+
+        //
+        // OpenEXR
+        //
+        TSharedPtr<IImageWrapper> ExrImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::EXR);
+        if (ExrImageWrapper.IsValid() && ExrImageWrapper->SetCompressed(Buffer, Length))
+        {
+            int32 Width = ExrImageWrapper->GetWidth();
+            int32 Height = ExrImageWrapper->GetHeight();
+
+            if (!IsImportResolutionValid(Width, Height, true))
+            {
+                return false;
+            }
+
+            // Select the texture's source format
+            ETextureSourceFormat TextureFormat = TSF_Invalid;
+            int32 BitDepth = ExrImageWrapper->GetBitDepth();
+            ERGBFormat Format = ExrImageWrapper->GetFormat();
+
+            if (Format == ERGBFormat::RGBA && BitDepth == 16)
+            {
+                TextureFormat = TSF_RGBA16F;
+                Format = ERGBFormat::BGRA;
+            }
+
+            if (TextureFormat == TSF_Invalid)
+            {
+                OutError = TEXT("EXR file contains data in an unsupported format.");
+                return false;
+            }
+
+            TArray<uint8> RawExr;
+            if (ExrImageWrapper->GetRaw(Format, BitDepth, RawExr))
+            {
+                OutImage.Init2D(
+                    Width,
+                    Height,
+                    TextureFormat,
+                    RawExr.GetData()
+                );
+
+                OutImage.SRGB = false;
+                OutImage.GammaSpace = OutImage.SRGB ? EGammaSpace::sRGB : EGammaSpace::Linear;
+                OutImage.CompressionSettings = TC_HDR;
+            }
+            else
+            {
+                OutError = FString::Printf(TEXT("Failed to decode EXR. Bit depth: %d"), BitDepth);
+                return false;
+            }
+
+            return true;
+        }
+
+#if WITH_FREEIMAGE_LIB
+        FRuntimeTiffLoadHelper TiffLoaderHelper;
+        if (TiffLoaderHelper.IsValid())
+        {
+            if (TiffLoaderHelper.Load(Buffer, Length))
+            {
+                OutImage.Init2D(
+                    TiffLoaderHelper.Width,
+                    TiffLoaderHelper.Height,
+                    TiffLoaderHelper.TextureSourceFormat,
+                    TiffLoaderHelper.RawData.GetData()
+                );
+
+                OutImage.SRGB = TiffLoaderHelper.bSRGB;
+                OutImage.GammaSpace = OutImage.SRGB ? EGammaSpace::sRGB : EGammaSpace::Linear;
+                OutImage.CompressionSettings = TiffLoaderHelper.CompressionSettings;
+
+                return true;
+            }
+            else
+            {
+                OutError = FString::Printf(TEXT("Failed to decode TIFF. Bits per pixel: %d"), TiffLoaderHelper.GetBitDepth());
+                return false;
+            }
+#endif // WITH_FREEIMAGE_LIB
         }
 
         return true;
