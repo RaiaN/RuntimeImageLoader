@@ -368,12 +368,16 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
 
     if (TransformParams.bForUI)
     {
-        FImage BGRAImage;
-        BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);
-        ImageData.CopyTo(BGRAImage, ERawImageFormat::BGRA8, EGammaSpace::sRGB);
+        // no need to convert float RGBA
+        if (ImageData.TextureSourceFormat != TSF_RGBA16F)
+        {
+            FImage BGRAImage;
+            BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);
+            ImageData.CopyTo(BGRAImage, ERawImageFormat::BGRA8, EGammaSpace::sRGB);
 
-        ImageData.RawData = MoveTemp(BGRAImage.RawData);
-        ImageData.SRGB = true;
-        ImageData.GammaSpace = EGammaSpace::sRGB;
+            ImageData.RawData = MoveTemp(BGRAImage.RawData);
+            ImageData.SRGB = true;
+            ImageData.GammaSpace = EGammaSpace::sRGB;
+        }
     }
 }
