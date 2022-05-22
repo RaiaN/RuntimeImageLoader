@@ -47,7 +47,8 @@ public class RuntimeImageLoader : ModuleRules
 				"ImageWrapper",
 				"RenderCore",
 				"ImageCore",
-				"FreeImage"
+				"FreeImage",
+				"HTTP"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
