@@ -309,7 +309,11 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const F
     {
         FTextureDataResource TextureData(Mip0Data, ImageData.RawData.Num());
 
+#if ENGINE_MAJOR_VERSION < 5
         FRHIResourceCreateInfo CreateInfo(&TextureData);
+#else
+        FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReaderTextureData"), &TextureData);
+#endif
         
         FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
             [&RHITexture2D, &CreateInfo, &ImageData, &TextureFlags]()
