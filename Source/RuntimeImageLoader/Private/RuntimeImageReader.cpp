@@ -14,7 +14,7 @@
 #include "Engine/Texture2D.h"
 #include "PixelFormat.h"
 #include "TextureResource.h"
-#include "Runtime/Launch/Resources/Version.h"
+#include "Launch/Resources/Version.h"
 #include "Async/Async.h"
 #include "Containers/ResourceArray.h"
 
@@ -188,11 +188,6 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
         bCompletedWork.AtomicSet(Requests.IsEmpty());
     }
 }
-
-/**
- * The rendering resource which represents a runtime texture.
- */
-
 
 EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const
 {

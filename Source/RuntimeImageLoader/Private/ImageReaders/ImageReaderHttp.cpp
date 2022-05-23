@@ -1,6 +1,7 @@
 // Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #include "ImageReaderHttp.h"
+#include "Launch/Resources/Version.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "HTTPManager.h"

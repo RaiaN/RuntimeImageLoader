@@ -8,6 +8,10 @@
 
 class UTexture2D;
 
+/**
+ * The rendering resource which represents a runtime texture.
+ */
+
 class FRuntimeTextureResource : public FTextureResource
 {
 public:
