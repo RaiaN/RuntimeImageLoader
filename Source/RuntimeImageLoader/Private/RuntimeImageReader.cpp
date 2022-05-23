@@ -18,7 +18,11 @@
 #include "Async/Async.h"
 #include "Containers/ResourceArray.h"
 
+#include "ImageReaders/ImageReaderFactory.h"
+#include "ImageReaders/IImageReader.h"
 #include "RuntimeImageUtils.h"
+#include "RuntimeTextureResource.h"
+
 
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
@@ -127,8 +131,19 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             FImageReadResult& ReadResult = Results.Emplace_GetRef();
             ReadResult.ImageFilename = Request.ImageFilename;
 
+            TSharedPtr<IImageReader> ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
+
+            TArray<uint8> ImageBuffer;
+            if (!ImageReader->ReadImage(Request.ImageFilename, ImageBuffer))
+            {
+                ReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.ImageFilename, *ImageReader->GetLastError());
+            }
+
             FRuntimeImageData ImageData;
-            FRuntimeImageUtils::ImportFileAsImage(Request.ImageFilename, ImageData, ReadResult.OutError);
+            if (!FRuntimeImageUtils::ImportBufferAsImage(ImageBuffer.GetData(), ImageBuffer.Num(), ImageData, ReadResult.OutError))
+            {
+                continue;
+            }
 
             if (ReadResult.OutError.Len() > 0)
             {
@@ -177,70 +192,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 /**
  * The rendering resource which represents a runtime texture.
  */
-class FRuntimeTextureResource : public FTextureResource
-{
-public:
-    FRuntimeTextureResource(UTexture2D* InTexture, FTexture2DRHIRef RHITexture2D)
-        : Owner(InTexture), SizeX(RHITexture2D->GetSizeX()), SizeY(RHITexture2D->GetSizeY())
-    {
-        TextureRHI = RHITexture2D;
-        bSRGB = (TextureRHI->GetFlags() & TexCreate_SRGB) != TexCreate_None;
-        bIgnoreGammaConversions = !bSRGB;
-        bGreyScaleFormat = (TextureRHI->GetFormat() == PF_G8) || (TextureRHI->GetFormat() == PF_BC4);
-    }
 
-    virtual ~FRuntimeTextureResource() 
-    {
-        Owner->SetResource(nullptr);
-       
-        UE_LOG(LogRuntimeImageReader, Log, TEXT("RuntimeTextureResource has been destroyed!"))
-    }
-
-    uint32 GetSizeX() const override
-    {
-        return SizeX;
-    }
-
-    uint32 GetSizeY() const override
-    {
-        return SizeY;
-    }
-
-    void InitRHI() override
-    {
-        // Create the sampler state RHI resource.
-        FSamplerStateInitializerRHI SamplerStateInitializer(SF_Trilinear);
-        SamplerStateRHI = GetOrCreateSamplerState(SamplerStateInitializer);
-
-        // Create a custom sampler state for using this texture in a deferred pass, where ddx / ddy are discontinuous
-        FSamplerStateInitializerRHI DeferredPassSamplerStateInitializer(
-            SF_Trilinear,
-            AM_Wrap,
-            AM_Wrap,
-            AM_Wrap,
-            0,
-            // Disable anisotropic filtering, since aniso doesn't respect MaxLOD
-            1,
-            0,
-            // Prevent the less detailed mip levels from being used, which hides artifacts on silhouettes due to ddx / ddy being very large
-            // This has the side effect that it increases minification aliasing on light functions
-            2
-        );
-
-        DeferredPassSamplerStateRHI = GetOrCreateSamplerState(DeferredPassSamplerStateInitializer);
-    }
-
-    void ReleaseRHI() override
-    {
-        RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
-        FTextureResource::ReleaseRHI();
-    }
-
-private:
-    UTexture2D* Owner;
-    uint32 SizeX;
-    uint32 SizeY;
-};
 
 EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const
 {

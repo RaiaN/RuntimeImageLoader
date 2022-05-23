@@ -360,13 +360,10 @@ namespace FRuntimeImageUtils
 
                 return true;
             }
-            else
-            {
-                OutError = FString::Printf(TEXT("Failed to decode TIFF. Bits per pixel: %d"), TiffLoaderHelper.GetBitDepth());
-                return false;
-            }
 #endif // WITH_FREEIMAGE_LIB
         }
+
+        OutError = FString::Printf(TEXT("Failed to decode image. Not supported format!"));
 
         return true;
     }

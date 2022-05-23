@@ -86,8 +86,10 @@ protected:
     void Exit() override;
     /* ~FRunnable interface */
 
+    // FTickableGameObject
     void Tick(float DeltaTime) override;
     TStatId GetStatId() const override;
+    // ~FTickableGameObject
 
 private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;

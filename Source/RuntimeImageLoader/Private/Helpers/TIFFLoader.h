@@ -13,22 +13,19 @@ struct FIMEMORY;
 class FRuntimeTiffLoadHelper
 {
 public:
-
 	FRuntimeTiffLoadHelper();
-
 	~FRuntimeTiffLoadHelper();
 
-	bool Load(const uint8 * Buffer, uint32 Length);
-
-	bool ConvertToRGBA16();
-
-	void SetError(const FString& InErrorMessage);
+	bool Load(const uint8* Buffer, uint32 Length);
 
 	int32 GetBitDepth() const;
+
+	void SetError(const FString& InErrorMessage);
 	FString GetError();
 
 	bool IsValid();
 
+public:
 	// Resulting image data and properties
 	TArray<uint8> RawData;
 	int32 Width;
@@ -36,6 +33,9 @@ public:
 	ETextureSourceFormat TextureSourceFormat = TSF_Invalid;
 	TextureCompressionSettings CompressionSettings = TC_Default;
 	bool bSRGB = true;
+
+private:
+	bool ConvertToRGBA16();
 
 private:
 	bool bIsValid = false;

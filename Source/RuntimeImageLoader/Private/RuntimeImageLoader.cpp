@@ -3,6 +3,8 @@
 #include "RuntimeImageLoader.h"
 #include "Subsystems/SubsystemBlueprintLibrary.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
+
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
@@ -47,6 +49,11 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, const FTr
                             ensure(IsValid(ReadResult.OutTexture));
                         }
 #endif
+
+                        if (!ReadResult.OutError.IsEmpty())
+                        {
+                            UE_LOG(LogRuntimeImageLoader, Error, TEXT("Failed to load image. Error: %s"), *ReadResult.OutError);
+                        }
 
                         bSuccess = ReadResult.OutError.IsEmpty();
                         OutTexture = ReadResult.OutTexture;

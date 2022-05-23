@@ -5,20 +5,22 @@
 #include "CoreMinimal.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Async/Future.h"
+#include "ImageReaders/IImageReader.h"
 
-class FImageHttpDownload
+class FImageReaderHttp : public IImageReader
 {
 public:
-    FImageHttpDownload(const FString& ImageURI, TArray<uint8>& OutImageData);
-    void Wait();
+    virtual ~FImageReaderHttp() {}
+
+    virtual bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
 
 private:
     /** Handles image requests coming from the web */
     void HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded);
 
 private:
-    FString ImageURI;
-    TArray<uint8>& ImageData;
-
+    TArray<uint8>* ImageData;
     TSharedPtr<TFutureState<bool>, ESPMode::ThreadSafe> DownloadFuture;
+
+    FString OutError;
 };
