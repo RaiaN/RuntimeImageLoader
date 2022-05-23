@@ -448,22 +448,6 @@ namespace FRuntimeImageUtils
             PlatformData->Mips.Add(Mip);
             Mip->SizeX = ImageData.SizeX;
             Mip->SizeY = ImageData.SizeY;
-
-            /*const uint32 MipBytes = Mip->SizeX * Mip->SizeY * GPixelFormats[PixelFormat].BlockBytes;
-            {
-                Mip->BulkData.Lock(LOCK_READ_WRITE);
-
-                void* TextureData = Mip->BulkData.Realloc(MipBytes);
-
-                static TArray<uint8> DummyBytes;
-                DummyBytes.SetNum(MipBytes);
-
-                FMemory::Memcpy(TextureData, DummyBytes.GetData(), MipBytes);
-
-                Mip->BulkData.Unlock();
-            }*/
-
-            // NewTexture->UpdateResource();
         }
 
         return NewTexture;
