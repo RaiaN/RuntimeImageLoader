@@ -3,6 +3,7 @@
 #include "RuntimeTextureResource.h"
 #include "PixelFormat.h"
 #include "Engine/Texture.h"
+#include "Engine/Texture2D.h"
 #include "RenderResource.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeTextureResource, Log, All);

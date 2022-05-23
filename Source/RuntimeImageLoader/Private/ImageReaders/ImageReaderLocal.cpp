@@ -3,6 +3,7 @@
 #include "ImageReaderLocal.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
+#include "Stats/Stats.h"
 
 bool FImageReaderLocal::ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData)
 {
