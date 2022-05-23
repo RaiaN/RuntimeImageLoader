@@ -30,7 +30,11 @@ bool FImageReaderHttp::ReadImage(const FString& ImageURI, TArray<uint8>& OutImag
 
     if (IsInGameThread())
     {
+#if ENGINE_MAJOR_VERSION < 5
         FHttpModule::Get().GetHttpManager().Flush(false);
+#else
+        FHttpModule::Get().GetHttpManager().Flush(EHttpFlushReason::Default);
+#endif
     }
 
     bool bResult = DownloadFuture->GetResult();
