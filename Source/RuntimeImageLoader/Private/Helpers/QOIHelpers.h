@@ -1,6 +1,8 @@
 // Copyright Peter Leontev
 
 #pragma once
+#include "CoreMinimal.h"
+#include "Engine/Texture.h"
 
 class FQOILoader
 {

@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "Engine/Texture.h"
 
-class UTexture2D;
-
 struct FIBITMAP;
 struct FIMEMORY;
 
