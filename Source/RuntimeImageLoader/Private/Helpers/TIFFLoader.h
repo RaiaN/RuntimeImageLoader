@@ -33,6 +33,7 @@ public:
 	ETextureSourceFormat TextureSourceFormat = TSF_Invalid;
 	TextureCompressionSettings CompressionSettings = TC_Default;
 	bool bSRGB = true;
+	int32 BitDepth;
 
 private:
 	bool ConvertToRGBA16();
@@ -41,8 +42,6 @@ private:
 	bool bIsValid = false;
 	FIBITMAP* Bitmap = nullptr;
 	FIMEMORY* Memory = nullptr;
-
-	int32 BitDepth;
 
 	FString ErrorMessage;
 };
