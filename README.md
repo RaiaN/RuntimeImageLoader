@@ -16,9 +16,9 @@
 Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader !
 
 ## Features
-- Loads up to 8k resolution images in hitch-less manner
-- Can load an image over HTTP or from local file storage
-- Can transform an image during loading
+- Supports loading of up to 8k resolution images in hitch-less manner
+- Can load image over HTTP or from local file storage
+- Can transform image during loading
 - Supports PNG, JPEG, BMP, TGA, OpenEXR, TIFF and QOI
 - Supports 8, 16, 32 bit per channel (or up to 128 bit *pixel depth* images)
 - Can generate UI ready texture format (RGBA8 or 'float' RGBA)
