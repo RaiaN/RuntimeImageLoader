@@ -16,19 +16,22 @@
 Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader !
 
 ## Features
-- Fast & hitch-less & zero-freeze runtime texture loading up to 8k resolution
-- Blueprint friendly (see below)
+- Loads up to 8k resolution images in hitch-less manner
+- Can load an image over HTTP or from local file storage
+- Can transform an image during loading
 - Supports PNG, JPEG, BMP, TGA, OpenEXR, TIFF and QOI
-- Supports 8, 16, 32 bit depth per channel images  (or up to 128 bit *pixel depth* images)
-- Output texture is in RGBA8 format if option bForUI = true
-- Resizes loaded image if SizeX and SizeY params are set
-- No static libraries or external dependencies except for single-header libraries
-- Supported RHIs: DirectX 11&12, Vulkan
-- Supported Unreal engine versions: 4.27, 5.0
-- Supported platforms: Windows
+- Supports 8, 16, 32 bit per channel (or up to 128 bit *pixel depth* images)
+- Can generate UI ready texture format (RGBA8 or 'float' RGBA)
+- Blueprint friendly
+- No static libraries or external dependencies (except for single-header libraries)
+
+## Tested on
+- RHIs: DirectX 11&12, Vulkan
+- Unreal engine versions: 4.27, 5.0
+- Platforms: Windows
 
 # Blueprints
 
-Below is the example of how to use this plugin for loading images from your blueprints/scripts:
+Below is the example of how to use this plugin for loading images in your blueprints/scripts:
 
 <img src="Resources/Blueprint_node.PNG">
