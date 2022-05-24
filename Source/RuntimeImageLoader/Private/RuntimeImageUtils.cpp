@@ -384,8 +384,6 @@ namespace FRuntimeImageUtils
                 return true;
             }
 
-
-
             OutError = QOILoader.GetLastError();
         }
 

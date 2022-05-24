@@ -150,6 +150,10 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 continue;
             }
 
+            // sanity checks
+            check(ImageData.RawData.Num() > 0);
+            check(ImageData.TextureSourceFormat != TSF_Invalid);
+
             ImageData.PixelFormat = DeterminePixelFormat(ImageData.Format, Request.TransformParams);
             if (ImageData.PixelFormat == PF_Unknown)
             {
