@@ -340,11 +340,6 @@ void FRuntimeTiffLoadHelper::SetError(const FString& InErrorMessage)
 	ErrorMessage = InErrorMessage;
 }
 
-int32 FRuntimeTiffLoadHelper::GetBitDepth() const
-{
-	return BitDepth;
-}
-
 FString FRuntimeTiffLoadHelper::GetError()
 {
 	return ErrorMessage;

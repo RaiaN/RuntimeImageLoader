@@ -24,10 +24,10 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
     bool bForUI = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
-    int32 PercentSizeX = 0;
+    int32 PercentSizeX = 100;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
-    int32 PercentSizeY = 0;
+    int32 PercentSizeY = 100;
 
     bool IsPercentSizeValid() const
     {

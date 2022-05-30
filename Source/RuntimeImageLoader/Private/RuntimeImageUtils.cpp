@@ -20,6 +20,7 @@
 #include "Helpers/TGAHelpers.h"
 #include "Helpers/PNGHelpers.h"
 #include "Helpers/TIFFLoader.h"
+#include "Helpers/QOIHelpers.h"
 
 
 namespace FRuntimeImageUtils
@@ -280,11 +281,6 @@ namespace FRuntimeImageUtils
                 return false;
             }
         }
-        /*else
-        {
-            OutError = TEXT("TGA file contains data in an unsupported format. Please contact devs");
-            return false;
-        }*/
 
 
         //
@@ -341,6 +337,9 @@ namespace FRuntimeImageUtils
             return true;
         }
 
+        //
+        // TIFF
+        //
 #if WITH_FREEIMAGE_LIB
         FRuntimeTiffLoadHelper TiffLoaderHelper;
         if (TiffLoaderHelper.IsValid())
@@ -363,54 +362,33 @@ namespace FRuntimeImageUtils
 #endif // WITH_FREEIMAGE_LIB
         }
 
-        OutError = FString::Printf(TEXT("Failed to decode image. Not supported format!"));
-
-        return true;
-    }
-
-    void ImportFileAsImage(const FString& ImageFilename, FRuntimeImageData& OutImage, FString& OutError)
-    {
-        QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageUtils_ImportFileAsTexture);
-
-        // TODO: 
-        const int64 MAX_FILESIZE_BYTES = 999999999;
-
-        IFileManager& FileManager = IFileManager::Get();
-
-        if (!FileManager.FileExists(*ImageFilename))
+        //
+        // QOI
+        //
+        FQOILoader QOILoader;
+        if (QOILoader.IsValidImage(Buffer, Length))
         {
-            OutError = FString::Printf(TEXT("Image does not exist: %s"), *ImageFilename);
-            return;
-        }
-
-        const int64 ImageFileSizeBytes = FileManager.FileSize(*ImageFilename);
-        check(ImageFileSizeBytes != INDEX_NONE);
-
-        // check filesize
-        if (ImageFileSizeBytes > MAX_FILESIZE_BYTES)
-        {
-            OutError = FString::Printf(TEXT("Image filesize > %d MBs): %s"), MAX_FILESIZE_BYTES, *ImageFilename);
-            return;
-        }
-        
-        TArray<uint8> ImageBuffer;
-        {
-            QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageUtils_ImportFileAsTexture_LoadFileToArray);
-            if (!FFileHelper::LoadFileToArray(ImageBuffer, *ImageFilename))
+            if (QOILoader.Load(Buffer, Length))
             {
-                OutError = FString::Printf(TEXT("Image I/O error: %s"), *ImageFilename);
-                return;
+                OutImage.Init2D(
+                    QOILoader.Width,
+                    QOILoader.Height,
+                    QOILoader.TextureSourceFormat,
+                    QOILoader.RawData.GetData()
+                );
+                
+                OutImage.SRGB = QOILoader.bSRGB;
+                OutImage.GammaSpace = OutImage.SRGB ? EGammaSpace::sRGB : EGammaSpace::Linear;
+                OutImage.CompressionSettings = QOILoader.CompressionSettings;
+
+                return true;
             }
-            ImageBuffer.Add(0);
+
+            OutError = QOILoader.GetLastError();
         }
 
-        const FFileStatData ImageFileStatData = FileManager.GetStatData(*ImageFilename);
-        OutImage.ModificationTime = FMath::Max(ImageFileStatData.CreationTime, ImageFileStatData.ModificationTime);
-
-        if (!ImportBufferAsImage(ImageBuffer.GetData(), ImageBuffer.Num() - 1, OutImage, OutError))
-        {
-            return;
-        }
+        OutError = FString::Printf(TEXT("Failed to decode image. Not supported format!"));
+        return false;
     }
 
     UTexture2D* CreateTexture(const FString& ImageFilename, const FRuntimeImageData& ImageData)
