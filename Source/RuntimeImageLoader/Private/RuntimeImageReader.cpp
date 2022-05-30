@@ -158,7 +158,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             ImageData.PixelFormat = DeterminePixelFormat(ImageData.Format, Request.TransformParams);
             if (ImageData.PixelFormat == PF_Unknown)
             {
-                ReadResult.OutError = TEXT("Image data is corrupted. Please contact devs");
+                ReadResult.OutError = FString::Printf(TEXT("Pixel format is not supported: %d"), (int32)ImageData.PixelFormat);
                 continue;
             }
 
@@ -182,6 +182,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             if (ConstructedTextures.Num() == 0)
             {
+                ReadResult.OutError = TEXT("Texture not constructed. Please contact developer support: https://t.me/+RmbtPdzK2ntiYzQy");
                 return;
             }
 
