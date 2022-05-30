@@ -359,8 +359,8 @@ namespace FRuntimeImageUtils
 
                 return true;
             }
-#endif // WITH_FREEIMAGE_LIB
         }
+#endif // WITH_FREEIMAGE_LIB
 
         //
         // QOI
