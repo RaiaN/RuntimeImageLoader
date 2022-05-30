@@ -94,7 +94,12 @@ protected:
 private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
     void ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams);
-    void AsyncReallocateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+
+    void CreateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateTexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateTexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateTexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    void FinalizeTexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;

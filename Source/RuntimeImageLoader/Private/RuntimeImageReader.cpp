@@ -188,7 +188,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             ReadResult.OutTexture = ConstructedTextures.Pop();
 
-            AsyncReallocateTexture(ReadResult.OutTexture, ImageData);
+            CreateTexture(ReadResult.OutTexture, ImageData);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -230,7 +230,22 @@ private:
     int32 DataSize;
 };
 
-void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+
+void URuntimeImageReader::CreateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+{
+    FTexture2DRHIRef RHITexture2D = nullptr;
+#if PLATFORM_WINDOWS
+    RHITexture2D = CreateTexture_Windows(NewTexture, ImageData);
+#elif (PLATFORM_ANDROID || PLATFORM_ANDROID_VULKAN)
+    RHITexture2D = CreateTexture_Mobile(NewTexture, ImageData);
+#else
+    RHITexture2D = CreateTexture_Other(NewTexture, ImageData);
+#endif
+
+    FinalizeTexture(NewTexture, RHITexture2D);
+}
+
+FTexture2DRHIRef URuntimeImageReader::CreateTexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     uint32 NumMips = 1;
     uint32 NumSamples = 1;
@@ -264,7 +279,7 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const F
 
         FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReaderTextureData"));
         CreateInfo.BulkData = &TextureData;
-        
+
         FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
             [&RHITexture2D, &CreateInfo, &ImageData, &TextureFlags]()
             {
@@ -276,12 +291,75 @@ void URuntimeImageReader::AsyncReallocateTexture(UTexture2D* NewTexture, const F
                     TextureFlags,
                     CreateInfo
                 );
-
             }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
         );
         CreateTextureTask->Wait();
     }
 
+    return RHITexture2D;
+}
+
+
+FTexture2DRHIRef URuntimeImageReader::CreateTexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+{
+    uint32 NumMips = 1;
+    uint32 NumSamples = 1;
+    void* Mip0Data = (void*)ImageData.RawData.GetData();
+
+    ETextureCreateFlags TextureFlags = TexCreate_ShaderResource;
+    if (ImageData.SRGB)
+    {
+        TextureFlags |= TexCreate_SRGB;
+    }
+
+    FTexture2DRHIRef RHITexture2D = nullptr;
+
+    ensureMsgf(ImageData.SizeX > 0, TEXT("ImageData.SizeX must be > 0"));
+    ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
+
+    FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
+        [&RHITexture2D, &ImageData, &TextureFlags]()
+        {
+            FRHIResourceCreateInfo DummyCreateInfo(TEXT("DummyCreateInfo"));
+            RHITexture2D = RHICreateTexture2D(
+                ImageData.SizeX, ImageData.SizeY,
+                ImageData.PixelFormat,
+                ImageData.NumMips,
+                1,
+                TextureFlags,
+                DummyCreateInfo
+            );
+
+            FUpdateTextureRegion2D TextureRegion2D;
+            {
+                TextureRegion2D.DestX = 0;
+                TextureRegion2D.DestY = 0;
+                TextureRegion2D.SrcX = 0;
+                TextureRegion2D.SrcY = 0;
+                TextureRegion2D.Width = ImageData.SizeX;
+                TextureRegion2D.Height = ImageData.SizeY;
+            }
+
+            RHIUpdateTexture2D(
+                RHITexture2D, 0, TextureRegion2D,
+                TextureRegion2D.Width * GPixelFormats[ImageData.PixelFormat].BlockBytes,
+                ImageData.RawData.GetData()
+            );
+        }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
+    );
+    CreateTextureTask->Wait();
+
+    return RHITexture2D;
+}
+
+FTexture2DRHIRef URuntimeImageReader::CreateTexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+{
+    // TODO: Figure out the best way to support other graphics APIs and platfornms
+    return CreateTexture_Windows(NewTexture, ImageData);
+}
+
+void URuntimeImageReader::FinalizeTexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D)
+{
     // Create proper texture resource so UMG can display runtime texture
     FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);
     NewTexture->SetResource(NewTextureResource);
