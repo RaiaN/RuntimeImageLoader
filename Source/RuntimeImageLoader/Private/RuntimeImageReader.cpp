@@ -137,6 +137,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             if (!ImageReader->ReadImage(Request.ImageFilename, ImageBuffer))
             {
                 ReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.ImageFilename, *ImageReader->GetLastError());
+                continue;
             }
 
             FRuntimeImageData ImageData;
