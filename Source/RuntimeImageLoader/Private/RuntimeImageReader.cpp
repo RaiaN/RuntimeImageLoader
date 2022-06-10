@@ -106,6 +106,11 @@ void URuntimeImageReader::Stop()
     bStopThread = true;
     Trigger();
 
+    if (ImageReader.IsValid())
+    {
+        ImageReader->Flush();
+    }
+
     Thread->WaitForCompletion();
 
     FPlatformProcess::ReturnSynchEventToPool(ThreadSemaphore);
@@ -126,12 +131,12 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
     while (!bCompletedWork && !bStopThread)
     {
         FImageReadRequest Request;
-        while (Requests.Dequeue(Request))
+        while (Requests.Dequeue(Request) && !bStopThread)
         {
             FImageReadResult& ReadResult = Results.Emplace_GetRef();
             ReadResult.ImageFilename = Request.ImageFilename;
 
-            TSharedPtr<IImageReader> ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
+            ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
 
             TArray<uint8> ImageBuffer;
             if (!ImageReader->ReadImage(Request.ImageFilename, ImageBuffer))

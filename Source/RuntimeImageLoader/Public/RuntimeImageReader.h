@@ -59,6 +59,7 @@ struct RUNTIMEIMAGELOADER_API FConstructTextureTask
 };
 
 class UTexture2D;
+class IImageReader;
 
 UCLASS()
 class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable, public FTickableGameObject
@@ -118,6 +119,8 @@ private:
 private:
     FRunnableThread* Thread = nullptr;
     FEvent* ThreadSemaphore = nullptr;
+
+    TSharedPtr<IImageReader, ESPMode::ThreadSafe> ImageReader;
 
     FThreadSafeBool bCompletedWork = true; 
     FThreadSafeBool bStopThread = false;

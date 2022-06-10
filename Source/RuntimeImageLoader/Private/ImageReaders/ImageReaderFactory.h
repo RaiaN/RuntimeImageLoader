@@ -7,5 +7,5 @@
 class FImageReaderFactory
 {
 public:
-    static TSharedPtr<IImageReader> CreateReader(const FString& ImageURI);
+    static TSharedPtr<IImageReader, ESPMode::ThreadSafe> CreateReader(const FString& ImageURI);
 };

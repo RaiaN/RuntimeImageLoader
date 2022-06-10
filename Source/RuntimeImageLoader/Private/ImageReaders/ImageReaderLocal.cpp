@@ -44,3 +44,8 @@ FString FImageReaderLocal::GetLastError() const
 {
     return OutError;
 }
+
+void FImageReaderLocal::Flush()
+{
+    // do nothing as we image reader local is synchronous and does not depend on game thread
+}

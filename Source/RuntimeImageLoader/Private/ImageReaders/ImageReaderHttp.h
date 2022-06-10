@@ -13,6 +13,8 @@ public:
     virtual ~FImageReaderHttp() {}
 
     virtual bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
+    virtual FString GetLastError() const override;
+    virtual void Flush() override;
 
 private:
     /** Handles image requests coming from the web */

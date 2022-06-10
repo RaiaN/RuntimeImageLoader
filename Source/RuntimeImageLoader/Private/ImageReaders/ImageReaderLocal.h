@@ -10,8 +10,9 @@ class FImageReaderLocal : public IImageReader
 public:
     virtual ~FImageReaderLocal() {}
 
-    bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
-    FString GetLastError() const override;
+    virtual bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
+    virtual FString GetLastError() const override;
+    virtual void Flush() override;
 
 private:
     FString OutError;
