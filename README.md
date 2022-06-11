@@ -28,7 +28,7 @@ Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/
 ## Tested on
 - RHIs: DirectX 11&12, Vulkan
 - Unreal engine versions: 4.27, 5.0
-- Platforms: Windows
+- Platforms: Windows, Android
 
 # Blueprints
 
