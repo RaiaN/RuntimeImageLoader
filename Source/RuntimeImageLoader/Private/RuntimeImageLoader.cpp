@@ -2,6 +2,7 @@
 
 #include "RuntimeImageLoader.h"
 #include "Subsystems/SubsystemBlueprintLibrary.h"
+#include "UObject/WeakObjectPtr.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
@@ -36,9 +37,11 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, const FTr
         Request.OnRequestCompleted.BindLambda(
             [this, &OutTexture, &bSuccess, &OutError, LatentInfo](const FImageReadResult& ReadResult)
             {
-                if (UObject* CallbackTarget = LatentInfo.CallbackTarget)
+                FWeakObjectPtr CallbackTargetPtr = LatentInfo.CallbackTarget;
+                if (UObject* CallbackTarget = CallbackTargetPtr.Get())
                 {
-                    if (UFunction* ExecutionFunction = CallbackTarget->FindFunction(LatentInfo.ExecutionFunction))
+                    UFunction* ExecutionFunction = CallbackTarget->FindFunction(LatentInfo.ExecutionFunction);
+                    if (IsValid(ExecutionFunction))
                     {
                         int32 Linkage = LatentInfo.Linkage;
 
