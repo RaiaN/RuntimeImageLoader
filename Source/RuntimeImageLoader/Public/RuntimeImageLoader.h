@@ -50,11 +50,14 @@ class RUNTIMEIMAGELOADER_API URuntimeImageLoader : public UWorldSubsystem, publi
 
 public:
     //------------------ Images --------------------
-    UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadImageAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
     
-    UFUNCTION(BlueprintCallable, Category = "RuntimeImageImporter", meta = (AutoCreateRefTerm = "TransformParams"))
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams"))
     void LoadImageSync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
+
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
+    void CancelAll();
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
