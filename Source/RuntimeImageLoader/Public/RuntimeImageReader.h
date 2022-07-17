@@ -72,7 +72,7 @@ public:
 
 public:
     void AddRequest(const FImageReadRequest& Request);
-    void GetResult(FImageReadResult& OutResult);
+    bool GetResult(FImageReadResult& OutResult);
     void Clear();
     void Stop();
     bool IsWorkCompleted() const;

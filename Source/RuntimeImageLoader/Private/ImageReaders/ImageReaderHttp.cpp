@@ -20,13 +20,13 @@ bool FImageReaderHttp::ReadImage(const FString& ImageURI, TArray<uint8>& OutImag
     DownloadFuture = MakeShared<TFutureState<bool>, ESPMode::ThreadSafe>();
 
     // Create the Http request and add to pending request list
-    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
+    CurrentHttpRequest = FHttpModule::Get().CreateRequest();
     {
-        HttpRequest->OnProcessRequestComplete().BindRaw(this, &FImageReaderHttp::HandleImageRequest);
-        HttpRequest->SetURL(ImageURI);
-        HttpRequest->SetVerb(TEXT("GET"));
-        HttpRequest->SetTimeout(60.0f);
-        HttpRequest->ProcessRequest();
+        CurrentHttpRequest->OnProcessRequestComplete().BindRaw(this, &FImageReaderHttp::HandleImageRequest);
+        CurrentHttpRequest->SetURL(ImageURI);
+        CurrentHttpRequest->SetVerb(TEXT("GET"));
+        CurrentHttpRequest->SetTimeout(60.0f);
+        CurrentHttpRequest->ProcessRequest();
     }
 
     if (IsInGameThread())
@@ -51,6 +51,14 @@ void FImageReaderHttp::Flush()
 #else
     FHttpModule::Get().GetHttpManager().Flush(EHttpFlushReason::Default);
 #endif
+}
+
+void FImageReaderHttp::Cancel()
+{
+    if (CurrentHttpRequest.IsValid() && !DownloadFuture->IsComplete())
+    {
+        CurrentHttpRequest->CancelRequest();
+    }
 }
 
 void FImageReaderHttp::HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded)

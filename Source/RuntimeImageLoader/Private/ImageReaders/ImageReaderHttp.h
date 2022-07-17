@@ -15,6 +15,7 @@ public:
     virtual bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
     virtual FString GetLastError() const override;
     virtual void Flush() override;
+    virtual void Cancel() override;
 
 private:
     /** Handles image requests coming from the web */
@@ -23,6 +24,8 @@ private:
 private:
     TArray<uint8>* ImageData;
     TSharedPtr<TFutureState<bool>, ESPMode::ThreadSafe> DownloadFuture;
+
+    TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> CurrentHttpRequest;
 
     FString OutError;
 };

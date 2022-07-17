@@ -88,17 +88,29 @@ void URuntimeImageReader::AddRequest(const FImageReadRequest& Request)
     bCompletedWork.AtomicSet(false);
 }
 
-void URuntimeImageReader::GetResult(FImageReadResult& OutResult)
+bool URuntimeImageReader::GetResult(FImageReadResult& OutResult)
 {
-    ensure(Results.Num() > 0);
+    if (Results.Num() > 0)
+    {
+        OutResult = Results.Pop();
 
-    OutResult = Results.Pop();
+        return true;
+    }
+
+    return false;
 }
 
 void URuntimeImageReader::Clear()
 {
     Requests.Empty();
     Results.Empty();
+
+    bCompletedWork = true;
+
+    if (ImageReader.IsValid())
+    {
+        ImageReader->Cancel();
+    }
 }
 
 void URuntimeImageReader::Stop()
@@ -187,7 +199,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             if (ConstructedTextures.Num() == 0)
             {
-                ReadResult.OutError = TEXT("Texture not constructed. Please contact developer support: https://t.me/+RmbtPdzK2ntiYzQy");
+                ReadResult.OutError = TEXT("Texture was not constructed. Please contact developer support: https://t.me/+RmbtPdzK2ntiYzQy");
                 return;
             }
 
@@ -239,6 +251,7 @@ private:
 void URuntimeImageReader::CreateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     FTexture2DRHIRef RHITexture2D = nullptr;
+
 #if PLATFORM_WINDOWS
     RHITexture2D = CreateTexture_Windows(NewTexture, ImageData);
 #elif (PLATFORM_ANDROID || PLATFORM_ANDROID_VULKAN)

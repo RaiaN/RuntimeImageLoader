@@ -48,4 +48,10 @@ FString FImageReaderLocal::GetLastError() const
 void FImageReaderLocal::Flush()
 {
     // do nothing as we image reader local is synchronous and does not depend on game thread
+    // TODO: Implement file reading in async way?
+}
+
+void FImageReaderLocal::Cancel()
+{
+    // TODO: need to implement async file reading first
 }

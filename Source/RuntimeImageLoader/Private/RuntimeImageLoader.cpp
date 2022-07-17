@@ -98,6 +98,7 @@ void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, const FTra
 void URuntimeImageLoader::CancelAll()
 {
     Requests.Empty();
+    ActiveRequest.Invalidate();
 
     ImageReader->Clear();
 }

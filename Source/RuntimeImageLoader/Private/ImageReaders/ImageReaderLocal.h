@@ -13,6 +13,7 @@ public:
     virtual bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
     virtual FString GetLastError() const override;
     virtual void Flush() override;
+    virtual void Cancel() override;
 
 private:
     FString OutError;
