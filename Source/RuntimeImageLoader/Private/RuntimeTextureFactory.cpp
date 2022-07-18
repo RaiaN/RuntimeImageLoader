@@ -2,6 +2,8 @@
 
 #include "RuntimeTextureFactory.h"
 #include "RuntimeImageUtils.h"
+#include "Engine/Texture2D.h"
+#include "Engine/TextureCube.h"
 
 void URuntimeTextureFactory::Flush()
 {
@@ -29,5 +31,19 @@ UTexture2D* URuntimeTextureFactory::CreateTexture2D(const FConstructTextureTask&
 
 UTextureCube* URuntimeTextureFactory::CreateTextureCube(const FConstructTextureTask& Task)
 {
-    return nullptr;
+    UTextureCube* OutResult = nullptr;
+
+    CurrentTask = Async(
+        EAsyncExecution::TaskGraphMainThread,
+        [Task, &OutResult]()
+        {
+            OutResult = FRuntimeImageUtils::CreateTextureCube(Task.ImageFilename, *Task.ImageData);
+
+            return IsValid(OutResult);
+        }
+    );
+
+    bool bResult = CurrentTask.Get();
+
+    return OutResult;
 }

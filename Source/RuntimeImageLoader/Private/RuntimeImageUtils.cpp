@@ -4,6 +4,7 @@
 
 #include "Misc/FileHelper.h"
 #include "Engine/Texture2D.h"
+#include "Engine/TextureCube.h"
 #include "TextureResource.h"
 #include "PixelFormat.h"
 #include "HAL/FileManager.h"
@@ -438,6 +439,47 @@ namespace FRuntimeImageUtils
             MakeUniqueObjectName(GetTransientPackage(), UTexture2D::StaticClass(), *BaseFilename),
             RF_Public | RF_Transient
         );
+        NewTexture->NeverStream = true;
+        NewTexture->SRGB = ImageData.SRGB;
+
+        {
+            QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);
+
+            check(IsValid(NewTexture));
+
+            FTexturePlatformData* PlatformData = new FTexturePlatformData();
+
+#if ENGINE_MAJOR_VERSION < 5
+            NewTexture->PlatformData = PlatformData;
+#else
+            NewTexture->SetPlatformData(PlatformData);
+#endif
+
+            PlatformData->SizeX = ImageData.SizeX;
+            PlatformData->SizeY = ImageData.SizeY;
+            PlatformData->PixelFormat = ImageData.PixelFormat;
+
+            FTexture2DMipMap* Mip = new FTexture2DMipMap();
+            PlatformData->Mips.Add(Mip);
+            Mip->SizeX = ImageData.SizeX;
+            Mip->SizeY = ImageData.SizeY;
+        }
+
+        return NewTexture;
+    }
+
+    UTextureCube* CreateTextureCube(const FString& ImageFilename, const FRuntimeImageData& ImageData)
+    {
+        check(IsInGameThread());
+
+        const FString& BaseFilename = FPaths::GetBaseFilename(ImageFilename);
+
+        UTextureCube* NewTexture = NewObject<UTextureCube>(
+            GetTransientPackage(),
+            MakeUniqueObjectName(GetTransientPackage(), UTextureCube::StaticClass(), *BaseFilename),
+            RF_Public | RF_Transient
+        );
+
         NewTexture->NeverStream = true;
         NewTexture->SRGB = ImageData.SRGB;
 
