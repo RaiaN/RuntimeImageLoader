@@ -38,6 +38,8 @@ void URuntimeImageReader::Deinitialize()
     Clear();
     Stop();
 
+    TextureFactory = nullptr;
+
     UE_LOG(LogRuntimeImageReader, Log, TEXT("Image reader thread exited!"))
 }
 
@@ -93,17 +95,17 @@ void URuntimeImageReader::Clear()
     {
         ImageReader->Cancel();
     }
+
+    if (IsValid(TextureFactory))
+    {
+        TextureFactory->Cancel();
+    }
 }
 
 void URuntimeImageReader::Stop()
 {
     bStopThread = true;
     Trigger();
-
-    if (ImageReader.IsValid())
-    {
-        ImageReader->Flush();
-    }
 
     Thread->WaitForCompletion();
 

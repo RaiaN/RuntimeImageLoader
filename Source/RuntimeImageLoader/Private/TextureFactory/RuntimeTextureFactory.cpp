@@ -6,7 +6,7 @@
 #include "Engine/TextureCube.h"
 #include "RuntimeImageUtils.h"
 
-void URuntimeTextureFactory::Flush()
+void URuntimeTextureFactory::Cancel()
 {
     CurrentTask.Reset();
 }

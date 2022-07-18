@@ -22,7 +22,7 @@ class URuntimeTextureFactory : public UObject
     GENERATED_BODY()
 
 public:
-    void Flush();
+    void Cancel();
 
 public:
     UTexture2D* CreateTexture2D(const FConstructTextureTask& Task);
