@@ -178,7 +178,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 ReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
             }
 
-            CreateRHITexture(ReadResult.OutTexture, ImageData);
+            CreateRHITexture2D(ReadResult.OutTexture, ImageData);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -221,22 +221,22 @@ private:
 };
 
 
-void URuntimeImageReader::CreateRHITexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+void URuntimeImageReader::CreateRHITexture2D(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     FTexture2DRHIRef RHITexture2D = nullptr;
 
 #if PLATFORM_WINDOWS
-    RHITexture2D = CreateRHITexture_Windows(NewTexture, ImageData);
+    RHITexture2D = CreateRHITexture2D_Windows(NewTexture, ImageData);
 #elif (PLATFORM_ANDROID || PLATFORM_ANDROID_VULKAN)
-    RHITexture2D = CreateRHITexture_Mobile(NewTexture, ImageData);
+    RHITexture2D = CreateRHITexture2D_Mobile(NewTexture, ImageData);
 #else
-    RHITexture2D = CreateRHITexture_Other(NewTexture, ImageData);
+    RHITexture2D = CreateRHITexture2D_Other(NewTexture, ImageData);
 #endif
 
-    FinalizeRHITexture(NewTexture, RHITexture2D);
+    FinalizeRHITexture2D(NewTexture, RHITexture2D);
 }
 
-FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+FTexture2DRHIRef URuntimeImageReader::CreateRHITexture2D_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     uint32 NumMips = 1;
     uint32 NumSamples = 1;
@@ -291,7 +291,7 @@ FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Windows(UTexture2D* NewTe
 }
 
 
-FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+FTexture2DRHIRef URuntimeImageReader::CreateRHITexture2D_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     uint32 NumMips = 1;
     uint32 NumSamples = 1;
@@ -343,13 +343,13 @@ FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Mobile(UTexture2D* NewTex
     return RHITexture2D;
 }
 
-FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+FTexture2DRHIRef URuntimeImageReader::CreateRHITexture2D_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     // TODO: Figure out the best way to support other graphics APIs and platfornms
-    return CreateRHITexture_Windows(NewTexture, ImageData);
+    return CreateRHITexture2D_Windows(NewTexture, ImageData);
 }
 
-void URuntimeImageReader::FinalizeRHITexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D)
+void URuntimeImageReader::FinalizeRHITexture2D(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D)
 {
     // Create proper texture resource so UMG can display runtime texture
     FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);

@@ -87,11 +87,11 @@ private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
     void ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams);
 
-    void CreateRHITexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    FTexture2DRHIRef CreateRHITexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    FTexture2DRHIRef CreateRHITexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    FTexture2DRHIRef CreateRHITexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    void FinalizeRHITexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D);
+    void CreateRHITexture2D(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateRHITexture2D_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateRHITexture2D_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateRHITexture2D_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    void FinalizeRHITexture2D(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;
