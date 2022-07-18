@@ -351,7 +351,7 @@ FTexture2DRHIRef URuntimeImageReader::CreateRHITexture2D_Other(UTexture2D* NewTe
 
 void URuntimeImageReader::FinalizeRHITexture2D(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D)
 {
-    // Create proper texture resource so UMG can display runtime texture
+    // Create texture resource that returns actual texture size so that UMG can display the texture
     FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);
     NewTexture->SetResource(NewTextureResource);
 
