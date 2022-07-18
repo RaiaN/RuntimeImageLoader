@@ -5,25 +5,20 @@
 #include "GenericPlatform/GenericPlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "HAL/Event.h"
-#include "RHI.h"
-#include "RHIResources.h"
-#include "RHICommandList.h"
-#include "RHIDefinitions.h"
 #include "RenderUtils.h"
 #include "Engine/Texture.h"
 #include "Engine/Texture2D.h"
 #include "PixelFormat.h"
-#include "TextureResource.h"
 #include "Launch/Resources/Version.h"
 #include "Async/Async.h"
-#include "Containers/ResourceArray.h"
+
 
 #include "ImageReaders/ImageReaderFactory.h"
 #include "ImageReaders/IImageReader.h"
+#include "TextureFactory/RuntimeTextureResource.h"
+#include "TextureFactory/RuntimeRHITexture2DFactory.h"
+#include "TextureFactory/RuntimeTextureFactory.h"
 #include "RuntimeImageUtils.h"
-#include "RuntimeTextureResource.h"
-#include "RuntimeTextureFactory.h"
-
 
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
@@ -170,15 +165,18 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             if (ImageData.TextureSourceFormat == TSF_BGRE8)
             {
-                // TODO:
                 TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
+
+                // TODO: Create RHI texture cube
             }
             else
             {
                 ReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
-            }
 
-            CreateRHITexture2D(ReadResult.OutTexture, ImageData);
+                // TODO: Add cancel()?
+                FRuntimeRHITexture2DFactory RHITexture2DFactory(ReadResult.OutTexture, ImageData);
+                RHITexture2DFactory.Create();
+            }
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -202,169 +200,6 @@ EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type Ima
     }
 
     return PixelFormat;
-}
-
-struct FTextureDataResource : public FResourceBulkDataInterface
-{
-public:
-    FTextureDataResource(void* InMipData, int32 InDataSize)
-        : MipData(InMipData), DataSize(InDataSize)
-    {}
-
-    const void* GetResourceBulkData() const override { return MipData; }
-    uint32 GetResourceBulkDataSize() const override { return DataSize; }
-    void Discard() override {}
-
-private:
-    void* MipData;
-    int32 DataSize;
-};
-
-
-void URuntimeImageReader::CreateRHITexture2D(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
-{
-    FTexture2DRHIRef RHITexture2D = nullptr;
-
-#if PLATFORM_WINDOWS
-    RHITexture2D = CreateRHITexture2D_Windows(NewTexture, ImageData);
-#elif (PLATFORM_ANDROID || PLATFORM_ANDROID_VULKAN)
-    RHITexture2D = CreateRHITexture2D_Mobile(NewTexture, ImageData);
-#else
-    RHITexture2D = CreateRHITexture2D_Other(NewTexture, ImageData);
-#endif
-
-    FinalizeRHITexture2D(NewTexture, RHITexture2D);
-}
-
-FTexture2DRHIRef URuntimeImageReader::CreateRHITexture2D_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
-{
-    uint32 NumMips = 1;
-    uint32 NumSamples = 1;
-    void* Mip0Data = (void*)ImageData.RawData.GetData();
-
-    ETextureCreateFlags TextureFlags = TexCreate_ShaderResource;
-    if (ImageData.SRGB)
-    {
-        TextureFlags |= TexCreate_SRGB;
-    }
-
-    FTexture2DRHIRef RHITexture2D = nullptr;
-
-    ensureMsgf(ImageData.SizeX > 0, TEXT("ImageData.SizeX must be > 0"));
-    ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
-
-    if (GRHISupportsAsyncTextureCreation)
-    {
-        RHITexture2D = RHIAsyncCreateTexture2D(
-            ImageData.SizeX, ImageData.SizeY,
-            ImageData.PixelFormat,
-            ImageData.NumMips,
-            TextureFlags,
-            &Mip0Data,
-            1
-        );
-    }
-    else
-    {
-        FTextureDataResource TextureData(Mip0Data, ImageData.RawData.Num());
-
-        FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReaderTextureData"));
-        CreateInfo.BulkData = &TextureData;
-
-        FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-            [&RHITexture2D, &CreateInfo, &ImageData, &TextureFlags]()
-            {
-                RHITexture2D = RHICreateTexture2D(
-                    ImageData.SizeX, ImageData.SizeY,
-                    ImageData.PixelFormat,
-                    ImageData.NumMips,
-                    1,
-                    TextureFlags,
-                    CreateInfo
-                );
-            }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
-        );
-        CreateTextureTask->Wait();
-    }
-
-    return RHITexture2D;
-}
-
-
-FTexture2DRHIRef URuntimeImageReader::CreateRHITexture2D_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
-{
-    uint32 NumMips = 1;
-    uint32 NumSamples = 1;
-    void* Mip0Data = (void*)ImageData.RawData.GetData();
-
-    ETextureCreateFlags TextureFlags = TexCreate_ShaderResource;
-    if (ImageData.SRGB)
-    {
-        TextureFlags |= TexCreate_SRGB;
-    }
-
-    FTexture2DRHIRef RHITexture2D = nullptr;
-
-    ensureMsgf(ImageData.SizeX > 0, TEXT("ImageData.SizeX must be > 0"));
-    ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
-
-    FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-        [&RHITexture2D, &ImageData, &TextureFlags]()
-        {
-            FRHIResourceCreateInfo DummyCreateInfo(TEXT("DummyCreateInfo"));
-            RHITexture2D = RHICreateTexture2D(
-                ImageData.SizeX, ImageData.SizeY,
-                ImageData.PixelFormat,
-                ImageData.NumMips,
-                1,
-                TextureFlags,
-                DummyCreateInfo
-            );
-
-            FUpdateTextureRegion2D TextureRegion2D;
-            {
-                TextureRegion2D.DestX = 0;
-                TextureRegion2D.DestY = 0;
-                TextureRegion2D.SrcX = 0;
-                TextureRegion2D.SrcY = 0;
-                TextureRegion2D.Width = ImageData.SizeX;
-                TextureRegion2D.Height = ImageData.SizeY;
-            }
-
-            RHIUpdateTexture2D(
-                RHITexture2D, 0, TextureRegion2D,
-                TextureRegion2D.Width * GPixelFormats[ImageData.PixelFormat].BlockBytes,
-                ImageData.RawData.GetData()
-            );
-        }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
-    );
-    CreateTextureTask->Wait();
-
-    return RHITexture2D;
-}
-
-FTexture2DRHIRef URuntimeImageReader::CreateRHITexture2D_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
-{
-    // TODO: Figure out the best way to support other graphics APIs and platfornms
-    return CreateRHITexture2D_Windows(NewTexture, ImageData);
-}
-
-void URuntimeImageReader::FinalizeRHITexture2D(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D)
-{
-    // Create texture resource that returns actual texture size so that UMG can display the texture
-    FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);
-    NewTexture->SetResource(NewTextureResource);
-
-    FGraphEventRef UpdateResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-        [&NewTextureResource, &NewTexture, &RHITexture2D]()
-        {
-            NewTextureResource->InitResource();
-            RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
-            NewTextureResource->SetTextureReference(NewTexture->TextureReference.TextureReferenceRHI);
-
-        }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
-    );
-    UpdateResourceTask->Wait();
 }
 
 void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams)

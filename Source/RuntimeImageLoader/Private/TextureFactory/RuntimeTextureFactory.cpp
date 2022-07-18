@@ -1,9 +1,10 @@
 // Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #include "RuntimeTextureFactory.h"
-#include "RuntimeImageUtils.h"
+#include "UObject/GCObjectScopeGuard.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureCube.h"
+#include "RuntimeImageUtils.h"
 
 void URuntimeTextureFactory::Flush()
 {
@@ -13,6 +14,7 @@ void URuntimeTextureFactory::Flush()
 UTexture2D* URuntimeTextureFactory::CreateTexture2D(const FConstructTextureTask& Task)
 {
     UTexture2D* OutResult = nullptr;
+    FGCObjectScopeGuard ResultGuard(OutResult);
     
     CurrentTask = Async(
         EAsyncExecution::TaskGraphMainThread,
@@ -32,6 +34,7 @@ UTexture2D* URuntimeTextureFactory::CreateTexture2D(const FConstructTextureTask&
 UTextureCube* URuntimeTextureFactory::CreateTextureCube(const FConstructTextureTask& Task)
 {
     UTextureCube* OutResult = nullptr;
+    FGCObjectScopeGuard ResultGuard(OutResult);
 
     CurrentTask = Async(
         EAsyncExecution::TaskGraphMainThread,

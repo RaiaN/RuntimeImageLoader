@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Tickable.h"
 #include "Async/Future.h"
 #include "RuntimeTextureFactory.generated.h"
 
