@@ -22,6 +22,7 @@
 #include "ImageReaders/IImageReader.h"
 #include "RuntimeImageUtils.h"
 #include "RuntimeTextureResource.h"
+#include "RuntimeTextureFactory.h"
 
 
 
@@ -29,8 +30,9 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
 
 void URuntimeImageReader::Initialize()
 {
+    TextureFactory = NewObject<URuntimeTextureFactory>(GetTransientPackage());
+
     ThreadSemaphore = FPlatformProcess::GetSynchEventFromPool(false);
-    TextureConstructedSemaphore = FPlatformProcess::GetSynchEventFromPool(false);
     Thread = FRunnableThread::Create(this, TEXT("RuntimeImageReader"), 0, TPri_SlightlyBelowNormal);
 
     UE_LOG(LogRuntimeImageReader, Log, TEXT("Image reader thread started!"))
@@ -64,21 +66,6 @@ uint32 URuntimeImageReader::Run()
 void URuntimeImageReader::Exit()
 {
     // 
-}
-
-void URuntimeImageReader::Tick(float DeltaTime)
-{
-    FConstructTextureTask Task;
-    while (!bStopThread && ConstructTasks.Dequeue(Task))
-    {
-        ConstructedTextures.Add(FRuntimeImageUtils::CreateTexture(Task.ImageFilename, *Task.ImageData));
-        TextureConstructedSemaphore->Trigger();
-    }
-}
-
-TStatId URuntimeImageReader::GetStatId() const
-{
-    RETURN_QUICK_DECLARE_CYCLE_STAT(URuntimeImageReader, STATGROUP_Tickables);
 }
 
 void URuntimeImageReader::AddRequest(const FImageReadRequest& Request)
@@ -181,31 +168,17 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             ApplyTransformations(ImageData, Request.TransformParams);
 
-            if (IsInGameThread())
+            if (ImageData.TextureSourceFormat == TSF_BGRE8)
             {
-                ConstructedTextures.Add(FRuntimeImageUtils::CreateTexture(Request.ImageFilename, ImageData));
+                // TODO:
+                TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
             }
             else
             {
-                FConstructTextureTask Task;
-                {
-                    Task.ImageFilename = Request.ImageFilename;
-                    Task.ImageData = &ImageData;
-                }
-                ConstructTasks.Enqueue(Task);
-
-                while (!TextureConstructedSemaphore->Wait(100) && !bStopThread);
+                ReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
             }
 
-            if (ConstructedTextures.Num() == 0)
-            {
-                ReadResult.OutError = TEXT("Texture was not constructed. Please contact developer support: https://t.me/+RmbtPdzK2ntiYzQy");
-                return;
-            }
-
-            ReadResult.OutTexture = ConstructedTextures.Pop();
-
-            CreateTexture(ReadResult.OutTexture, ImageData);
+            CreateRHITexture(ReadResult.OutTexture, ImageData);
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
@@ -248,22 +221,22 @@ private:
 };
 
 
-void URuntimeImageReader::CreateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+void URuntimeImageReader::CreateRHITexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     FTexture2DRHIRef RHITexture2D = nullptr;
 
 #if PLATFORM_WINDOWS
-    RHITexture2D = CreateTexture_Windows(NewTexture, ImageData);
+    RHITexture2D = CreateRHITexture_Windows(NewTexture, ImageData);
 #elif (PLATFORM_ANDROID || PLATFORM_ANDROID_VULKAN)
-    RHITexture2D = CreateTexture_Mobile(NewTexture, ImageData);
+    RHITexture2D = CreateRHITexture_Mobile(NewTexture, ImageData);
 #else
-    RHITexture2D = CreateTexture_Other(NewTexture, ImageData);
+    RHITexture2D = CreateRHITexture_Other(NewTexture, ImageData);
 #endif
 
-    FinalizeTexture(NewTexture, RHITexture2D);
+    FinalizeRHITexture(NewTexture, RHITexture2D);
 }
 
-FTexture2DRHIRef URuntimeImageReader::CreateTexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     uint32 NumMips = 1;
     uint32 NumSamples = 1;
@@ -318,7 +291,7 @@ FTexture2DRHIRef URuntimeImageReader::CreateTexture_Windows(UTexture2D* NewTextu
 }
 
 
-FTexture2DRHIRef URuntimeImageReader::CreateTexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     uint32 NumMips = 1;
     uint32 NumSamples = 1;
@@ -370,13 +343,13 @@ FTexture2DRHIRef URuntimeImageReader::CreateTexture_Mobile(UTexture2D* NewTextur
     return RHITexture2D;
 }
 
-FTexture2DRHIRef URuntimeImageReader::CreateTexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
+FTexture2DRHIRef URuntimeImageReader::CreateRHITexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData)
 {
     // TODO: Figure out the best way to support other graphics APIs and platfornms
-    return CreateTexture_Windows(NewTexture, ImageData);
+    return CreateRHITexture_Windows(NewTexture, ImageData);
 }
 
-void URuntimeImageReader::FinalizeTexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D)
+void URuntimeImageReader::FinalizeRHITexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D)
 {
     // Create proper texture resource so UMG can display runtime texture
     FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);

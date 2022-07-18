@@ -12,8 +12,10 @@
 #include "RuntimeImageReader.generated.h"
 
 
+class URuntimeTextureFactory;
 class FRunnableThread;
 class FEvent;
+
 
 USTRUCT(BlueprintType)
 struct RUNTIMEIMAGELOADER_API FTransformImageParams
@@ -52,17 +54,11 @@ struct RUNTIMEIMAGELOADER_API FImageReadResult
     FString OutError = TEXT("");
 };
 
-struct RUNTIMEIMAGELOADER_API FConstructTextureTask
-{
-    FString ImageFilename;
-    FRuntimeImageData* ImageData;
-};
-
 class UTexture2D;
 class IImageReader;
 
 UCLASS()
-class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable, public FTickableGameObject
+class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable
 {
     GENERATED_BODY()
 
@@ -87,20 +83,15 @@ protected:
     void Exit() override;
     /* ~FRunnable interface */
 
-    // FTickableGameObject
-    void Tick(float DeltaTime) override;
-    TStatId GetStatId() const override;
-    // ~FTickableGameObject
-
 private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
     void ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams);
 
-    void CreateTexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    FTexture2DRHIRef CreateTexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    FTexture2DRHIRef CreateTexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    FTexture2DRHIRef CreateTexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
-    void FinalizeTexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D);
+    void CreateRHITexture(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateRHITexture_Windows(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateRHITexture_Mobile(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    FTexture2DRHIRef CreateRHITexture_Other(UTexture2D* NewTexture, const FRuntimeImageData& ImageData);
+    void FinalizeRHITexture(UTexture2D* NewTexture, FTexture2DRHIRef RHITexture2D);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;
@@ -109,12 +100,8 @@ private:
     TArray<FImageReadResult> Results;
 
 private:
-    TQueue<FConstructTextureTask, EQueueMode::Mpsc> ConstructTasks;
-
     UPROPERTY()
-    TArray<UTexture2D*> ConstructedTextures;
-
-    FEvent* TextureConstructedSemaphore = nullptr;
+    URuntimeTextureFactory* TextureFactory;
 
 private:
     FRunnableThread* Thread = nullptr;
