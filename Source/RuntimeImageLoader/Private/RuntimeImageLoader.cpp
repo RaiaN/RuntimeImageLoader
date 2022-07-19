@@ -97,6 +97,8 @@ void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, const FTra
 
 void URuntimeImageLoader::CancelAll()
 {
+    check (IsInGameThread());
+
     Requests.Empty();
     ActiveRequest.Invalidate();
 

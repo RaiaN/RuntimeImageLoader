@@ -105,12 +105,12 @@ void URuntimeImageReader::Clear()
     Requests.Empty();
     Results.Empty();
 
-    bCompletedWork = true;
-
     if (ImageReader.IsValid())
     {
         ImageReader->Cancel();
     }
+
+    bCompletedWork = true;
 }
 
 void URuntimeImageReader::Stop()

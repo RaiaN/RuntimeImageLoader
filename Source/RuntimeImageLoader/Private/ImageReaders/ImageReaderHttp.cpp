@@ -55,7 +55,7 @@ void FImageReaderHttp::Flush()
 
 void FImageReaderHttp::Cancel()
 {
-    if (CurrentHttpRequest.IsValid() && !DownloadFuture->IsComplete())
+    if (CurrentHttpRequest.IsValid() && DownloadFuture.IsValid() && !DownloadFuture->IsComplete())
     {
         CurrentHttpRequest->CancelRequest();
     }
@@ -73,4 +73,7 @@ void FImageReaderHttp::HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResp
         OutError = FString::Printf(TEXT("Error code: %d, Content: %d"), HttpResponse->GetResponseCode(), *HttpResponse->GetContentAsString());
         DownloadFuture->EmplaceResult(false);
     }
+
+    CurrentHttpRequest = nullptr;
+    DownloadFuture = nullptr;
 }
