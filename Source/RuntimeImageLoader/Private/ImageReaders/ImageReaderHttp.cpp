@@ -22,7 +22,10 @@ bool FImageReaderHttp::ReadImage(const FString& ImageURI, TArray<uint8>& OutImag
     // Create the Http request and add to pending request list
     CurrentHttpRequest = FHttpModule::Get().CreateRequest();
     {
-        CurrentHttpRequest->OnProcessRequestComplete().BindRaw(this, &FImageReaderHttp::HandleImageRequest);
+        HttpRequestHandler = CurrentHttpRequest->OnProcessRequestComplete().CreateRaw(this, &FImageReaderHttp::HandleImageRequest);
+
+        CurrentHttpRequest->OnProcessRequestComplete() = HttpRequestHandler;
+
         CurrentHttpRequest->SetURL(ImageURI);
         CurrentHttpRequest->SetVerb(TEXT("GET"));
         CurrentHttpRequest->SetTimeout(60.0f);
@@ -58,22 +61,31 @@ void FImageReaderHttp::Cancel()
     if (CurrentHttpRequest.IsValid() && DownloadFuture.IsValid() && !DownloadFuture->IsComplete())
     {
         CurrentHttpRequest->CancelRequest();
+        DownloadFuture->EmplaceResult(false);
+        HttpRequestHandler.Unbind();
+        HttpRequestHandler = nullptr;
     }
 }
 
 void FImageReaderHttp::HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded)
 {
-    if (HttpResponse->GetResponseCode() == 200)
+    bool bSuccess = HttpResponse->GetResponseCode() == 200;
+    
+    if (bSuccess)
     {
         ImageData->Append(HttpResponse->GetContent().GetData(), HttpResponse->GetContentLength());
-        DownloadFuture->EmplaceResult(true);
     }
     else
     {
         OutError = FString::Printf(TEXT("Error code: %d, Content: %d"), HttpResponse->GetResponseCode(), *HttpResponse->GetContentAsString());
-        DownloadFuture->EmplaceResult(false);
+    }
+
+    if (!DownloadFuture->IsComplete())
+    {
+        DownloadFuture->EmplaceResult(bSuccess);
     }
 
     CurrentHttpRequest = nullptr;
     DownloadFuture = nullptr;
+    HttpRequestHandler.Unbind();
 }

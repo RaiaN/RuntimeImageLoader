@@ -109,6 +109,11 @@ void URuntimeImageReader::Stop()
 
     Thread->WaitForCompletion();
 
+    if (ImageReader.IsValid())
+    {
+        ImageReader->Flush();
+    }
+
     FPlatformProcess::ReturnSynchEventToPool(ThreadSemaphore);
 }
 

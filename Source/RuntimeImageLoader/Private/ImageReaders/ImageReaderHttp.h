@@ -26,6 +26,7 @@ private:
     TSharedPtr<TFutureState<bool>, ESPMode::ThreadSafe> DownloadFuture;
 
     TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> CurrentHttpRequest;
+    TDelegate<void(FHttpRequestPtr, FHttpResponsePtr, bool)> HttpRequestHandler;
 
     FString OutError;
 };
