@@ -12,11 +12,11 @@
 #include "Launch/Resources/Version.h"
 #include "Async/Async.h"
 
-
 #include "ImageReaders/ImageReaderFactory.h"
 #include "ImageReaders/IImageReader.h"
 #include "TextureFactory/RuntimeTextureResource.h"
 #include "TextureFactory/RuntimeRHITexture2DFactory.h"
+#include "TextureFactory/RuntimeRHITextureCubeFactory.h"
 #include "TextureFactory/RuntimeTextureFactory.h"
 #include "RuntimeImageUtils.h"
 
@@ -167,9 +167,11 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
             if (ImageData.TextureSourceFormat == TSF_BGRE8)
             {
-                TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
+                ReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
 
-                // TODO: Create RHI texture cube
+                // TODO: Add cancel()?
+                FRuntimeRHITextureCubeFactory RHITextureCubeFactory(ReadResult.OutTextureCube, ImageData);
+                RHITextureCubeFactory.Create();
             }
             else
             {

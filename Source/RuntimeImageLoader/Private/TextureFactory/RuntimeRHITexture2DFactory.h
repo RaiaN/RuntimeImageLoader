@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Async/Future.h"
 #include "RHIResources.h"
+#include "RuntimeImageData.h"
 
 
 class UTexture2D;

@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Engine/Texture.h"
-#include "Tickable.h"
 #include "Misc/ScopedEvent.h"
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
+#include "ImageCore.h"
 #include "RuntimeImageData.h"
 #include "RuntimeImageReader.generated.h"
 
@@ -15,6 +15,9 @@
 class URuntimeTextureFactory;
 class FRunnableThread;
 class FEvent;
+class UTexture2D;
+class UTextureCube;
+class IImageReader;
 
 
 USTRUCT(BlueprintType)
@@ -49,13 +52,16 @@ struct RUNTIMEIMAGELOADER_API FImageReadResult
     GENERATED_BODY()
 
     FString ImageFilename = TEXT("");
+    
     UPROPERTY()
     UTexture2D* OutTexture = nullptr;
+
+    UPROPERTY()
+    UTextureCube* OutTextureCube = nullptr;
+
     FString OutError = TEXT("");
 };
 
-class UTexture2D;
-class IImageReader;
 
 UCLASS()
 class RUNTIMEIMAGELOADER_API URuntimeImageReader : public UObject, public FRunnable
