@@ -89,8 +89,6 @@ void URuntimeImageReader::Clear()
     Requests.Empty();
     Results.Empty();
 
-    bCompletedWork = true;
-
     if (ImageReader.IsValid())
     {
         ImageReader->Cancel();
@@ -100,6 +98,8 @@ void URuntimeImageReader::Clear()
     {
         TextureFactory->Cancel();
     }
+
+    bCompletedWork = true;
 }
 
 void URuntimeImageReader::Stop()
