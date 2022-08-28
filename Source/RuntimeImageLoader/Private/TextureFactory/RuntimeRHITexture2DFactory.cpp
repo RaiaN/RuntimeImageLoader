@@ -1,6 +1,7 @@
 // Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #include "RuntimeRHITexture2DFactory.h"
+#include "Engine/Texture2D.h"
 #include "RHI.h"
 #include "RHIDefinitions.h"
 #include "RHIResources.h"
@@ -8,9 +9,9 @@
 #include "Containers/ResourceArray.h"
 #include "HAL/Platform.h"
 #include "TextureResource.h"
-
 #include "Async/TaskGraphInterfaces.h"
-#include "RuntimeTextureResource.h"
+
+#include "RuntimeTexture2DResource.h"
 #include "RuntimeImageData.h"
 
 
@@ -162,7 +163,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Other()
 void FRuntimeRHITexture2DFactory::FinalizeRHITexture2D()
 {
     // Create texture resource that returns actual texture size so that UMG can display the texture
-    FRuntimeTextureResource* NewTextureResource = new FRuntimeTextureResource(NewTexture, RHITexture2D);
+    FRuntimeTextureResource* NewTextureResource = new FRuntimeTexture2DResource(NewTexture, RHITexture2D);
     NewTexture->SetResource(NewTextureResource);
 
     FGraphEventRef UpdateResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(

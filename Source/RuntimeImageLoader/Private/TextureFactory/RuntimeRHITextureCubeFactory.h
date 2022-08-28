@@ -19,6 +19,12 @@ public:
     FTextureCubeRHIRef Create();
 
 private:
+    FTextureCubeRHIRef CreateTextureCubeRHI_Windows();
+    void FinalizeRHITexture2D();
+
+    void CopySrcDataToLockedDestData(uint8* Src, uint8* Dest, uint32 DestPitch, uint32 MipSize);
+
+private:
     UTextureCube* NewTextureCube;
     const FRuntimeImageData& ImageData;
 

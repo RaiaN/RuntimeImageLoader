@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/Texture.h"
 #include "PixelFormat.h"
 #include "ImageCore.h"
 

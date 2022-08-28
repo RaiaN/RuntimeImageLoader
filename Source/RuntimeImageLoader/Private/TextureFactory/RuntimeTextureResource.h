@@ -6,7 +6,7 @@
 #include "RHIResources.h"
 #include "RHIDefinitions.h"
 
-class UTexture2D;
+class UTexture;
 
 /**
  * The rendering resource which represents a runtime texture.
@@ -15,17 +15,17 @@ class UTexture2D;
 class FRuntimeTextureResource : public FTextureResource
 {
 public:
-    FRuntimeTextureResource(UTexture2D* InTexture, FTexture2DRHIRef RHITexture2D);
+    FRuntimeTextureResource(UTexture* InTexture, FTextureRHIRef InRHITexture);
     virtual ~FRuntimeTextureResource();
 
     uint32 GetSizeX() const override { return SizeX; }
     uint32 GetSizeY() const override { return SizeY; }
 
-    void InitRHI() override;
-    void ReleaseRHI() override;
+    virtual void InitRHI() override;
+    virtual void ReleaseRHI() override;
 
-private:
-    UTexture2D* Owner;
+protected:
+    UTexture* Owner;
     uint32 SizeX;
     uint32 SizeY;
 };

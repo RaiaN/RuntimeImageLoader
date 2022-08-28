@@ -75,6 +75,59 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, const FTr
     Requests.Enqueue(Request);
 }
 
+void URuntimeImageLoader::LoadHDRIAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTextureCube*& OutTextureCube, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
+{
+    if (!IsValid(WorldContextObject))
+    {
+        return;
+    }
+
+    FLoadImageRequest Request;
+    {
+        Request.Params.ImageFilename = ImageFilename;
+        Request.Params.TransformParams = TransformParams;
+
+        Request.OnRequestCompleted.BindLambda(
+            [this, &OutTextureCube, &bSuccess, &OutError, LatentInfo](const FImageReadResult& ReadResult)
+            {
+                FWeakObjectPtr CallbackTargetPtr = LatentInfo.CallbackTarget;
+                if (UObject* CallbackTarget = CallbackTargetPtr.Get())
+                {
+                    UFunction* ExecutionFunction = CallbackTarget->FindFunction(LatentInfo.ExecutionFunction);
+                    if (IsValid(ExecutionFunction))
+                    {
+                        int32 Linkage = LatentInfo.Linkage;
+
+#if (UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT)
+                        // Make sure the texture was not destroyed by GC 
+                        if (ReadResult.OutError.IsEmpty())
+                        {
+                            ensure(IsValid(ReadResult.OutTextureCube));
+                        }
+#endif
+
+                        if (!ReadResult.OutError.IsEmpty())
+                        {
+                            UE_LOG(LogRuntimeImageLoader, Error, TEXT("Failed to load image. Error: %s"), *ReadResult.OutError);
+                        }
+
+                        bSuccess = ReadResult.OutError.IsEmpty();
+                        OutTextureCube = ReadResult.OutTextureCube;
+                        OutError = ReadResult.OutError;
+
+                        if (Linkage != -1)
+                        {
+                            CallbackTarget->ProcessEvent(ExecutionFunction, &Linkage);
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    Requests.Enqueue(Request);
+}
+
 void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
 {
     FImageReadRequest ReadRequest;

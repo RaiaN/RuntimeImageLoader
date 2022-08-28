@@ -174,17 +174,23 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             {
                 ReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
 
-                // TODO: Add cancel()?
                 FRuntimeRHITextureCubeFactory RHITextureCubeFactory(ReadResult.OutTextureCube, ImageData);
-                RHITextureCubeFactory.Create();
+                if (!RHITextureCubeFactory.Create())
+                {
+                    ReadResult.OutError = FString::Printf(TEXT("Failed to create rhi texture cube, pixel format: %d"), (int32)ImageData.PixelFormat);
+                    continue;
+                }
             }
             else
             {
                 ReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
 
-                // TODO: Add cancel()?
                 FRuntimeRHITexture2DFactory RHITexture2DFactory(ReadResult.OutTexture, ImageData);
-                RHITexture2DFactory.Create();
+                if (RHITexture2DFactory.Create())
+                {
+                    ReadResult.OutError = FString::Printf(TEXT("Failed to create rhi texture 2D, pixel format: %d"), (int32)ImageData.PixelFormat);
+                    continue;
+                }
             }
         }
 
@@ -235,8 +241,8 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
 
     if (TransformParams.bForUI)
     {
-        // no need to convert float RGBA
-        if (ImageData.TextureSourceFormat != TSF_RGBA16F)
+        // no need to convert float RGBA and HDR
+        if (ImageData.TextureSourceFormat != TSF_RGBA16F && ImageData.TextureSourceFormat != TSF_BGRE8)
         {
             FImage BGRAImage;
             BGRAImage.Init(ImageData.SizeX, ImageData.SizeY, ERawImageFormat::BGRA8);

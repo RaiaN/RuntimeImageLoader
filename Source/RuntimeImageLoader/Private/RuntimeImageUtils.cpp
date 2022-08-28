@@ -392,37 +392,36 @@ namespace FRuntimeImageUtils
             return false;
         }
 
+
+
         //
-        // HDR File
-        //
-        FHDRLoadHelper HDRLoadHelper(Buffer, Length);
-        if (HDRLoadHelper.IsValid())
-        {
-            TArray<uint8> DDSFile;
-            HDRLoadHelper.ExtractDDSInRGBE(DDSFile);
-            FDDSLoadHelper HDRDDSLoadHelper(DDSFile.GetData(), DDSFile.Num());
+	    // HDR File
+	    //
+	    FHDRLoadHelper HDRLoadHelper(Buffer, Length);
+	    if(HDRLoadHelper.IsValid())
+	    {
+		    TArray<uint8> DDSFile;
+		    HDRLoadHelper.ExtractDDSInRGBE(DDSFile);
+		    FDDSLoadHelper HDRDDSLoadHelper(DDSFile.GetData(), DDSFile.Num());
 
-            if (HDRDDSLoadHelper.IsValidCubemapTexture())
-            {
-                OutImage.Init2D(
-                    HDRDDSLoadHelper.DDSHeader->dwWidth,
-                    HDRDDSLoadHelper.DDSHeader->dwHeight,
-                    TSF_BGRE8,
-                    HDRDDSLoadHelper.GetDDSDataPointer()
-                );
+            OutImage.Init2D(
+                HDRDDSLoadHelper.DDSHeader->dwWidth,
+                HDRDDSLoadHelper.DDSHeader->dwHeight,
+                TSF_BGRE8,
+                HDRDDSLoadHelper.GetDDSDataPointer()
+            );
 
-                OutImage.SRGB = false;
-                OutImage.GammaSpace = EGammaSpace::Linear;
-                OutImage.CompressionSettings = TC_HDR;
+            OutImage.SRGB = false;
+            OutImage.GammaSpace = EGammaSpace::Linear;
+            OutImage.CompressionSettings = TC_HDR;
 
-                return true;
-            }
-            else
-            {
-                OutError = TEXT("Failed to load .HDR image. Input image is not valid cubemap texture!");
-                return false;
-            }
-        }
+            return true;
+	    }
+
+        /*
+        OutError = TEXT("Failed to load .HDR image. Input image is not valid cubemap texture!");
+        return false;
+        */
 
         OutError = FString::Printf(TEXT("Failed to decode image. The format is not supported!"));
         return false;
