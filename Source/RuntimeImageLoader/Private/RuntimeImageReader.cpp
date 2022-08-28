@@ -111,7 +111,7 @@ void URuntimeImageReader::Stop()
 
     if (ImageReader.IsValid())
     {
-        ImageReader->Flush();
+        ImageReader->Cancel();
     }
 
     FPlatformProcess::ReturnSynchEventToPool(ThreadSemaphore);
