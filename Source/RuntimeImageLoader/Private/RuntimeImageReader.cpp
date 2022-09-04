@@ -181,7 +181,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 ImageData.RawData = MoveTemp(CubemapMip.RawData);
                 ImageData.SizeX = CubemapMip.SizeX;
                 ImageData.SizeY = CubemapMip.SizeY;
-                ImageData.Format = CubemapMip.Format;
+                ImageData.PixelFormat = DeterminePixelFormat(CubemapMip.Format, Request.TransformParams);
                 ImageData.GammaSpace = CubemapMip.GammaSpace;
 
                 FRuntimeRHITextureCubeFactory RHITextureCubeFactory(ReadResult.OutTextureCube, ImageData);
@@ -221,6 +221,7 @@ EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type Ima
         case ERawImageFormat::BGRE8:         PixelFormat = PF_B8G8R8A8; break;
         case ERawImageFormat::RGBA16:        PixelFormat = (Params.bForUI) ? PF_B8G8R8A8 : PF_R16G16B16A16_SINT; break;
         case ERawImageFormat::RGBA16F:       PixelFormat = PF_FloatRGBA; break;
+        case ERawImageFormat::RGBA32F:       PixelFormat = PF_A32B32G32R32F; break;
         default:                             PixelFormat = PF_Unknown; break;
     }
 
