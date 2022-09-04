@@ -3,8 +3,7 @@
 #include "CubemapUtils.h"
 #include "ImageCore.h"
 
-namespace RuntimeCubemapUtils
-{
+PRAGMA_DISABLE_OPTIMIZATION
 
 // transform world space vector to a space relative to the face
 static FVector TransformSideToWorldSpace(uint32 CubemapFace, FVector InDirection)
@@ -189,7 +188,7 @@ struct FImageViewLongLat
     }
 };
 
-static void GenerateBaseCubeMipFromLongitudeLatitude2D(FImage* OutMip, const FImage& SrcImage, const uint32 MaxCubemapTextureResolution, uint8 SourceEncodingOverride)
+void GenerateBaseCubeMipFromLongitudeLatitude2D(FImage* OutMip, const FImage& SrcImage, const uint32 MaxCubemapTextureResolution, uint8 SourceEncodingOverride)
 {
     // TRACE_CPUPROFILER_EVENT_SCOPE(GenerateBaseCubeMipFromLongitudeLatitude2D);
 
@@ -218,4 +217,5 @@ static void GenerateBaseCubeMipFromLongitudeLatitude2D(FImage* OutMip, const FIm
         }
     }
 }
-}
+
+PRAGMA_ENABLE_OPTIMIZATION

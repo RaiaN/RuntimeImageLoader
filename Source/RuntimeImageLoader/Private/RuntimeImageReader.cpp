@@ -19,6 +19,7 @@
 #include "TextureFactory/RuntimeRHITextureCubeFactory.h"
 #include "TextureFactory/RuntimeTextureFactory.h"
 #include "RuntimeImageUtils.h"
+#include "Helpers/CubemapUtils.h"
 
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
@@ -173,6 +174,15 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             if (ImageData.TextureSourceFormat == TSF_BGRE8)
             {
                 ReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
+
+                // FIXME:
+                FImage CubemapMip;
+                GenerateBaseCubeMipFromLongitudeLatitude2D(&CubemapMip, ImageData, 8192, 0);
+                ImageData.RawData = MoveTemp(CubemapMip.RawData);
+                ImageData.SizeX = CubemapMip.SizeX;
+                ImageData.SizeY = CubemapMip.SizeY;
+                ImageData.Format = CubemapMip.Format;
+                ImageData.GammaSpace = CubemapMip.GammaSpace;
 
                 FRuntimeRHITextureCubeFactory RHITextureCubeFactory(ReadResult.OutTextureCube, ImageData);
                 if (!RHITextureCubeFactory.Create())
