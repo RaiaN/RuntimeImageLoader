@@ -284,6 +284,8 @@ namespace FRuntimeImageUtils
                 OutError = TEXT("Failed to decompress TGA. Please contact devs");
                 return false;
             }
+
+            return true;
         }
 
 
