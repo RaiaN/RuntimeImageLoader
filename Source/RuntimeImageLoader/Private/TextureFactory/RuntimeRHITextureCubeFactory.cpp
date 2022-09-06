@@ -76,12 +76,7 @@ FTextureCubeRHIRef FRuntimeRHITextureCubeFactory::CreateTextureCubeRHI_Windows()
 
     FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReader_TextureCubeData"));
 
-    // TODO: for create info bulk data to work raw data size should be equal to SizeX (2048) * RowPitch (8192 bytes) * 6 (number of faces). Why?
-    // Below code does not crash when calling RHICreateTextureCube
-    TArray<uint8> RawData(ImageData.RawData);
-    RawData.SetNum(100663296);
-
-    FTextureCubeDataResource TextureCubeData((void*)RawData.GetData(), RawData.Num());
+    FTextureCubeDataResource TextureCubeData((void*)ImageData.RawData.GetData(), ImageData.RawData.Num());
     CreateInfo.BulkData = &TextureCubeData;
 
     FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
@@ -90,20 +85,6 @@ FTextureCubeRHIRef FRuntimeRHITextureCubeFactory::CreateTextureCubeRHI_Windows()
             TextureCubeRHI = RHICreateTextureCube(
                 ImageData.SizeX, ImageData.PixelFormat, 1, TextureFlags, CreateInfo
             );
-
-            /*const uint32 MipSize = ImageData.RawData.Num() / 6;
-
-            for (int32 FaceIndex = 0; FaceIndex < 6; ++FaceIndex)
-            {
-                uint8* SrcData = (uint8*)ImageData.RawData.GetData() + MipSize * FaceIndex;
-
-                uint32 DestStride;
-                void* TheMipData = RHILockTextureCubeFace(TextureCubeRHI, FaceIndex, 0, 0, RLM_WriteOnly, DestStride, false);
-
-                CopySrcDataToLockedDestData(SrcData, (uint8*)TheMipData, DestStride, MipSize);
-
-                RHIUnlockTextureCubeFace(TextureCubeRHI, FaceIndex, 0, 0, false);
-            }*/
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
     );
     CreateTextureTask->Wait();

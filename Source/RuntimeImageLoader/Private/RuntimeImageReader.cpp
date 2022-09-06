@@ -175,7 +175,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
             {
                 ReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
 
-                // FIXME:
+                // TODO: Make a new processing layer? When to define pixel format?
                 FImage CubemapMip;
                 GenerateBaseCubeMipFromLongitudeLatitude2D(&CubemapMip, ImageData, 8192, 0);
                 ImageData.RawData = MoveTemp(CubemapMip.RawData);
