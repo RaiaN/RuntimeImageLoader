@@ -196,7 +196,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 ReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
 
                 FRuntimeRHITexture2DFactory RHITexture2DFactory(ReadResult.OutTexture, ImageData);
-                if (RHITexture2DFactory.Create())
+                if (!RHITexture2DFactory.Create())
                 {
                     ReadResult.OutError = FString::Printf(TEXT("Failed to create rhi texture 2D, pixel format: %d"), (int32)ImageData.PixelFormat);
                     continue;
