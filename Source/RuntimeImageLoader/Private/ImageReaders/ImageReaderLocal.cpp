@@ -5,7 +5,7 @@
 #include "Misc/FileHelper.h"
 #include "Stats/Stats.h"
 
-bool FImageReaderLocal::ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData)
+TArray<uint8> FImageReaderLocal::ReadImage(const FString& ImageURI)
 {
     QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageUtils_ImportFileAsTexture);
 
@@ -16,7 +16,7 @@ bool FImageReaderLocal::ReadImage(const FString& ImageURI, TArray<uint8>& OutIma
     if (!FileManager.FileExists(*ImageURI))
     {
         OutError = FString::Printf(TEXT("Image does not exist: %s"), *ImageURI);
-        return false;
+        return TArray<uint8>();
     }
 
     const int64 ImageFileSizeBytes = FileManager.FileSize(*ImageURI);
@@ -26,18 +26,18 @@ bool FImageReaderLocal::ReadImage(const FString& ImageURI, TArray<uint8>& OutIma
     if (ImageFileSizeBytes > MAX_FILESIZE_BYTES)
     {
         OutError = FString::Printf(TEXT("Image filesize > %d MBs): %s"), MAX_FILESIZE_BYTES, *ImageURI);
-        return false;
+        return TArray<uint8>();
     }
 
     QUICK_SCOPE_CYCLE_COUNTER(STAT_FImageReaderLocal_LoadFileToArray);
     if (!FFileHelper::LoadFileToArray(OutImageData, *ImageURI))
     {
         OutError = FString::Printf(TEXT("Image loading I/O error: %s"), *ImageURI);
-        return false;
+        return TArray<uint8>();
     }
     OutImageData.Add(0);
 
-    return true;
+    return OutImageData;
 }
 
 FString FImageReaderLocal::GetLastError() const
@@ -47,8 +47,7 @@ FString FImageReaderLocal::GetLastError() const
 
 void FImageReaderLocal::Flush()
 {
-    // do nothing as we image reader local is synchronous and does not depend on game thread
-    // TODO: Implement file reading in async way?
+    // TODO: need to implement async file reading first
 }
 
 void FImageReaderLocal::Cancel()

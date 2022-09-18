@@ -10,9 +10,9 @@
 class FImageReaderHttp : public IImageReader
 {
 public:
-    virtual ~FImageReaderHttp() {}
+    virtual ~FImageReaderHttp();
 
-    virtual bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
+    virtual TArray<uint8> ReadImage(const FString& ImageURI) override;
     virtual FString GetLastError() const override;
     virtual void Flush() override;
     virtual void Cancel() override;
@@ -22,11 +22,10 @@ private:
     void HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded);
 
 private:
-    TArray<uint8>* ImageData;
     TSharedPtr<TFutureState<bool>, ESPMode::ThreadSafe> DownloadFuture;
 
     TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> CurrentHttpRequest;
-    TDelegate<void(FHttpRequestPtr, FHttpResponsePtr, bool)> HttpRequestHandler;
 
+    TArray<uint8> OutImageData;
     FString OutError;
 };
