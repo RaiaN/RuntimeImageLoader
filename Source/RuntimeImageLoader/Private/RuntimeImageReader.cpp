@@ -11,6 +11,7 @@
 #include "PixelFormat.h"
 #include "Launch/Resources/Version.h"
 #include "Async/Async.h"
+#include "Misc/ScopeLock.h"
 
 #include "ImageReaders/ImageReaderFactory.h"
 #include "ImageReaders/IImageReader.h"
@@ -23,6 +24,7 @@
 
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
+
 
 void URuntimeImageReader::Initialize()
 {
@@ -75,6 +77,8 @@ void URuntimeImageReader::AddRequest(const FImageReadRequest& Request)
 
 bool URuntimeImageReader::GetResult(FImageReadResult& OutResult)
 {
+    FScopeLock ResultsLock(&ResultsMutex);
+
     if (Results.Num() > 0)
     {
         OutResult = Results.Pop();
@@ -88,7 +92,11 @@ bool URuntimeImageReader::GetResult(FImageReadResult& OutResult)
 void URuntimeImageReader::Clear()
 {
     Requests.Empty();
-    Results.Empty();
+
+    {
+        FScopeLock ResultsLock(&ResultsMutex);
+        Results.Empty();
+    }
 
     if (ImageReader.IsValid())
     {
@@ -106,8 +114,8 @@ void URuntimeImageReader::Clear()
 void URuntimeImageReader::Stop()
 {
     bStopThread = true;
-    Trigger();
 
+    Trigger();
     Thread->WaitForCompletion();
 
     if (ImageReader.IsValid())
@@ -135,69 +143,96 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
         FImageReadRequest Request;
         while (Requests.Dequeue(Request) && !bStopThread)
         {
-            FImageReadResult& ReadResult = Results.Emplace_GetRef();
-            ReadResult.ImageFilename = Request.ImageFilename;
+            PendingReadResult.ImageFilename = Request.ImageFilename;
 
-            ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
+            UE_LOG(LogRuntimeImageReader, Log, TEXT("Reading image %s"), *PendingReadResult.ImageFilename);
 
-            TArray<uint8> ImageBuffer;
-            if (!ImageReader->ReadImage(Request.ImageFilename, ImageBuffer))
+            if (!ProcessRequest(Request))
             {
-                ReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.ImageFilename, *ImageReader->GetLastError());
-                continue;
+                UE_LOG(LogRuntimeImageReader, Warning, TEXT("Failed to process image %s"), *PendingReadResult.ImageFilename);
             }
 
-            FRuntimeImageData ImageData;
-            if (!FRuntimeImageUtils::ImportBufferAsImage(ImageBuffer.GetData(), ImageBuffer.Num(), ImageData, ReadResult.OutError))
-            {
-                continue;
-            }
+            FScopeLock ResultsLock(&ResultsMutex);
+            Results.Add(PendingReadResult);
 
-            if (ReadResult.OutError.Len() > 0)
-            {
-                continue;
-            }
-
-            // sanity checks
-            check(ImageData.RawData.Num() > 0);
-            check(ImageData.TextureSourceFormat != TSF_Invalid);
-
-            ImageData.PixelFormat = DeterminePixelFormat(ImageData.Format, Request.TransformParams);
-            if (ImageData.PixelFormat == PF_Unknown)
-            {
-                ReadResult.OutError = FString::Printf(TEXT("Pixel format is not supported: %d"), (int32)ImageData.PixelFormat);
-                continue;
-            }
-
-            // TODO: Split into multiple transformation layers, which can be stacked?
-            ApplySizeFormatTransformations(ImageData, Request.TransformParams);
-
-            if (ImageData.TextureSourceFormat == TSF_BGRE8)
-            {
-                ReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
-
-                FRuntimeRHITextureCubeFactory RHITextureCubeFactory(ReadResult.OutTextureCube, ImageData);
-                if (!RHITextureCubeFactory.Create())
-                {
-                    ReadResult.OutError = FString::Printf(TEXT("Failed to create RHI texture cube, pixel format: %d"), (int32)ImageData.PixelFormat);
-                    continue;
-                }
-            }
-            else
-            {
-                ReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
-
-                FRuntimeRHITexture2DFactory RHITexture2DFactory(ReadResult.OutTexture, ImageData);
-                if (!RHITexture2DFactory.Create())
-                {
-                    ReadResult.OutError = FString::Printf(TEXT("Failed to create RHI texture 2D, pixel format: %d"), (int32)ImageData.PixelFormat);
-                    continue;
-                }
-            }
+            PendingReadResult = FImageReadResult();
         }
 
         bCompletedWork.AtomicSet(Requests.IsEmpty());
     }
+}
+
+bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
+{
+    const FString& InputImageFilename = Request.ImageFilename;
+    
+    // read image data from using URI
+    TArray<uint8> ImageBuffer;
+    ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
+    {
+        ImageBuffer = ImageReader->ReadImage(Request.ImageFilename);
+        if (ImageBuffer.Num() == 0)
+        {
+            PendingReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.ImageFilename, *ImageReader->GetLastError());
+            return false;
+        }
+        
+    }
+    ImageReader = nullptr;
+
+    // sanity check
+    check(ImageBuffer.Num() > 0);
+
+
+    FRuntimeImageData ImageData;
+    if (!FRuntimeImageUtils::ImportBufferAsImage(ImageBuffer.GetData(), ImageBuffer.Num(), ImageData, PendingReadResult.OutError))
+    {
+        return false;
+    }
+
+    if (PendingReadResult.OutError.Len() > 0)
+    {
+        return false;
+    }
+
+    // sanity checks
+    check(ImageData.RawData.Num() > 0);
+    check(ImageData.TextureSourceFormat != TSF_Invalid);
+
+    ImageData.PixelFormat = DeterminePixelFormat(ImageData.Format, Request.TransformParams);
+    if (ImageData.PixelFormat == PF_Unknown)
+    {
+        PendingReadResult.OutError = FString::Printf(TEXT("Pixel format is not supported: %d"), (int32)ImageData.PixelFormat);
+        return false;
+    }
+
+    // TODO: Split into multiple transformation layers, which can be stacked?
+    ApplySizeFormatTransformations(ImageData, Request.TransformParams);
+
+    if (ImageData.TextureSourceFormat == TSF_BGRE8)
+    {
+        PendingReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
+
+        FRuntimeRHITextureCubeFactory RHITextureCubeFactory(PendingReadResult.OutTextureCube, ImageData);
+        if (!RHITextureCubeFactory.Create())
+        {
+            PendingReadResult.OutError = FString::Printf(TEXT("Failed to create RHI texture cube, pixel format: %d"), (int32)ImageData.PixelFormat);
+            return false;
+        }
+    }
+    else
+    {
+        PendingReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
+
+        FRuntimeRHITexture2DFactory RHITexture2DFactory(PendingReadResult.OutTexture, ImageData);
+        if (!RHITexture2DFactory.Create())
+        {
+            PendingReadResult.OutError = FString::Printf(TEXT("Failed to create RHI texture 2D, pixel format: %d"), (int32)ImageData.PixelFormat);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const
@@ -280,3 +315,4 @@ void URuntimeImageReader::ApplySizeFormatTransformations(FRuntimeImageData& Imag
         ImageData.GammaSpace = CubemapMip.GammaSpace;
     }
 }
+

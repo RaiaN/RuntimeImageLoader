@@ -81,6 +81,7 @@ public:
 
     void Trigger();
     void BlockTillAllRequestsFinished();
+    bool ProcessRequest(FImageReadRequest& Request);
 
 protected:
     /* FRunnable interface */
@@ -98,6 +99,11 @@ private:
 
     UPROPERTY()
     TArray<FImageReadResult> Results;
+
+    UPROPERTY()
+    FImageReadResult PendingReadResult;
+
+    FCriticalSection ResultsMutex;
 
 private:
     UPROPERTY()
