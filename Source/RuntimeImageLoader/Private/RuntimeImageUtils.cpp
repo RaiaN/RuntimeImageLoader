@@ -29,6 +29,7 @@
 
 #define MAX_SUPPORTED_TEXTURE_SIZE int32(1 << (MAX_TEXTURE_MIP_COUNT - 1))
 
+static FRuntimeTiffLoadHelper TiffLoaderHelper;
 
 namespace FRuntimeImageUtils
 {
@@ -140,6 +141,7 @@ namespace FRuntimeImageUtils
             return true;
         }
 
+        return false;
         //
         // JPEG
         //
@@ -341,9 +343,10 @@ namespace FRuntimeImageUtils
         // TIFF
         //
 #if WITH_FREEIMAGE_LIB
-        FRuntimeTiffLoadHelper TiffLoaderHelper;
-        if (TiffLoaderHelper.IsValid())
+        /*if (TiffLoaderHelper.IsValid())
         {
+            TiffLoaderHelper.Reset();
+
             if (TiffLoaderHelper.Load(Buffer, Length))
             {
                 OutImage.Init2D(
@@ -359,7 +362,7 @@ namespace FRuntimeImageUtils
 
                 return true;
             }
-        }
+        }*/
 #endif // WITH_FREEIMAGE_LIB
 
         //
