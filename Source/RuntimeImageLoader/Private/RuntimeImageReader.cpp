@@ -169,6 +169,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 continue;
             }
 
+            // TODO: Split into multiple transformation layers, which can be stacked?
             ApplySizeFormatTransformations(ImageData, Request.TransformParams);
 
             if (ImageData.TextureSourceFormat == TSF_BGRE8)
