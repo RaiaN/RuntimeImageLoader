@@ -20,7 +20,10 @@ FRuntimeTextureResource::FRuntimeTextureResource(UTexture* InTexture, FTextureRH
 
 FRuntimeTextureResource::~FRuntimeTextureResource()
 {
-    Owner->SetResource(nullptr);
+    if (IsValid(Owner))
+    {
+        Owner->SetResource(nullptr);
+    }
 
     UE_LOG(LogRuntimeTextureResource, Verbose, TEXT("RuntimeTextureResource has been destroyed!"))
 }
@@ -33,7 +36,10 @@ void FRuntimeTextureResource::InitRHI()
 
 void FRuntimeTextureResource::ReleaseRHI()
 {
-    RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+    if (IsValid(Owner))
+    {
+        RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+    }
     FTextureResource::ReleaseRHI();
 
     UE_LOG(LogRuntimeTextureResource, Verbose, TEXT("RuntimeTextureResource RHI has been destroyed!"))
