@@ -8,7 +8,7 @@
 
 struct RUNTIMEIMAGELOADER_API FRuntimeImageData : public FImage
 {
-    void Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InFormat, const void* InData = nullptr);
+    void Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InFormat, const void* InData = nullptr, int32 InDataSize = -1);
 
     int32 NumMips = 1;
     bool SRGB = true;
