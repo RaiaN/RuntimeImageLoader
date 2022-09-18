@@ -206,12 +206,14 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
         return false;
     }
 
-    // TODO: Split into multiple transformation layers, which can be stacked?
-    ApplySizeFormatTransformations(ImageData, Request.TransformParams);
-
     if (ImageData.TextureSourceFormat == TSF_BGRE8)
     {
         PendingReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
+
+        // TODO: Split into multiple transformation layers, which can be stacked?
+        // FIXME: this transformation should be done after texture cube is created
+        // FIXME: this is not exactly compatible with transform params
+        ApplySizeFormatTransformations(ImageData, Request.TransformParams);
 
         FRuntimeRHITextureCubeFactory RHITextureCubeFactory(PendingReadResult.OutTextureCube, ImageData);
         if (!RHITextureCubeFactory.Create())
@@ -222,6 +224,9 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
     }
     else
     {
+        // TODO: Split into multiple transformation layers, which can be stacked?
+        ApplySizeFormatTransformations(ImageData, Request.TransformParams);
+
         PendingReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
 
         FRuntimeRHITexture2DFactory RHITexture2DFactory(PendingReadResult.OutTexture, ImageData);
@@ -303,7 +308,8 @@ void URuntimeImageReader::ApplySizeFormatTransformations(FRuntimeImageData& Imag
             }
         }
     }
-    else if (ImageData.TextureSourceFormat == TSF_BGRE8)
+    
+    if (ImageData.TextureSourceFormat == TSF_BGRE8)
     {
         FImage CubemapMip;
         GenerateBaseCubeMipFromLongitudeLatitude2D(&CubemapMip, ImageData, 8192, 0);
