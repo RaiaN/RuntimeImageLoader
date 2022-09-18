@@ -343,7 +343,7 @@ namespace FRuntimeImageUtils
         // TIFF
         //
 #if WITH_FREEIMAGE_LIB
-        /*if (TiffLoaderHelper.IsValid())
+        if (TiffLoaderHelper.IsValid())
         {
             TiffLoaderHelper.Reset();
 
@@ -362,7 +362,7 @@ namespace FRuntimeImageUtils
 
                 return true;
             }
-        }*/
+        }
 #endif // WITH_FREEIMAGE_LIB
 
         //
