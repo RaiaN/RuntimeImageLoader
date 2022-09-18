@@ -140,8 +140,6 @@ namespace FRuntimeImageUtils
 
             return true;
         }
-
-        return false;
         //
         // JPEG
         //
@@ -396,7 +394,8 @@ namespace FRuntimeImageUtils
         //
         // HDR File
         //
-#if ENGINE_MAJOR_VERSION < 5
+        // FIXME: This is only working version for now so force enable it
+#if 1 // ENGINE_MAJOR_VERSION < 5 || 1
 	    FHDRLoadHelper HDRLoadHelper(Buffer, Length);
 	    if(HDRLoadHelper.IsValid())
 	    {
@@ -419,6 +418,7 @@ namespace FRuntimeImageUtils
 	    }
 
 #else
+        // FIXME: This is not compatible with other parts of image reader for some reason
         TSharedPtr<IImageWrapper> HdrImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::HDR);
         if (HdrImageWrapper.IsValid() && HdrImageWrapper->SetCompressed(Buffer, Length))
         {
@@ -440,7 +440,8 @@ namespace FRuntimeImageUtils
                     HdrImageWrapper->GetWidth(),
                     HdrImageWrapper->GetWidth(),
                     TextureFormat,
-                    RawHDR.GetData()
+                    RawHDR.GetData(),
+                    RawHDR.Num()
                 );
 
                 OutImage.SRGB = false;
