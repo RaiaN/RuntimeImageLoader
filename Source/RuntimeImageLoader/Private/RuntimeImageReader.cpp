@@ -169,25 +169,16 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 continue;
             }
 
-            ApplyTransformations(ImageData, Request.TransformParams);
+            ApplySizeFormatTransformations(ImageData, Request.TransformParams);
 
             if (ImageData.TextureSourceFormat == TSF_BGRE8)
             {
                 ReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
 
-                // TODO: Make a new processing layer? When to define pixel format?
-                FImage CubemapMip;
-                GenerateBaseCubeMipFromLongitudeLatitude2D(&CubemapMip, ImageData, 8192, 0);
-                ImageData.RawData = MoveTemp(CubemapMip.RawData);
-                ImageData.SizeX = CubemapMip.SizeX;
-                ImageData.SizeY = CubemapMip.SizeY;
-                ImageData.PixelFormat = DeterminePixelFormat(CubemapMip.Format, Request.TransformParams);
-                ImageData.GammaSpace = CubemapMip.GammaSpace;
-
                 FRuntimeRHITextureCubeFactory RHITextureCubeFactory(ReadResult.OutTextureCube, ImageData);
                 if (!RHITextureCubeFactory.Create())
                 {
-                    ReadResult.OutError = FString::Printf(TEXT("Failed to create rhi texture cube, pixel format: %d"), (int32)ImageData.PixelFormat);
+                    ReadResult.OutError = FString::Printf(TEXT("Failed to create RHI texture cube, pixel format: %d"), (int32)ImageData.PixelFormat);
                     continue;
                 }
             }
@@ -198,7 +189,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
                 FRuntimeRHITexture2DFactory RHITexture2DFactory(ReadResult.OutTexture, ImageData);
                 if (!RHITexture2DFactory.Create())
                 {
-                    ReadResult.OutError = FString::Printf(TEXT("Failed to create rhi texture 2D, pixel format: %d"), (int32)ImageData.PixelFormat);
+                    ReadResult.OutError = FString::Printf(TEXT("Failed to create RHI texture 2D, pixel format: %d"), (int32)ImageData.PixelFormat);
                     continue;
                 }
             }
@@ -215,11 +206,11 @@ EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type Ima
     // determine pixel format
     switch (ImageFormat)
     {
-        case ERawImageFormat::G8:            PixelFormat = (Params.bForUI) ? PF_B8G8R8A8 : PF_G8; break;
+        case ERawImageFormat::G8:            PixelFormat = PF_G8; break;
         case ERawImageFormat::G16:           PixelFormat = PF_G16; break;
         case ERawImageFormat::BGRA8:         PixelFormat = PF_B8G8R8A8; break;
         case ERawImageFormat::BGRE8:         PixelFormat = PF_B8G8R8A8; break;
-        case ERawImageFormat::RGBA16:        PixelFormat = (Params.bForUI) ? PF_B8G8R8A8 : PF_R16G16B16A16_SINT; break;
+        case ERawImageFormat::RGBA16:        PixelFormat = PF_R16G16B16A16_SINT; break;
         case ERawImageFormat::RGBA16F:       PixelFormat = PF_FloatRGBA; break;
         case ERawImageFormat::RGBA32F:       PixelFormat = PF_A32B32G32R32F; break;
         default:                             PixelFormat = PF_Unknown; break;
@@ -228,13 +219,8 @@ EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type Ima
     return PixelFormat;
 }
 
-void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams)
+void URuntimeImageReader::ApplySizeFormatTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams)
 {
-    if (!TransformParams.IsPercentSizeValid())
-    {
-        UE_LOG(LogRuntimeImageReader, Verbose, TEXT("Supplied transform params are not valid! PercentSizeX, PercentSizeX: (%d, %d)"), TransformParams.PercentSizeX, TransformParams.PercentSizeY);
-    }
-    
     if (TransformParams.IsPercentSizeValid())
     {
         const int32 TransformedSizeX = FMath::Floor(ImageData.SizeX * TransformParams.PercentSizeX * 0.01f);
@@ -249,6 +235,10 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
         ImageData.SizeX = TransformedImage.SizeX;
         ImageData.SizeY = TransformedImage.SizeY;
     }
+    else
+    {
+        UE_LOG(LogRuntimeImageReader, Verbose, TEXT("Supplied transform params are not valid! PercentSizeX, PercentSizeX: (%d, %d)"), TransformParams.PercentSizeX, TransformParams.PercentSizeY);
+    }
 
     if (TransformParams.bForUI)
     {
@@ -262,6 +252,30 @@ void URuntimeImageReader::ApplyTransformations(FRuntimeImageData& ImageData, FTr
             ImageData.RawData = MoveTemp(BGRAImage.RawData);
             ImageData.SRGB = true;
             ImageData.GammaSpace = EGammaSpace::sRGB;
+
+            // modify pixel format
+            switch (ImageData.TextureSourceFormat)
+            {
+                case ERawImageFormat::G8:
+                case ERawImageFormat::RGBA16:
+                {
+                    ImageData.PixelFormat = PF_B8G8R8A8;
+                    break;
+                }
+                default:
+                    break;
+            }
         }
+    }
+    else if (ImageData.TextureSourceFormat == TSF_BGRE8)
+    {
+        FImage CubemapMip;
+        GenerateBaseCubeMipFromLongitudeLatitude2D(&CubemapMip, ImageData, 8192, 0);
+
+        ImageData.RawData = MoveTemp(CubemapMip.RawData);
+        ImageData.SizeX = CubemapMip.SizeX;
+        ImageData.SizeY = CubemapMip.SizeY;
+        ImageData.PixelFormat = DeterminePixelFormat(CubemapMip.Format, TransformParams);
+        ImageData.GammaSpace = CubemapMip.GammaSpace;
     }
 }
