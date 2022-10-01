@@ -14,6 +14,5 @@ struct RUNTIMEIMAGELOADER_API FRuntimeImageData : public FImage
     bool SRGB = true;
     ETextureSourceFormat TextureSourceFormat = TSF_Invalid;
     TextureCompressionSettings CompressionSettings;
-    // FDateTime ModificationTime;
     EPixelFormat PixelFormat = PF_B8G8R8A8;
 };
