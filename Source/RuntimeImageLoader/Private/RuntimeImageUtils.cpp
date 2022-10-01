@@ -394,8 +394,7 @@ namespace FRuntimeImageUtils
         //
         // HDR File
         //
-        // FIXME: This is only working version for now so force enable it
-#if 1 // ENGINE_MAJOR_VERSION < 5 || 1
+#if ENGINE_MAJOR_VERSION < 5
 	    FHDRLoadHelper HDRLoadHelper(Buffer, Length);
 	    if(HDRLoadHelper.IsValid())
 	    {
@@ -418,7 +417,6 @@ namespace FRuntimeImageUtils
 	    }
 
 #else
-        // FIXME: This is not compatible with other parts of image reader for some reason
         TSharedPtr<IImageWrapper> HdrImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::HDR);
         if (HdrImageWrapper.IsValid() && HdrImageWrapper->SetCompressed(Buffer, Length))
         {
@@ -438,7 +436,7 @@ namespace FRuntimeImageUtils
             {
                 OutImage.Init2D(
                     HdrImageWrapper->GetWidth(),
-                    HdrImageWrapper->GetWidth(),
+                    HdrImageWrapper->GetHeight(),
                     TextureFormat,
                     RawHDR.GetData(),
                     RawHDR.Num()
