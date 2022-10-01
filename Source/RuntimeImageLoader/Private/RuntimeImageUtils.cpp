@@ -389,8 +389,6 @@ namespace FRuntimeImageUtils
             return false;
         }
 
-
-
         //
         // HDR File
         //
@@ -438,8 +436,7 @@ namespace FRuntimeImageUtils
                     HdrImageWrapper->GetWidth(),
                     HdrImageWrapper->GetHeight(),
                     TextureFormat,
-                    RawHDR.GetData(),
-                    RawHDR.Num()
+                    RawHDR.GetData()
                 );
 
                 OutImage.SRGB = false;

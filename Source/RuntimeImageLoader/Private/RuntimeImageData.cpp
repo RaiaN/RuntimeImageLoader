@@ -38,7 +38,7 @@ ERawImageFormat::Type ToRawImageFormat(ETextureSourceFormat SourceFormat)
 	return ERawImageFormat::BGRA8;
 }
 
-void FRuntimeImageData::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InFormat, const void* InData, int32 InDataSize)
+void FRuntimeImageData::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceFormat InFormat, const void* InData)
 {
     SizeX = InSizeX;
     SizeY = InSizeY;
@@ -47,13 +47,9 @@ void FRuntimeImageData::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceForma
     TextureSourceFormat = InFormat;
     Format = ToRawImageFormat(InFormat);
 
-    if (InDataSize == -1)
-    {
-        // FIXME: this is not true in case of cubemap
-        InDataSize = SizeX * SizeY * GetBytesPerPixel();
-    }
+    const int32 RawDataSize = SizeX * SizeY * GetBytesPerPixel();
 
-    RawData.AddUninitialized(InDataSize);
+    RawData.AddUninitialized(RawDataSize);
 
     if (InData)
     {
