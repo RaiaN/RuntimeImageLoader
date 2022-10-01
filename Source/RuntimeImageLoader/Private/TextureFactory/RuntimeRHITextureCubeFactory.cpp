@@ -7,6 +7,7 @@
 #include "RHIDefinitions.h"
 #include "RHIResources.h"
 #include "RenderUtils.h"
+#include "RHIUtilities.h"
 #include "RHICommandList.h"
 #include "Containers/ResourceArray.h"
 #include "HAL/Platform.h"
@@ -108,15 +109,6 @@ void FRuntimeRHITextureCubeFactory::FinalizeRHITexture2D()
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
     );
     UpdateResourceTask->Wait();
-}
-
-void FRuntimeRHITextureCubeFactory::CopySrcDataToLockedDestData(uint8* Src, uint8* Dest, uint32 DestPitch, uint32 MipSize)
-{
-    EPixelFormat PixelFormat = NewTextureCube->GetPixelFormat();
-    uint32 NumRows = 0;
-    uint32 SrcPitch = 0;
-
-    CopyTextureData2D(Src, Dest, ImageData.SizeY, NewTextureCube->GetPixelFormat(), ImageData.SizeY, DestPitch);
 }
 
 PRAGMA_DISABLE_OPTIMIZATION
