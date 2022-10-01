@@ -10,8 +10,6 @@
 #include "Engine/Texture2D.h"
 #include "PixelFormat.h"
 #include "Launch/Resources/Version.h"
-#include "Async/Async.h"
-#include "Misc/ScopeLock.h"
 
 #include "ImageReaders/ImageReaderFactory.h"
 #include "ImageReaders/IImageReader.h"

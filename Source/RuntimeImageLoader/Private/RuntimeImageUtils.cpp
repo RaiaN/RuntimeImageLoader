@@ -5,6 +5,7 @@
 #include "Misc/FileHelper.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureCube.h"
+#include "Engine/TextureDefines.h"
 #include "TextureResource.h"
 #include "PixelFormat.h"
 #include "HAL/FileManager.h"

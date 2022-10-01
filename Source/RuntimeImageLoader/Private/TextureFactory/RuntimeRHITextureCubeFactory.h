@@ -9,7 +9,6 @@
 
 
 class UTextureCube;
-struct FRuntimeImageData;
 
 class FRuntimeRHITextureCubeFactory
 {

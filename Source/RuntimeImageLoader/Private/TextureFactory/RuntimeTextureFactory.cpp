@@ -4,6 +4,7 @@
 #include "UObject/GCObjectScopeGuard.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureCube.h"
+#include "Async/Async.h"
 #include "RuntimeImageUtils.h"
 
 void URuntimeTextureFactory::Cancel()

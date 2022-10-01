@@ -2,6 +2,7 @@
 
 #include "CubemapUtils.h"
 #include "ImageCore.h"
+#include "Launch/Resources/Version.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
