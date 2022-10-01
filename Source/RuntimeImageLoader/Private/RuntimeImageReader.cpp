@@ -206,6 +206,7 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
         return false;
     }
 
+    // TODO: Below code should be unified and texture source format should be respected by transformation layers
     if (ImageData.TextureSourceFormat == TSF_BGRE8)
     {
         PendingReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
