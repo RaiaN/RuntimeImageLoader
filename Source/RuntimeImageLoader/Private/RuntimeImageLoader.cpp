@@ -3,6 +3,7 @@
 #include "RuntimeImageLoader.h"
 #include "Subsystems/SubsystemBlueprintLibrary.h"
 #include "UObject/WeakObjectPtr.h"
+#include "HAL/Platform.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
@@ -152,10 +153,16 @@ void URuntimeImageLoader::CancelAll()
 {
     check (IsInGameThread());
 
+    // TODO: Cancelling http request leads to crash on Android so remove the code for now
+    // TODO: opportunity for pull request!
+#if PLATFORM_ANDROID
+    UE_LOG(LogRuntimeImageLoader, Warning, TEXT("Cancelling http requests is not supported on Android platform!"));
+#else
     Requests.Empty();
     ActiveRequest.Invalidate();
 
     ImageReader->Clear();
+#endif
 }
 
 void URuntimeImageLoader::Tick(float DeltaTime)
