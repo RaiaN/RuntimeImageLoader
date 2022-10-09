@@ -294,7 +294,7 @@ void URuntimeImageReader::ApplySizeFormatTransformations(FRuntimeImageData& Imag
             ImageData.GammaSpace = EGammaSpace::sRGB;
 
             // modify pixel format
-            switch (ImageData.TextureSourceFormat)
+            switch (ImageData.Format)
             {
                 case ERawImageFormat::G8:
                 case ERawImageFormat::RGBA16:
