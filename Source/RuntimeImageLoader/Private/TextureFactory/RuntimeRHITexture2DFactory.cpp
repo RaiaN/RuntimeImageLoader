@@ -23,7 +23,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::Create()
 {
 #if PLATFORM_WINDOWS
     RHITexture2D = CreateRHITexture2D_Windows();
-#elif (PLATFORM_ANDROID || PLATFORM_ANDROID_VULKAN)
+#elif PLATFORM_ANDROID
     RHITexture2D = CreateRHITexture2D_Mobile();
 #else
     RHITexture2D = CreateRHITexture2D_Other();
