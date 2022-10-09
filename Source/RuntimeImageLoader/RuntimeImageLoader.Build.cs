@@ -11,7 +11,7 @@ public class RuntimeImageLoader : ModuleRules
 
 		{
             bEnforceIWYU = true;
-            bUseUnity = true;
+            bUseUnity = false;
 
             PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         }
