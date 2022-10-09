@@ -11,7 +11,6 @@
 #include "Async/TaskGraphInterfaces.h"
 
 #include "RuntimeTexture2DResource.h"
-#include "RuntimeImageData.h"
 
 
 FRuntimeRHITexture2DFactory::FRuntimeRHITexture2DFactory(UTexture2D* InTexture2D, const FRuntimeImageData& InImageData)

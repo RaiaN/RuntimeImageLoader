@@ -4,6 +4,7 @@
 #include "PixelFormat.h"
 #include "Engine/Texture.h"
 #include "RenderResource.h"
+#include "RHICommandList.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeTextureResource, Log, All);
 

@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "TextureResource.h"
-#include "RHIResources.h"
 #include "RHIDefinitions.h"
 
 class UTexture;
