@@ -2,6 +2,7 @@
 
 #include "RuntimeTextureCubeResource.h"
 #include "Engine/TextureCube.h"
+#include "Templates/RefCounting.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeTextureCubeResource, Log, All);
 

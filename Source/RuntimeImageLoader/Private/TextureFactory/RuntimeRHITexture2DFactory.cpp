@@ -4,7 +4,6 @@
 #include "Engine/Texture2D.h"
 #include "RHI.h"
 #include "RHIDefinitions.h"
-#include "RHIResources.h"
 #include "RHICommandList.h"
 #include "Containers/ResourceArray.h"
 #include "HAL/Platform.h"
