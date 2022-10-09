@@ -83,6 +83,15 @@ void URuntimeImageLoader::LoadHDRIAsync(const FString& ImageFilename, const FTra
         return;
     }
 
+    // TODO: loading cubemaps is not supported on Android platform! Use at your own risk!
+    // TODO: opportunity for a pull request!
+#if PLATFORM_ANDROID
+    OutError = TEXT("Loading cubemaps is not supported on Android platform! Please build plugin from source to change this behaviour..");
+    bSuccess = false;
+    UE_LOG(LogRuntimeImageLoader, Warning, TEXT("%s"), *OutError);
+    return;
+#endif
+
     FLoadImageRequest Request;
     {
         Request.Params.ImageFilename = ImageFilename;
@@ -153,16 +162,17 @@ void URuntimeImageLoader::CancelAll()
 {
     check (IsInGameThread());
 
-    // TODO: Cancelling http request leads to crash on Android so remove the code for now
-    // TODO: opportunity for pull request!
+    // TODO: Cancelling http request leads to crash on Android!
+    // TODO: opportunity for a pull request!
 #if PLATFORM_ANDROID
     UE_LOG(LogRuntimeImageLoader, Warning, TEXT("Cancelling http requests is not supported on Android platform!"));
-#else
+    return;
+#endif
+
     Requests.Empty();
     ActiveRequest.Invalidate();
 
     ImageReader->Clear();
-#endif
 }
 
 void URuntimeImageLoader::Tick(float DeltaTime)
