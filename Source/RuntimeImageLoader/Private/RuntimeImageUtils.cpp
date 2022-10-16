@@ -30,8 +30,6 @@
 
 #define MAX_SUPPORTED_TEXTURE_SIZE int32(1 << (MAX_TEXTURE_MIP_COUNT - 1))
 
-static FRuntimeTiffLoadHelper TiffLoaderHelper;
-
 namespace FRuntimeImageUtils
 {
     bool IsImportResolutionValid(int32 Width, int32 Height, bool bAllowNonPowerOfTwo)
@@ -342,6 +340,7 @@ namespace FRuntimeImageUtils
         // TIFF
         //
 #if WITH_FREEIMAGE_LIB
+        static FRuntimeTiffLoadHelper TiffLoaderHelper;
         if (TiffLoaderHelper.IsValid())
         {
             TiffLoaderHelper.Reset();
