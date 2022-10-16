@@ -63,6 +63,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
     void CancelAll();
 
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Runtime Image Loader")
+    static FString GetThisPluginResourcesDirectory();
+
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;

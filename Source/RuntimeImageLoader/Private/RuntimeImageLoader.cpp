@@ -4,6 +4,7 @@
 #include "Subsystems/SubsystemBlueprintLibrary.h"
 #include "UObject/WeakObjectPtr.h"
 #include "HAL/Platform.h"
+#include "Interfaces/IPluginManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
@@ -173,6 +174,11 @@ void URuntimeImageLoader::CancelAll()
     ActiveRequest.Invalidate();
 
     ImageReader->Clear();
+}
+
+FString URuntimeImageLoader::GetThisPluginResourcesDirectory()
+{
+    return IPluginManager::Get().FindPlugin(TEXT("RuntimeImageLoader"))->GetBaseDir() / TEXT("Resources");
 }
 
 void URuntimeImageLoader::Tick(float DeltaTime)
