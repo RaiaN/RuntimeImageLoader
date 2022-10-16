@@ -77,7 +77,7 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, const FTr
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadHDRIAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTextureCube*& OutTextureCube, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
+void URuntimeImageLoader::LoadHDRIAsCubemapAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTextureCube*& OutTextureCube, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
 {
     if (!IsValid(WorldContextObject))
     {
