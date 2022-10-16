@@ -16,6 +16,11 @@ UTexture2D* URuntimeTextureFactory::CreateTexture2D(const FConstructTextureTask&
 {
     UTexture2D* OutResult = nullptr;
     FGCObjectScopeGuard ResultGuard(OutResult);
+
+    if (IsInGameThread())
+    {
+        return FRuntimeImageUtils::CreateTexture(Task.ImageFilename, *Task.ImageData);
+    }
     
     CurrentTask = Async(
         EAsyncExecution::TaskGraphMainThread,
@@ -36,6 +41,11 @@ UTextureCube* URuntimeTextureFactory::CreateTextureCube(const FConstructTextureT
 {
     UTextureCube* OutResult = nullptr;
     FGCObjectScopeGuard ResultGuard(OutResult);
+
+    if (IsInGameThread())
+    {
+        return FRuntimeImageUtils::CreateTextureCube(Task.ImageFilename, *Task.ImageData);
+    }
 
     CurrentTask = Async(
         EAsyncExecution::TaskGraphMainThread,

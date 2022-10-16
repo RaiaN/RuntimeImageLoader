@@ -209,8 +209,9 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
     {
         PendingReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
 
-        // TODO: Split into multiple transformation layers, which can be stacked?
+        // TODO: Split into multiple transformation layers?
         // FIXME: this transformation should be done after texture cube is created
+        // as texture cube object creation depends on image data params -> bad design!
         // FIXME: this is not exactly compatible with transform params
         ApplySizeFormatTransformations(ImageData, Request.TransformParams);
 
@@ -223,7 +224,7 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
     }
     else
     {
-        // TODO: Split into multiple transformation layers, which can be stacked?
+        // TODO: Split into multiple transformation layers?
         ApplySizeFormatTransformations(ImageData, Request.TransformParams);
 
         PendingReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
