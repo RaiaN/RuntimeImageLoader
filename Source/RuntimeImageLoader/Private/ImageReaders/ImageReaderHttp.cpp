@@ -60,6 +60,7 @@ void FImageReaderHttp::Cancel()
 {
     if (CurrentHttpRequest.IsValid() && DownloadFuture.IsValid() && !DownloadFuture->IsComplete())
     {
+        CurrentHttpRequest->OnProcessRequestComplete().Unbind();
         CurrentHttpRequest->CancelRequest();
         DownloadFuture->EmplaceResult(false);
     }
