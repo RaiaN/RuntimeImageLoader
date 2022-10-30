@@ -15,7 +15,7 @@
 
 Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
 
-Developer's UPDATE: **The active development of this free plugin is completed! It provides an intuitive Blueprint interface that allows to load images without facing issues that exist in vanilla Unreal Engine. That was my main intention and I'm not planning to support more advanced workflows, for example, cache layers, mip generation, rare image formats and OS besides Windows and Android (experimental). However, you are free to use this plugin plus I always welcome pull requests targeting new features.**
+Developer's UPDATE: **The active development of this free plugin is completed! It provides an intuitive Blueprint interface that allows to load images without facing issues that exist in vanilla Unreal Engine. That was my main intention and I'm not planning to support more advanced workflows, for example, cache layers, mip generation, rare image formats and OS besides Windows and Android (experimental). However, I always welcome pull requests targeting new features.**
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
