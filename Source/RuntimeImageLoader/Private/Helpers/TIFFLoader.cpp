@@ -67,15 +67,7 @@ FRuntimeTiffLoadHelper::FRuntimeTiffLoadHelper()
 
 FRuntimeTiffLoadHelper::~FRuntimeTiffLoadHelper()
 {
-	if (Memory)
-	{
-		FreeImage_CloseMemory(Memory);
-	}
-
-	if (Bitmap)
-	{
-		FreeImage_Unload(Bitmap);
-	}
+	Reset();
 }
 
 bool FRuntimeTiffLoadHelper::Load(const uint8 * Buffer, uint32 Length)
@@ -343,6 +335,19 @@ void FRuntimeTiffLoadHelper::SetError(const FString& InErrorMessage)
 FString FRuntimeTiffLoadHelper::GetError()
 {
 	return ErrorMessage;
+}
+
+void FRuntimeTiffLoadHelper::Reset()
+{
+    if (Memory)
+    {
+        FreeImage_CloseMemory(Memory);
+    }
+
+    if (Bitmap)
+    {
+        FreeImage_Unload(Bitmap);
+    }
 }
 
 bool FRuntimeTiffLoadHelper::IsValid()

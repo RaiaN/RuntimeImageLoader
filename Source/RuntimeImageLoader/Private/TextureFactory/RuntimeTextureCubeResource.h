@@ -3,8 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "RuntimeTextureResource.h"
-#include "RHIResources.h"
-#include "RHIDefinitions.h"
 
 class UTextureCube;
 

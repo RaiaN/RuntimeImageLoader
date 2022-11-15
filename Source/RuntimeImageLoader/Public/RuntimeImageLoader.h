@@ -55,13 +55,16 @@ public:
     void LoadImageAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
     
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadHDRIAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTextureCube*& OutTextureCube, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
+    void LoadHDRIAsCubemapAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTextureCube*& OutTextureCube, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams"))
     void LoadImageSync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
     void CancelAll();
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Runtime Image Loader")
+    static FString GetThisPluginResourcesDirectory();
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;

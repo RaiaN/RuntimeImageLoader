@@ -5,6 +5,13 @@
 #include "CoreMinimal.h"
 #include "PixelFormat.h"
 #include "ImageCore.h"
+#include "Launch/Resources/Version.h"
+
+#if ENGINE_MAJOR_VERSION < 5
+#include "Engine/Texture.h"
+#else
+#include "Engine/TextureDefines.h"
+#endif
 
 struct RUNTIMEIMAGELOADER_API FRuntimeImageData : public FImage
 {
@@ -14,6 +21,5 @@ struct RUNTIMEIMAGELOADER_API FRuntimeImageData : public FImage
     bool SRGB = true;
     ETextureSourceFormat TextureSourceFormat = TSF_Invalid;
     TextureCompressionSettings CompressionSettings;
-    // FDateTime ModificationTime;
     EPixelFormat PixelFormat = PF_B8G8R8A8;
 };

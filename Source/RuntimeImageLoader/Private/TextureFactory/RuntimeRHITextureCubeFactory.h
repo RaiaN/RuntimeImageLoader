@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Async/Future.h"
-#include "RHIResources.h"
 #include "RuntimeImageData.h"
+
+class FRHITextureCube;
+typedef TRefCountPtr<FRHITextureCube> FTextureCubeRHIRef;
 
 
 class UTextureCube;
-struct FRuntimeImageData;
 
 class FRuntimeRHITextureCubeFactory
 {
@@ -21,8 +21,6 @@ public:
 private:
     FTextureCubeRHIRef CreateTextureCubeRHI_Windows();
     void FinalizeRHITexture2D();
-
-    void CopySrcDataToLockedDestData(uint8* Src, uint8* Dest, uint32 DestPitch, uint32 MipSize);
 
 private:
     UTextureCube* NewTextureCube;

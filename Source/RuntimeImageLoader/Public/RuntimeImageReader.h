@@ -81,6 +81,7 @@ public:
 
     void Trigger();
     void BlockTillAllRequestsFinished();
+    bool ProcessRequest(FImageReadRequest& Request);
 
 protected:
     /* FRunnable interface */
@@ -91,13 +92,18 @@ protected:
 
 private:
     EPixelFormat DeterminePixelFormat(ERawImageFormat::Type ImageFormat, const FTransformImageParams& Params) const;
-    void ApplyTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams);
+    void ApplySizeFormatTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams);
 
 private:
     TQueue<FImageReadRequest, EQueueMode::Mpsc> Requests;
 
     UPROPERTY()
     TArray<FImageReadResult> Results;
+
+    UPROPERTY()
+    FImageReadResult PendingReadResult;
+
+    FCriticalSection ResultsMutex;
 
 private:
     UPROPERTY()

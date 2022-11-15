@@ -10,11 +10,12 @@ class FImageReaderLocal : public IImageReader
 public:
     virtual ~FImageReaderLocal() {}
 
-    virtual bool ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData) override;
+    virtual TArray<uint8> ReadImage(const FString& ImageURI) override;
     virtual FString GetLastError() const override;
     virtual void Flush() override;
     virtual void Cancel() override;
 
 private:
+    TArray<uint8> OutImageData;
     FString OutError;
 };

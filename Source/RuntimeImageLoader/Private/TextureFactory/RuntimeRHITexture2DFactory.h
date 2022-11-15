@@ -3,19 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RHIResources.h"
 #include "RuntimeImageData.h"
+
+class FRHITexture2D;
+typedef TRefCountPtr<FRHITexture2D> FTexture2DRHIRef;
 
 
 class UTexture2D;
-
-
-struct FRHITexture2DContext
-{
-    UTexture2D* NewTexture;
-    FRuntimeImageData& ImageData;
-    FTexture2DRHIRef RHITexture2D;
-};
 
 class FRuntimeRHITexture2DFactory
 {

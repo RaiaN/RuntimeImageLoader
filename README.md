@@ -13,13 +13,16 @@
   </p>
 </p>
 
-Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader !
+Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
+
+Developer's UPDATE: **The active development of this free plugin is completed! It provides an intuitive Blueprint interface to load images without facing issues that exist in vanilla Unreal Engine. That was my main intention and I'm _not planning_ to support more advanced workflows, for example, image cache, mip generation, rare image formats and OS besides Windows and Android (currently experimental). However, I always welcome pull requests adding new features.**
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
+- Allows to import HDR images aka Cubemaps (Windows only)
 - Can load image over HTTP or from local file storage
 - Can transform image during loading
-- Can cancel all ongoing image loading requests 
+- Can cancel all ongoing image loading requests (Windows only)
 - Supports PNG, JPEG, BMP, TGA, OpenEXR, TIFF and QOI
 - Supports 8, 16, 32 bit per channel (or up to 128 bit *pixel depth* images)
 - Can generate UI ready texture format (RGBA8 or 'float' RGBA)
@@ -29,9 +32,9 @@ Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/
 ## Tested on
 - RHIs: DirectX 11&12, Vulkan
 - Unreal engine versions: 4.27, 5.0
-- Platforms: Windows, Android
+- Platforms: Windows, Android (experimental)
 
-# Blueprints
+## Blueprints
 
 Below is the example of how to use this plugin for loading images in your blueprints/scripts:
 

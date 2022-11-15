@@ -2,11 +2,8 @@
 
 #include "RuntimeRHITextureCubeFactory.h"
 #include "Engine/TextureCube.h"
-#include "DynamicRHI.h"
 #include "RHI.h"
 #include "RHIDefinitions.h"
-#include "RHIResources.h"
-#include "RenderUtils.h"
 #include "RHICommandList.h"
 #include "Containers/ResourceArray.h"
 #include "HAL/Platform.h"
@@ -14,9 +11,6 @@
 #include "Async/TaskGraphInterfaces.h"
 
 #include "RuntimeTextureCubeResource.h"
-#include "RuntimeImageData.h"
-
-PRAGMA_ENABLE_OPTIMIZATION
 
 FRuntimeRHITextureCubeFactory::FRuntimeRHITextureCubeFactory(UTextureCube* InTextureCube, const FRuntimeImageData& InImageData)
 : NewTextureCube(InTextureCube), ImageData(InImageData)
@@ -72,7 +66,6 @@ FTextureCubeRHIRef FRuntimeRHITextureCubeFactory::CreateTextureCubeRHI_Windows()
     ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
 
     ETextureCreateFlags TextureFlags = TexCreate_ShaderResource | (ImageData.SRGB ? TexCreate_SRGB : TexCreate_None);
-    ERHIAccess ResourceState = RHIGetDefaultResourceState(TextureFlags, true);
 
     FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReader_TextureCubeData"));
 
@@ -80,7 +73,7 @@ FTextureCubeRHIRef FRuntimeRHITextureCubeFactory::CreateTextureCubeRHI_Windows()
     CreateInfo.BulkData = &TextureCubeData;
 
     FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-        [this, &TextureCubeRHI, &CreateInfo, ResourceState, TextureFlags]()
+        [this, &TextureCubeRHI, &CreateInfo, TextureFlags]()
         {
             TextureCubeRHI = RHICreateTextureCube(
                 ImageData.SizeX, ImageData.PixelFormat, 1, TextureFlags, CreateInfo
@@ -109,14 +102,3 @@ void FRuntimeRHITextureCubeFactory::FinalizeRHITexture2D()
     );
     UpdateResourceTask->Wait();
 }
-
-void FRuntimeRHITextureCubeFactory::CopySrcDataToLockedDestData(uint8* Src, uint8* Dest, uint32 DestPitch, uint32 MipSize)
-{
-    EPixelFormat PixelFormat = NewTextureCube->GetPixelFormat();
-    uint32 NumRows = 0;
-    uint32 SrcPitch = 0;
-
-    CopyTextureData2D(Src, Dest, ImageData.SizeY, NewTextureCube->GetPixelFormat(), ImageData.SizeY, DestPitch);
-}
-
-PRAGMA_DISABLE_OPTIMIZATION

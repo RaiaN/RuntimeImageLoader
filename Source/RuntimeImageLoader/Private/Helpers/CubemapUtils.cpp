@@ -2,6 +2,7 @@
 
 #include "CubemapUtils.h"
 #include "ImageCore.h"
+#include "Launch/Resources/Version.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
 
@@ -190,10 +191,13 @@ struct FImageViewLongLat
 
 void GenerateBaseCubeMipFromLongitudeLatitude2D(FImage* OutMip, const FImage& SrcImage, const uint32 MaxCubemapTextureResolution, uint8 SourceEncodingOverride)
 {
-    // TRACE_CPUPROFILER_EVENT_SCOPE(GenerateBaseCubeMipFromLongitudeLatitude2D);
-
     FImage LongLatImage;
+
+#if ENGINE_MAJOR_VERSION < 5
+    SrcImage.CopyTo(LongLatImage, ERawImageFormat::RGBA32F, EGammaSpace::Linear);
+#else
     SrcImage.Linearize(SourceEncodingOverride, LongLatImage);
+#endif
 
     // TODO_TEXTURE: Expose target size to user.
     uint32 Extent = ComputeLongLatCubemapExtents(LongLatImage, MaxCubemapTextureResolution);

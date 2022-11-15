@@ -47,7 +47,9 @@ void FRuntimeImageData::Init2D(int32 InSizeX, int32 InSizeY, ETextureSourceForma
     TextureSourceFormat = InFormat;
     Format = ToRawImageFormat(InFormat);
 
-    RawData.AddUninitialized(SizeX * SizeY * GetBytesPerPixel());
+    const int32 RawDataSize = SizeX * SizeY * GetBytesPerPixel();
+
+    RawData.AddUninitialized(RawDataSize);
 
     if (InData)
     {

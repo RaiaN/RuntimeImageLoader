@@ -4,7 +4,6 @@
 #include "Engine/Texture2D.h"
 #include "RHI.h"
 #include "RHIDefinitions.h"
-#include "RHIResources.h"
 #include "RHICommandList.h"
 #include "Containers/ResourceArray.h"
 #include "HAL/Platform.h"
@@ -12,7 +11,6 @@
 #include "Async/TaskGraphInterfaces.h"
 
 #include "RuntimeTexture2DResource.h"
-#include "RuntimeImageData.h"
 
 
 FRuntimeRHITexture2DFactory::FRuntimeRHITexture2DFactory(UTexture2D* InTexture2D, const FRuntimeImageData& InImageData)
@@ -25,7 +23,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::Create()
 {
 #if PLATFORM_WINDOWS
     RHITexture2D = CreateRHITexture2D_Windows();
-#elif (PLATFORM_ANDROID || PLATFORM_ANDROID_VULKAN)
+#elif PLATFORM_ANDROID
     RHITexture2D = CreateRHITexture2D_Mobile();
 #else
     RHITexture2D = CreateRHITexture2D_Other();

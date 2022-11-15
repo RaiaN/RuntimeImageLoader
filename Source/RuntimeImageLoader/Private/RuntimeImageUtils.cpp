@@ -5,6 +5,7 @@
 #include "Misc/FileHelper.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureCube.h"
+#include "Engine/TextureDefines.h"
 #include "TextureResource.h"
 #include "PixelFormat.h"
 #include "HAL/FileManager.h"
@@ -16,7 +17,8 @@
 #include "IImageWrapper.h"
 #include "RHI.h"
 #include "RenderUtils.h"
-#include "Runtime/Launch/Resources/Version.h"
+#include "RHIDefinitions.h"
+#include "Launch/Resources/Version.h"
 
 #include "HDRLoader.h"
 #include "DDSLoader.h"
@@ -26,25 +28,17 @@
 #include "Helpers/TIFFLoader.h"
 #include "Helpers/QOIHelpers.h"
 
+#define MAX_SUPPORTED_TEXTURE_SIZE int32(1 << (MAX_TEXTURE_MIP_COUNT - 1))
 
 namespace FRuntimeImageUtils
 {
     bool IsImportResolutionValid(int32 Width, int32 Height, bool bAllowNonPowerOfTwo)
     {
-        // TODO: 
-        const int32 MAX_TEXTURE_SIZE = 8192;
-
         // Calculate the maximum supported resolution utilizing the global max texture mip count
         // (Note, have to subtract 1 because 1x1 is a valid mip-size; this means a GMaxTextureMipCount of 4 means a max resolution of 8x8, not 2^4 = 16x16)
         const int32 MaximumSupportedResolution = 1 << (GMaxTextureMipCount - 1);
 
         bool bValid = true;
-
-        // Check if the texture is above the supported resolution and prompt the user if they wish to continue if it is
-        if (Width > MaximumSupportedResolution || Height > MaximumSupportedResolution)
-        {
-            bValid = false;
-        }
 
         const bool bIsPowerOfTwo = FMath::IsPowerOfTwo(Width) && FMath::IsPowerOfTwo(Height);
         // Check if the texture dimensions are powers of two
@@ -53,7 +47,7 @@ namespace FRuntimeImageUtils
             bValid = false;
         }
 
-        if (Width > MAX_TEXTURE_SIZE || Height > MAX_TEXTURE_SIZE)
+        if (Width > MAX_SUPPORTED_TEXTURE_SIZE || Height > MAX_SUPPORTED_TEXTURE_SIZE)
         {
             bValid = false;
         }
@@ -145,7 +139,6 @@ namespace FRuntimeImageUtils
 
             return true;
         }
-
         //
         // JPEG
         //
@@ -347,9 +340,11 @@ namespace FRuntimeImageUtils
         // TIFF
         //
 #if WITH_FREEIMAGE_LIB
-        FRuntimeTiffLoadHelper TiffLoaderHelper;
+        static FRuntimeTiffLoadHelper TiffLoaderHelper;
         if (TiffLoaderHelper.IsValid())
         {
+            TiffLoaderHelper.Reset();
+
             if (TiffLoaderHelper.Load(Buffer, Length))
             {
                 OutImage.Init2D(
@@ -394,11 +389,10 @@ namespace FRuntimeImageUtils
             return false;
         }
 
-
-
         //
-	    // HDR File
-	    //
+        // HDR File
+        //
+#if ENGINE_MAJOR_VERSION < 5
 	    FHDRLoadHelper HDRLoadHelper(Buffer, Length);
 	    if(HDRLoadHelper.IsValid())
 	    {
@@ -420,10 +414,44 @@ namespace FRuntimeImageUtils
             return true;
 	    }
 
-        /*
-        OutError = TEXT("Failed to load .HDR image. Input image is not valid cubemap texture!");
-        return false;
-        */
+#else
+        TSharedPtr<IImageWrapper> HdrImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::HDR);
+        if (HdrImageWrapper.IsValid() && HdrImageWrapper->SetCompressed(Buffer, Length))
+        {
+            if (!IsImportResolutionValid(HdrImageWrapper->GetWidth(), HdrImageWrapper->GetHeight(), true))
+            {
+                OutError = FString::Printf(TEXT("HDR Texture resolution is not supported: %d x %d"), HdrImageWrapper->GetWidth(), HdrImageWrapper->GetHeight());
+                return false;
+            }
+
+            // Select the texture's source format
+            ETextureSourceFormat TextureFormat = TSF_BGRE8;
+            int32 BitDepth = HdrImageWrapper->GetBitDepth();
+            ERGBFormat Format = HdrImageWrapper->GetFormat();
+
+            TArray64<uint8> RawHDR;
+            if (HdrImageWrapper->GetRaw(ERGBFormat::BGRE, BitDepth, RawHDR))
+            {
+                OutImage.Init2D(
+                    HdrImageWrapper->GetWidth(),
+                    HdrImageWrapper->GetHeight(),
+                    TextureFormat,
+                    RawHDR.GetData()
+                );
+
+                OutImage.SRGB = false;
+                OutImage.GammaSpace = EGammaSpace::Linear;
+                OutImage.CompressionSettings = TC_HDR;
+            }
+            else
+            {
+                OutError = TEXT("Failed to load .HDR image. Input image is not valid cubemap texture!");
+                return false;
+            }
+
+            return true;
+        }
+#endif // #if ENGINE_MAJOR_VERSION < 5
 
         OutError = FString::Printf(TEXT("Failed to decode image. The format is not supported!"));
         return false;

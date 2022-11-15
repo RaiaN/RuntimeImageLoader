@@ -4,6 +4,7 @@
 #include "UObject/GCObjectScopeGuard.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureCube.h"
+#include "Async/Async.h"
 #include "RuntimeImageUtils.h"
 
 void URuntimeTextureFactory::Cancel()
@@ -15,6 +16,11 @@ UTexture2D* URuntimeTextureFactory::CreateTexture2D(const FConstructTextureTask&
 {
     UTexture2D* OutResult = nullptr;
     FGCObjectScopeGuard ResultGuard(OutResult);
+
+    if (IsInGameThread())
+    {
+        return FRuntimeImageUtils::CreateTexture(Task.ImageFilename, *Task.ImageData);
+    }
     
     CurrentTask = Async(
         EAsyncExecution::TaskGraphMainThread,
@@ -35,6 +41,11 @@ UTextureCube* URuntimeTextureFactory::CreateTextureCube(const FConstructTextureT
 {
     UTextureCube* OutResult = nullptr;
     FGCObjectScopeGuard ResultGuard(OutResult);
+
+    if (IsInGameThread())
+    {
+        return FRuntimeImageUtils::CreateTextureCube(Task.ImageFilename, *Task.ImageData);
+    }
 
     CurrentTask = Async(
         EAsyncExecution::TaskGraphMainThread,

@@ -1,12 +1,15 @@
 // Copyright 2022 Peter Leontev. All Rights Reserved.
 
 using UnrealBuildTool;
+using System.IO;
 
 public class RuntimeImageLoader : ModuleRules
 {
 	public RuntimeImageLoader(ReadOnlyTargetRules Target) : base(Target)
 	{
-        {
+		var EngineDir = Path.GetFullPath(Target.RelativeEnginePath);
+
+		{
             bEnforceIWYU = true;
             bUseUnity = false;
 
@@ -44,17 +47,23 @@ public class RuntimeImageLoader : ModuleRules
 				"Slate",
 				"SlateCore",
 				"RHI",
-				"ImageWrapper",
 				"RenderCore",
+				"Renderer",
+				"ImageWrapper",
 				"ImageCore",
 				"FreeImage",
-				"HTTP"
+				"HTTP",
+				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
+
+        PrivateIncludePaths.AddRange(new string[]
+        {
+			Path.Combine(EngineDir, @"Source/Runtime/Renderer/Private")
+        });
+
+        DynamicallyLoadedModuleNames.AddRange(
 			new string[]
 			{
 				// ... add any modules that your module loads dynamically here ...

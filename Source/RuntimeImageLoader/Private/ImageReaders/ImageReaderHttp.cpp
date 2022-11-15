@@ -7,24 +7,21 @@
 #include "HTTPManager.h"
 #include "HttpModule.h"
 
-bool FImageReaderHttp::ReadImage(const FString& ImageURI, TArray<uint8>& OutImageData)
+FImageReaderHttp::~FImageReaderHttp()
 {
-    ImageData = &OutImageData;
-    
-    if (DownloadFuture.IsValid())
-    {
-        ensure(false);
-        return false;
-    }
+    DownloadFuture = nullptr;
+}
+
+TArray<uint8> FImageReaderHttp::ReadImage(const FString& ImageURI)
+{
+    check (!DownloadFuture.IsValid());
 
     DownloadFuture = MakeShared<TFutureState<bool>, ESPMode::ThreadSafe>();
 
     // Create the Http request and add to pending request list
     CurrentHttpRequest = FHttpModule::Get().CreateRequest();
     {
-        HttpRequestHandler = CurrentHttpRequest->OnProcessRequestComplete().CreateRaw(this, &FImageReaderHttp::HandleImageRequest);
-
-        CurrentHttpRequest->OnProcessRequestComplete() = HttpRequestHandler;
+        CurrentHttpRequest->OnProcessRequestComplete().BindRaw(this, &FImageReaderHttp::HandleImageRequest);
 
         CurrentHttpRequest->SetURL(ImageURI);
         CurrentHttpRequest->SetVerb(TEXT("GET"));
@@ -38,8 +35,11 @@ bool FImageReaderHttp::ReadImage(const FString& ImageURI, TArray<uint8>& OutImag
     }
 
     bool bResult = DownloadFuture->GetResult();
-
-    return bResult;
+    if (bResult)
+    {
+        return OutImageData;
+    }
+    return TArray<uint8>();
 }
 
 FString FImageReaderHttp::GetLastError() const
@@ -60,10 +60,9 @@ void FImageReaderHttp::Cancel()
 {
     if (CurrentHttpRequest.IsValid() && DownloadFuture.IsValid() && !DownloadFuture->IsComplete())
     {
+        CurrentHttpRequest->OnProcessRequestComplete().Unbind();
         CurrentHttpRequest->CancelRequest();
         DownloadFuture->EmplaceResult(false);
-        HttpRequestHandler.Unbind();
-        HttpRequestHandler = nullptr;
     }
 }
 
@@ -73,19 +72,15 @@ void FImageReaderHttp::HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResp
     
     if (bSuccess)
     {
-        ImageData->Append(HttpResponse->GetContent().GetData(), HttpResponse->GetContentLength());
+        OutImageData.Append(HttpResponse->GetContent().GetData(), HttpResponse->GetContentLength());
     }
     else
     {
         OutError = FString::Printf(TEXT("Error code: %d, Content: %d"), HttpResponse->GetResponseCode(), *HttpResponse->GetContentAsString());
     }
 
-    if (!DownloadFuture->IsComplete())
+    if (DownloadFuture && !DownloadFuture->IsComplete())
     {
         DownloadFuture->EmplaceResult(bSuccess);
     }
-
-    CurrentHttpRequest = nullptr;
-    DownloadFuture = nullptr;
-    HttpRequestHandler.Unbind();
 }

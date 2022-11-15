@@ -21,6 +21,8 @@ public:
 	void SetError(const FString& InErrorMessage);
 	FString GetError();
 
+	void Reset();
+
 	bool IsValid();
 
 public:
