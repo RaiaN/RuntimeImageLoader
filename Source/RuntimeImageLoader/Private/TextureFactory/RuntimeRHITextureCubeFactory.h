@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "RuntimeImageData.h"
+#include "Templates/RefCounting.h"
 
+class FRHITexture;
 typedef TRefCountPtr<FRHITexture> FTextureCubeRHIRef;
 
 
