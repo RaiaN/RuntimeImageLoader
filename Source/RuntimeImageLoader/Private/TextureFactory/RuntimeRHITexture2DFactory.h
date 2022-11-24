@@ -5,8 +5,7 @@
 #include "CoreMinimal.h"
 #include "RuntimeImageData.h"
 
-class FRHITexture2D;
-typedef TRefCountPtr<FRHITexture2D> FTexture2DRHIRef;
+typedef TRefCountPtr<FRHITexture> FTexture2DRHIRef;
 
 
 class UTexture2D;

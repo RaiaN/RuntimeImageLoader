@@ -5,8 +5,7 @@
 #include "CoreMinimal.h"
 #include "RuntimeImageData.h"
 
-class FRHITextureCube;
-typedef TRefCountPtr<FRHITextureCube> FTextureCubeRHIRef;
+typedef TRefCountPtr<FRHITexture> FTextureCubeRHIRef;
 
 
 class UTextureCube;

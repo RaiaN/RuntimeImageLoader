@@ -86,14 +86,20 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
         FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
             [this, &CreateInfo, TextureFlags]()
             {
-                RHITexture2D = RHICreateTexture2D(
-                    ImageData.SizeX, ImageData.SizeY,
-                    ImageData.PixelFormat,
-                    ImageData.NumMips,
-                    1,
-                    TextureFlags,
-                    CreateInfo
+                RHITexture2D = RHICreateTexture(
+                    FRHITextureCreateDesc::Create2D(CreateInfo.DebugName)
+                    .SetExtent(ImageData.SizeX, ImageData.SizeY)
+                    .SetFormat(ImageData.PixelFormat)
+                    .SetNumMips(ImageData.NumMips)
+                    .SetNumSamples(1)
+                    .SetFlags(TextureFlags)
+                    .SetInitialState(ERHIAccess::Unknown)
+                    .SetExtData(CreateInfo.ExtData)
+                    .SetBulkData(CreateInfo.BulkData)
+                    .SetGPUMask(CreateInfo.GPUMask)
+                    .SetClearValue(CreateInfo.ClearValueBinding)
                 );
+
             }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
         );
         CreateTextureTask->Wait();
@@ -121,13 +127,18 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Mobile()
         [this, &TextureFlags]()
         {
             FRHIResourceCreateInfo DummyCreateInfo(TEXT("DummyCreateInfo"));
-            RHITexture2D = RHICreateTexture2D(
-                ImageData.SizeX, ImageData.SizeY,
-                ImageData.PixelFormat,
-                ImageData.NumMips,
-                1,
-                TextureFlags,
-                DummyCreateInfo
+            RHITexture2D = RHICreateTexture(
+                FRHITextureCreateDesc::Create2D(DummyCreateInfo.DebugName)
+                .SetExtent(ImageData.SizeX, ImageData.SizeY)
+                .SetFormat(ImageData.PixelFormat)
+                .SetNumMips(ImageData.NumMips)
+                .SetNumSamples(1)
+                .SetFlags(TextureFlags)
+                .SetInitialState(ERHIAccess::Unknown)
+                .SetExtData(DummyCreateInfo.ExtData)
+                .SetBulkData(DummyCreateInfo.BulkData)
+                .SetGPUMask(DummyCreateInfo.GPUMask)
+                .SetClearValue(DummyCreateInfo.ClearValueBinding)
             );
 
             FUpdateTextureRegion2D TextureRegion2D;
