@@ -75,8 +75,17 @@ FTextureCubeRHIRef FRuntimeRHITextureCubeFactory::CreateTextureCubeRHI_Windows()
     FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [this, &TextureCubeRHI, &CreateInfo, TextureFlags]()
         {
-            TextureCubeRHI = RHICreateTextureCube(
-                ImageData.SizeX, ImageData.PixelFormat, 1, TextureFlags, CreateInfo
+            TextureCubeRHI = RHICreateTexture(
+                FRHITextureCreateDesc::CreateCube(CreateInfo.DebugName)
+                .SetExtent(ImageData.SizeX)
+                .SetFormat(ImageData.PixelFormat)
+                .SetNumMips(1)
+                .SetFlags(TextureFlags)
+                .SetInitialState(ERHIAccess::Unknown)
+                .SetExtData(CreateInfo.ExtData)
+                .SetBulkData(CreateInfo.BulkData)
+                .SetGPUMask(CreateInfo.GPUMask)
+                .SetClearValue(CreateInfo.ClearValueBinding)
             );
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
     );

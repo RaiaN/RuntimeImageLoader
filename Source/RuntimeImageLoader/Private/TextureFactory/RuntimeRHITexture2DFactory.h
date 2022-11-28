@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "RuntimeImageData.h"
+#include "Templates/RefCounting.h"
 
-class FRHITexture2D;
-typedef TRefCountPtr<FRHITexture2D> FTexture2DRHIRef;
+class FRHITexture;
+typedef TRefCountPtr<FRHITexture> FTexture2DRHIRef;
 
 
 class UTexture2D;
