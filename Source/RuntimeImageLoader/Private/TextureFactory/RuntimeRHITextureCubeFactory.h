@@ -6,8 +6,13 @@
 #include "RuntimeImageData.h"
 #include "Templates/RefCounting.h"
 
+#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
 class FRHITexture;
 typedef TRefCountPtr<FRHITexture> FTextureCubeRHIRef;
+#else
+class FRHITextureCube;
+typedef TRefCountPtr<FRHITextureCube> FTextureCubeRHIRef;
+#endif
 
 
 class UTextureCube;

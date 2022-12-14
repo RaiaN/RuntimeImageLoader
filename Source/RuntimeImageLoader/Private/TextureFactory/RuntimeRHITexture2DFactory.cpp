@@ -86,6 +86,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
         FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
             [this, &CreateInfo, TextureFlags]()
             {
+#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
                 RHITexture2D = RHICreateTexture(
                     FRHITextureCreateDesc::Create2D(CreateInfo.DebugName)
                     .SetExtent(ImageData.SizeX, ImageData.SizeY)
@@ -99,6 +100,15 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
                     .SetGPUMask(CreateInfo.GPUMask)
                     .SetClearValue(CreateInfo.ClearValueBinding)
                 );
+#else
+                RHITexture2D = RHICreateTexture2D(
+                    ImageData.SizeX, ImageData.SizeY,
+                    ImageData.PixelFormat,
+                    ImageData.NumMips,
+                    1,
+                    TextureFlags,
+                    CreateInfo);
+#endif
 
             }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread
         );
@@ -127,6 +137,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Mobile()
         [this, &TextureFlags]()
         {
             FRHIResourceCreateInfo DummyCreateInfo(TEXT("DummyCreateInfo"));
+#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
             RHITexture2D = RHICreateTexture(
                 FRHITextureCreateDesc::Create2D(DummyCreateInfo.DebugName)
                 .SetExtent(ImageData.SizeX, ImageData.SizeY)
@@ -140,6 +151,15 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Mobile()
                 .SetGPUMask(DummyCreateInfo.GPUMask)
                 .SetClearValue(DummyCreateInfo.ClearValueBinding)
             );
+#else
+            RHITexture2D = RHICreateTexture2D(
+                ImageData.SizeX, ImageData.SizeY,
+                ImageData.PixelFormat,
+                ImageData.NumMips,
+                1,
+                TextureFlags,
+                DummyCreateInfo);
+#endif
 
             FUpdateTextureRegion2D TextureRegion2D;
             {
