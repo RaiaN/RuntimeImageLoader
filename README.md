@@ -17,6 +17,8 @@ Grab it from Unreal Marketplace: https://www.unrealengine.com/marketplace/en-US/
 
 Developer's UPDATE: **The active development of this free plugin is completed! It provides an intuitive Blueprint interface to load images without facing issues that exist in vanilla Unreal Engine. That was my main intention and I'm _not planning_ to support more advanced workflows, for example, image cache, mip generation, rare image formats and OS besides Windows and Android (currently experimental). However, I always welcome pull requests adding new features.**
 
+Discord: https://discord.gg/Ujw7QVrWxG
+
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
 - Allows to import HDR images aka Cubemaps (Windows only)
