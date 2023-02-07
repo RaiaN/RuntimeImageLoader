@@ -164,19 +164,28 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
 {
     const FString& InputImageFilename = Request.ImageFilename;
     
-    // read image data from using URI
     TArray<uint8> ImageBuffer;
-    ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
+
+    if (Request.ImageFilename.Len() > 0)
     {
-        ImageBuffer = ImageReader->ReadImage(Request.ImageFilename);
-        if (ImageBuffer.Num() == 0)
+        // read image data from using URI
+        ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
         {
-            PendingReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.ImageFilename, *ImageReader->GetLastError());
-            return false;
+            ImageBuffer = ImageReader->ReadImage(Request.ImageFilename);
+            if (ImageBuffer.Num() == 0)
+            {
+                PendingReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.ImageFilename, *ImageReader->GetLastError());
+                return false;
+            }
+
         }
-        
+
+        ImageReader = nullptr;
     }
-    ImageReader = nullptr;
+    else if (Request.ImageBytes.Num() > 0)
+    {
+        ImageBuffer = MoveTemp(Request.ImageBytes);
+    }
 
     // sanity check
     check(ImageBuffer.Num() > 0);

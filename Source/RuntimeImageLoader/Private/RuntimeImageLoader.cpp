@@ -4,6 +4,7 @@
 #include "Subsystems/SubsystemBlueprintLibrary.h"
 #include "UObject/WeakObjectPtr.h"
 #include "HAL/Platform.h"
+#include "Misc/FileHelper.h"
 #include "Interfaces/IPluginManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
@@ -54,6 +55,59 @@ void URuntimeImageLoader::LoadImageAsync(const FString& ImageFilename, const FTr
                             ensure(IsValid(ReadResult.OutTexture));
                         }
 #endif
+
+                        if (!ReadResult.OutError.IsEmpty())
+                        {
+                            UE_LOG(LogRuntimeImageLoader, Error, TEXT("Failed to load image. Error: %s"), *ReadResult.OutError);
+                        }
+
+                        bSuccess = ReadResult.OutError.IsEmpty();
+                        OutTexture = ReadResult.OutTexture;
+                        OutError = ReadResult.OutError;
+
+                        if (Linkage != -1)
+                        {
+                            CallbackTarget->ProcessEvent(ExecutionFunction, &Linkage);
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    Requests.Enqueue(Request);
+}
+
+void URuntimeImageLoader::LoadImageFromBytesAsync(UPARAM(ref) TArray<uint8>& ImageBytes, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject /*= nullptr*/)
+{
+    if (!IsValid(WorldContextObject))
+    {
+        return;
+    }
+
+    FLoadImageRequest Request;
+    {
+        Request.Params.ImageBytes = MoveTemp(ImageBytes);
+        Request.Params.TransformParams = TransformParams;
+
+        Request.OnRequestCompleted.BindLambda(
+            [this, &OutTexture, &bSuccess, &OutError, LatentInfo](const FImageReadResult& ReadResult)
+            {
+                FWeakObjectPtr CallbackTargetPtr = LatentInfo.CallbackTarget;
+                if (UObject* CallbackTarget = CallbackTargetPtr.Get())
+                {
+                    UFunction* ExecutionFunction = CallbackTarget->FindFunction(LatentInfo.ExecutionFunction);
+                    if (IsValid(ExecutionFunction))
+                    {
+                        int32 Linkage = LatentInfo.Linkage;
+
+        #if (UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT)
+                        // Make sure the texture was not destroyed by GC 
+                        if (ReadResult.OutError.IsEmpty())
+                        {
+                            ensure(IsValid(ReadResult.OutTexture));
+                        }
+        #endif
 
                         if (!ReadResult.OutError.IsEmpty())
                         {
@@ -159,6 +213,26 @@ void URuntimeImageLoader::LoadImageSync(const FString& ImageFilename, const FTra
     OutError = ReadResult.OutError;
 }
 
+void URuntimeImageLoader::LoadImageFromBytesSync(UPARAM(ref) TArray<uint8>& ImageBytes, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
+{
+    FImageReadRequest ReadRequest;
+    {
+        ReadRequest.ImageBytes = MoveTemp(ImageBytes);
+        ReadRequest.TransformParams = TransformParams;
+    }
+
+    ImageReader->BlockTillAllRequestsFinished();
+    ImageReader->AddRequest(ReadRequest);
+    ImageReader->BlockTillAllRequestsFinished();
+
+    FImageReadResult ReadResult;
+    ImageReader->GetResult(ReadResult);
+
+    bSuccess = ReadResult.OutError.IsEmpty();
+    OutTexture = ReadResult.OutTexture;
+    OutError = ReadResult.OutError;
+}
+
 void URuntimeImageLoader::CancelAll()
 {
     check (IsInGameThread());
@@ -174,6 +248,13 @@ void URuntimeImageLoader::CancelAll()
     ActiveRequest.Invalidate();
 
     ImageReader->Clear();
+}
+
+TArray<uint8> URuntimeImageLoader::LoadFileToByteArray(const FString& ImageFilename)
+{
+    TArray<uint8> OutData;
+    FFileHelper::LoadFileToArray(OutData, *ImageFilename);
+    return OutData;
 }
 
 FString URuntimeImageLoader::GetThisPluginResourcesDirectory()

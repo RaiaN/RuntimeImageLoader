@@ -43,6 +43,7 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
 struct RUNTIMEIMAGELOADER_API FImageReadRequest
 {
     FString ImageFilename = TEXT("");
+    TArray<uint8> ImageBytes;
     FTransformImageParams TransformParams;
 };
 
