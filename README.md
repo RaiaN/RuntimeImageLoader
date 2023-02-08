@@ -22,8 +22,9 @@ Discord: https://discord.gg/Ujw7QVrWxG
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
 - Allows to import HDR images aka Cubemaps (Windows only)
-- Can load image over HTTP or from local file storage
-- Can transform image during loading
+- Can load an image over HTTP or from local file storage
+- Can load an image from Byte array (TArray<uint8>)
+- Can transform an image during loading
 - Can cancel all ongoing image loading requests (Windows only)
 - Supports PNG, JPEG, BMP, TGA, OpenEXR, TIFF and QOI
 - Supports 8, 16, 32 bit per channel (or up to 128 bit *pixel depth* images)
