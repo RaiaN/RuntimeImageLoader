@@ -468,6 +468,8 @@ namespace FRuntimeImageUtils
             MakeUniqueObjectName(GetTransientPackage(), UTexture2D::StaticClass(), *BaseFilename),
             RF_Public | RF_Transient
         );
+        NewTexture->AddToRoot();
+
         NewTexture->NeverStream = true;
         NewTexture->SRGB = ImageData.SRGB;
 
@@ -508,6 +510,7 @@ namespace FRuntimeImageUtils
             MakeUniqueObjectName(GetTransientPackage(), UTextureCube::StaticClass(), *BaseFilename),
             RF_Public | RF_Transient
         );
+        NewTexture->AddToRoot();
 
         NewTexture->NeverStream = true;
         NewTexture->SRGB = ImageData.SRGB;

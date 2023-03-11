@@ -8,6 +8,7 @@
 #include "RenderUtils.h"
 #include "Engine/Texture.h"
 #include "Engine/Texture2D.h"
+#include "Engine/TextureCube.h"
 #include "PixelFormat.h"
 #include "Launch/Resources/Version.h"
 
@@ -230,6 +231,7 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
             PendingReadResult.OutError = FString::Printf(TEXT("Failed to create RHI texture cube, pixel format: %d"), (int32)ImageData.PixelFormat);
             return false;
         }
+        PendingReadResult.OutTextureCube->RemoveFromRoot();
     }
     else
     {
@@ -237,6 +239,7 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
         ApplySizeFormatTransformations(ImageData, Request.TransformParams);
 
         PendingReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
+        PendingReadResult.OutTexture->RemoveFromRoot();
 
         FRuntimeRHITexture2DFactory RHITexture2DFactory(PendingReadResult.OutTexture, ImageData);
         if (!RHITexture2DFactory.Create())
