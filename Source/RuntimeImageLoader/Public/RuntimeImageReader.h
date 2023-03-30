@@ -20,6 +20,24 @@ class UTextureCube;
 class IImageReader;
 
 
+
+USTRUCT(BlueprintType)
+struct RUNTIMEIMAGELOADER_API FInputImageDescription
+{
+    GENERATED_BODY()
+
+    FInputImageDescription(){ ImageBytes.Empty(); }
+    FInputImageDescription(const FString& InputImageFilename): ImageFilename(InputImageFilename) {}
+    FInputImageDescription(TArray<uint8>&& InputImageBytes) : ImageBytes(ImageBytes) {}
+
+    UPROPERTY()
+    FString ImageFilename = TEXT("");
+
+    UPROPERTY()
+    TArray<uint8> ImageBytes;
+};
+
+
 USTRUCT(BlueprintType)
 struct RUNTIMEIMAGELOADER_API FTransformImageParams
 {
@@ -27,6 +45,8 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     bool bForUI = true;
+
+    bool bOnlyPixels = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
     int32 PercentSizeX = 100;
@@ -42,9 +62,9 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
 
 struct RUNTIMEIMAGELOADER_API FImageReadRequest
 {
-    FString ImageFilename = TEXT("");
-    TArray<uint8> ImageBytes;
+    FInputImageDescription InputImage;
     FTransformImageParams TransformParams;
+    bool bPixelsOnly;
 };
 
 USTRUCT()
@@ -53,6 +73,9 @@ struct RUNTIMEIMAGELOADER_API FImageReadResult
     GENERATED_BODY()
 
     FString ImageFilename = TEXT("");
+
+    UPROPERTY()
+    TArray<FColor> OutImagePixels;
     
     UPROPERTY()
     UTexture2D* OutTexture = nullptr;

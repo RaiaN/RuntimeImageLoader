@@ -142,13 +142,22 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
         FImageReadRequest Request;
         while (Requests.Dequeue(Request) && !bStopThread)
         {
-            PendingReadResult.ImageFilename = Request.ImageFilename;
-
-            UE_LOG(LogRuntimeImageReader, Log, TEXT("Reading image %s"), *PendingReadResult.ImageFilename);
+            PendingReadResult.ImageFilename = Request.InputImage.ImageFilename;
+            if (PendingReadResult.ImageFilename.Len() > 0)
+            {
+                UE_LOG(LogRuntimeImageReader, Log, TEXT("Reading image from file: %s"), *PendingReadResult.ImageFilename);
+            }
+            else if (Request.InputImage.ImageBytes.Num() > 0)
+            {
+                UE_LOG(
+                    LogRuntimeImageReader, Log, TEXT("Reading image from byte array. First few bytes: %d %d %d"), 
+                    Request.InputImage.ImageBytes[0], Request.InputImage.ImageBytes[1], Request.InputImage.ImageBytes[2]
+                );
+            }
 
             if (!ProcessRequest(Request))
             {
-                UE_LOG(LogRuntimeImageReader, Warning, TEXT("Failed to process image %s"), *PendingReadResult.ImageFilename);
+                UE_LOG(LogRuntimeImageReader, Warning, TEXT("Failed to process request"));
             }
 
             FScopeLock ResultsLock(&ResultsMutex);
@@ -163,19 +172,17 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
 
 bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
 {
-    const FString& InputImageFilename = Request.ImageFilename;
-    
     TArray<uint8> ImageBuffer;
 
-    if (Request.ImageFilename.Len() > 0)
+    if (Request.InputImage.ImageFilename.Len() > 0)
     {
         // read image data from using URI
-        ImageReader = FImageReaderFactory::CreateReader(Request.ImageFilename);
+        ImageReader = FImageReaderFactory::CreateReader(Request.InputImage.ImageFilename);
         {
-            ImageBuffer = ImageReader->ReadImage(Request.ImageFilename);
+            ImageBuffer = ImageReader->ReadImage(Request.InputImage.ImageFilename);
             if (ImageBuffer.Num() == 0)
             {
-                PendingReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.ImageFilename, *ImageReader->GetLastError());
+                PendingReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Error: %s"), *Request.InputImage.ImageFilename, *ImageReader->GetLastError());
                 return false;
             }
 
@@ -183,9 +190,9 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
 
         ImageReader = nullptr;
     }
-    else if (Request.ImageBytes.Num() > 0)
+    else if (Request.InputImage.ImageBytes.Num() > 0)
     {
-        ImageBuffer = MoveTemp(Request.ImageBytes);
+        ImageBuffer = MoveTemp(Request.InputImage.ImageBytes);
     }
 
     // sanity check
@@ -203,6 +210,20 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
         return false;
     }
 
+    if (Request.TransformParams.bOnlyPixels)
+    {
+        if (ImageData.TextureSourceFormat == TSF_BGRE8)
+        {
+            PendingReadResult.OutImagePixels = ImageData.AsBGRE8();
+        }
+        else
+        {
+            PendingReadResult.OutImagePixels = ImageData.AsBGRA8();
+        }
+
+        return true;
+    }
+
     // sanity checks
     check(ImageData.RawData.Num() > 0);
     check(ImageData.TextureSourceFormat != TSF_Invalid);
@@ -215,9 +236,10 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
     }
 
     // TODO: Below code should be unified and texture source format should be respected by transformation layers
+    // cubemaps texture source format
     if (ImageData.TextureSourceFormat == TSF_BGRE8)
     {
-        PendingReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.ImageFilename, &ImageData });
+        PendingReadResult.OutTextureCube = TextureFactory->CreateTextureCube({ Request.InputImage.ImageFilename, &ImageData });
 
         // TODO: Split into multiple transformation layers?
         // FIXME: this transformation should be done after texture cube is created
@@ -238,7 +260,7 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
         // TODO: Split into multiple transformation layers?
         ApplySizeFormatTransformations(ImageData, Request.TransformParams);
 
-        PendingReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.ImageFilename, &ImageData });
+        PendingReadResult.OutTexture = TextureFactory->CreateTexture2D({ Request.InputImage.ImageFilename, &ImageData });
         PendingReadResult.OutTexture->RemoveFromRoot();
 
         FRuntimeRHITexture2DFactory RHITexture2DFactory(PendingReadResult.OutTexture, ImageData);

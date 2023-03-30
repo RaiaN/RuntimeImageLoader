@@ -31,7 +31,7 @@ public:
 
     bool IsRequestValid() const 
     {
-        return Params.ImageFilename.Len() > 0 || Params.ImageBytes.Num() > 0;
+        return Params.InputImage.ImageFilename.Len() > 0 || Params.InputImage.ImageBytes.Num() > 0;
     }
 
 public:
@@ -65,6 +65,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams"))
     void LoadImageFromBytesSync(UPARAM(ref) TArray<uint8>& ImageBytes, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
+
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
+    void LoadImagePixels(const FInputImageDescription& InputImage, const FTransformImageParams& TransformParams, TArray<FColor>& OutImagePixels, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
     void CancelAll();
