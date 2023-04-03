@@ -174,9 +174,10 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
 {
     TArray<uint8> ImageBuffer;
 
+    // read image data from using URI
+    // if not then read from bytes
     if (Request.InputImage.ImageFilename.Len() > 0)
     {
-        // read image data from using URI
         ImageReader = FImageReaderFactory::CreateReader(Request.InputImage.ImageFilename);
         {
             ImageBuffer = ImageReader->ReadImage(Request.InputImage.ImageFilename);

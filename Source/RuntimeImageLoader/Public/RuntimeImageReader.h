@@ -28,7 +28,7 @@ struct RUNTIMEIMAGELOADER_API FInputImageDescription
 
     FInputImageDescription(){ ImageBytes.Empty(); }
     FInputImageDescription(const FString& InputImageFilename): ImageFilename(InputImageFilename) {}
-    FInputImageDescription(TArray<uint8>&& InputImageBytes) : ImageBytes(ImageBytes) {}
+    FInputImageDescription(TArray<uint8>&& InputImageBytes) : ImageBytes(InputImageBytes) {}
 
     UPROPERTY()
     FString ImageFilename = TEXT("");
