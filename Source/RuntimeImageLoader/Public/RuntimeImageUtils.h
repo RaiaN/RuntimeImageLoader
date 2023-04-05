@@ -14,4 +14,11 @@ namespace FRuntimeImageUtils
 
     UTexture2D* CreateTexture(const FString& ImageFilename, const FRuntimeImageData& ImageData);
     UTextureCube* CreateTextureCube(const FString& ImageFilename, const FRuntimeImageData& ImageData);
+
+    static TArray<FString> SupportedImageFormats{
+        TEXT(".png"), TEXT(".jpg"), TEXT(".jpeg"), 
+        TEXT(".bmp"), TEXT(".tga"), TEXT(".exr"), 
+        TEXT(".tif"), TEXT(".tiff"), TEXT(".qoi"),
+        TEXT(".hdr"), TEXT(".tiff"), TEXT(".qoi"),
+    };
 }

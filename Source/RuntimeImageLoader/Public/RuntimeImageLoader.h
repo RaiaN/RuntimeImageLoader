@@ -72,10 +72,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
     void CancelAll();
 
-    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
+    /** Utilities */
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
     TArray<uint8> LoadFileToByteArray(const FString& ImageFilename);
 
-    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Runtime Image Loader")
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
+    void FindImagesInDirectory(const FString& Directory, TArray<FString>& OutImageFilenames, bool& bSuccess, FString& OutError);
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Runtime Image Loader | Utilities")
     static FString GetThisPluginResourcesDirectory();
 
 protected:

@@ -4,8 +4,11 @@
 #include "Subsystems/SubsystemBlueprintLibrary.h"
 #include "UObject/WeakObjectPtr.h"
 #include "HAL/Platform.h"
+#include "HAL/FileManager.h"
+#include "GenericPlatform/GenericPlatformFile.h"
 #include "Misc/FileHelper.h"
 #include "Interfaces/IPluginManager.h"
+#include "RuntimeImageUtils.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
@@ -309,6 +312,46 @@ TArray<uint8> URuntimeImageLoader::LoadFileToByteArray(const FString& ImageFilen
     TArray<uint8> OutData;
     FFileHelper::LoadFileToArray(OutData, *ImageFilename);
     return OutData;
+}
+
+class FImageFileVisitor : public IPlatformFile::FDirectoryVisitor
+{
+public:
+    virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
+    {
+        if (!bIsDirectory)
+        {
+            const FString Filename(FilenameOrDirectory);
+
+            for (const FString& ImageFormat : FRuntimeImageUtils::SupportedImageFormats)
+            {
+                if (Filename.EndsWith(ImageFormat))
+                {
+                    Files.Add(Filename);
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+
+    TArray<FString> Files;
+};
+
+void URuntimeImageLoader::FindImagesInDirectory(const FString& Directory, TArray<FString>& OutImageFilenames, bool& bSuccess, FString& OutError)
+{
+    if (Directory.IsEmpty() || !IFileManager::Get().DirectoryExists(*Directory))
+    {
+        bSuccess = false;
+        OutError = FString::Printf(TEXT("Directory not found: %s"), *Directory);
+        return;
+    }
+
+    FImageFileVisitor DirectoryVisitor;
+    IFileManager::Get().IterateDirectoryRecursively(*Directory, DirectoryVisitor);
+
+    OutImageFilenames = DirectoryVisitor.Files;
+    bSuccess = true;
 }
 
 FString URuntimeImageLoader::GetThisPluginResourcesDirectory()

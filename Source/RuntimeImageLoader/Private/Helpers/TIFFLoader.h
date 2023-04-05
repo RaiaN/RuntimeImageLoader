@@ -16,8 +16,6 @@ public:
 
 	bool Load(const uint8* Buffer, uint32 Length);
 
-	int32 GetBitDepth() const;
-
 	void SetError(const FString& InErrorMessage);
 	FString GetError();
 
