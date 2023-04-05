@@ -4,8 +4,6 @@
 #include "ImageCore.h"
 #include "Launch/Resources/Version.h"
 
-PRAGMA_DISABLE_OPTIMIZATION
-
 // transform world space vector to a space relative to the face
 static FVector TransformSideToWorldSpace(uint32 CubemapFace, FVector InDirection)
 {
@@ -221,5 +219,3 @@ void GenerateBaseCubeMipFromLongitudeLatitude2D(FImage* OutMip, const FImage& Sr
         }
     }
 }
-
-PRAGMA_ENABLE_OPTIMIZATION
