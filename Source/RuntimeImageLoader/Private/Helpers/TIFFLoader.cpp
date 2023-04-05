@@ -6,6 +6,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoaderTIFFLoader, Log, All);
 
 #if WITH_FREEIMAGE_LIB
 
+#include "Misc/Paths.h"
+
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
 #endif // PLATFORM_WINDOWS

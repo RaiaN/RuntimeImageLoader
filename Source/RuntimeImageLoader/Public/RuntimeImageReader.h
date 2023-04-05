@@ -8,6 +8,7 @@
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
 #include "ImageCore.h"
+#include "Containers/Queue.h"
 #include "RuntimeImageData.h"
 #include "RuntimeImageReader.generated.h"
 
