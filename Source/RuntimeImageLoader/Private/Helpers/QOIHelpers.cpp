@@ -3,11 +3,8 @@
 #include "QOIHelpers.h"
 
 #define QOI_IMPLEMENTATION 1
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-#include "qoi.h"
-PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
-PRAGMA_DISABLE_OPTIMIZATION
+#include "qoi.h"
 
 bool FQOILoader::IsValidImage(const uint8* Buffer, uint32 Length) const
 {
@@ -89,5 +86,3 @@ FString FQOILoader::GetLastError()
 {
     return ErrorMessage;
 }
-
-PRAGMA_ENABLE_OPTIMIZATION
