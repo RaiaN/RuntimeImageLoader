@@ -2,7 +2,9 @@
 
 #include "RuntimeImageUtils.h"
 
+#include "UObject/UObjectGlobals.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureCube.h"
 #include "Engine/TextureDefines.h"
@@ -464,8 +466,8 @@ namespace FRuntimeImageUtils
         const FString& BaseFilename = FPaths::GetBaseFilename(ImageFilename);
 
         UTexture2D* NewTexture = NewObject<UTexture2D>(
-            GetTransientPackage(), 
-            MakeUniqueObjectName(GetTransientPackage(), UTexture2D::StaticClass(), *BaseFilename),
+            (UObject*)GetTransientPackage(),
+            MakeUniqueObjectName((UObject*)GetTransientPackage(), UTexture2D::StaticClass(), *BaseFilename),
             RF_Public | RF_Transient
         );
         NewTexture->AddToRoot();
@@ -506,8 +508,8 @@ namespace FRuntimeImageUtils
         const FString& BaseFilename = FPaths::GetBaseFilename(ImageFilename);
 
         UTextureCube* NewTexture = NewObject<UTextureCube>(
-            GetTransientPackage(),
-            MakeUniqueObjectName(GetTransientPackage(), UTextureCube::StaticClass(), *BaseFilename),
+            (UObject*)GetTransientPackage(),
+            MakeUniqueObjectName((UObject*)GetTransientPackage(), UTextureCube::StaticClass(), *BaseFilename),
             RF_Public | RF_Transient
         );
         NewTexture->AddToRoot();

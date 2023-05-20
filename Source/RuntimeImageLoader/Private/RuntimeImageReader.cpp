@@ -27,7 +27,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageReader, Log, All);
 
 void URuntimeImageReader::Initialize()
 {
-    TextureFactory = NewObject<URuntimeTextureFactory>(GetTransientPackage());
+    TextureFactory = NewObject<URuntimeTextureFactory>((UObject*)GetTransientPackage());
 
     ThreadSemaphore = FPlatformProcess::GetSynchEventFromPool(false);
     Thread = FRunnableThread::Create(this, TEXT("RuntimeImageReader"), 0, TPri_SlightlyBelowNormal);
