@@ -338,7 +338,7 @@ public:
     TArray<FString> Files;
 };
 
-void URuntimeImageLoader::FindImagesInDirectory(const FString& Directory, TArray<FString>& OutImageFilenames, bool& bSuccess, FString& OutError)
+void URuntimeImageLoader::FindImagesInDirectory(const FString& Directory, bool bIsRecursive, TArray<FString>& OutImageFilenames, bool& bSuccess, FString& OutError)
 {
     if (Directory.IsEmpty() || !IFileManager::Get().DirectoryExists(*Directory))
     {
@@ -348,7 +348,14 @@ void URuntimeImageLoader::FindImagesInDirectory(const FString& Directory, TArray
     }
 
     FImageFileVisitor DirectoryVisitor;
-    IFileManager::Get().IterateDirectoryRecursively(*Directory, DirectoryVisitor);
+    if (bIsRecursive)
+    {
+        IFileManager::Get().IterateDirectoryRecursively(*Directory, DirectoryVisitor);
+    }
+    else
+    {
+        IFileManager::Get().IterateDirectory(*Directory, DirectoryVisitor);
+    }
 
     OutImageFilenames = DirectoryVisitor.Files;
     bSuccess = true;

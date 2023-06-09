@@ -77,7 +77,7 @@ public:
     TArray<uint8> LoadFileToByteArray(const FString& ImageFilename);
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
-    void FindImagesInDirectory(const FString& Directory, TArray<FString>& OutImageFilenames, bool& bSuccess, FString& OutError);
+    void FindImagesInDirectory(const FString& Directory, bool bIsRecursive, TArray<FString>& OutImageFilenames, bool& bSuccess, FString& OutError);
 
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Runtime Image Loader | Utilities")
     static FString GetThisPluginResourcesDirectory();
