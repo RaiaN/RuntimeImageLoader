@@ -20,5 +20,6 @@ namespace FRuntimeImageUtils
         TEXT(".bmp"), TEXT(".tga"), TEXT(".exr"), 
         TEXT(".tif"), TEXT(".tiff"), TEXT(".qoi"),
         TEXT(".hdr"), TEXT(".tiff"), TEXT(".qoi"),
+        TEXT(".jfif")
     };
 }
