@@ -53,6 +53,7 @@ public class RuntimeImageLoader : ModuleRules
 				"ImageCore",
 				"FreeImage",
 				"HTTP",
+				"RuntimeImageLoaderLibrary",
 				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}

@@ -12,4 +12,8 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+private:
+	/** Handle to the libnsgif dll we will load */
+	void* LibnsgifHandle;
 };
