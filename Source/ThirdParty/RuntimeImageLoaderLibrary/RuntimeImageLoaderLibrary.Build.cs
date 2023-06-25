@@ -23,17 +23,5 @@ public class RuntimeImageLoaderLibrary : ModuleRules
 			// Ensure that the DLL is staged along with the executable
 			RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/RuntimeImageLoaderLibrary/Win64/libnsgif.dll");
         }
-  //      else if (Target.Platform == UnrealTargetPlatform.Mac)
-  //      {
-  //          PublicDelayLoadDLLs.Add(Path.Combine(ModuleDirectory, "Mac", "Release", "libExampleLibrary.dylib"));
-  //          RuntimeDependencies.Add("$(PluginDir)/Source/ThirdParty/RuntimeImageLoaderLibrary/Mac/Release/libExampleLibrary.dylib");
-  //      }
-  //      else if (Target.Platform == UnrealTargetPlatform.Linux)
-		//{
-		//	string ExampleSoPath = Path.Combine("$(PluginDir)", "Binaries", "ThirdParty", "RuntimeImageLoaderLibrary", "Linux", "x86_64-unknown-linux-gnu", "libExampleLibrary.so");
-		//	PublicAdditionalLibraries.Add(ExampleSoPath);
-		//	PublicDelayLoadDLLs.Add(ExampleSoPath);
-		//	RuntimeDependencies.Add(ExampleSoPath);
-		//}
 	}
 }
