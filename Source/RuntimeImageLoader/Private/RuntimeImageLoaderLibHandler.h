@@ -1,4 +1,4 @@
-// Copyright Unreal Solution Ltd, Inc. All Rights Reserved.
+// Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #pragma once
 #include "CoreMinimal.h"
@@ -69,6 +69,8 @@ static nsgif_frame_decode_FnPtr Fn_nsgif_frame_decode = nullptr;
 static nsgif_reset_FnPtr Fn_nsgif_reset = nullptr;
 /** Pointer to nsgif_get_info function. */
 static nsgif_get_info_FnPtr Fn_nsgif_get_info = nullptr;
+
+/** Handling the Loading and Unloading of DLL and the Function Pointer exported from Library  */
 
 class FLibnsgifHandler
 {

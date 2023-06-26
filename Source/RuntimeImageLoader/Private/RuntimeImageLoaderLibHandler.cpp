@@ -1,4 +1,4 @@
-// Copyright Unreal Soultion Ltd, Inc. All Rights Reserved.
+// Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #include "RuntimeImageLoaderLibHandler.h"
 #include "RuntimeImageLoaderModule.h"
