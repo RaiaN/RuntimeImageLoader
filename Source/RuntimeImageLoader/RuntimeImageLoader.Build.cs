@@ -15,8 +15,10 @@ public class RuntimeImageLoader : ModuleRules
 
             PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         }
+		
+		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../", "ThirdParty", "RuntimeImageLoaderLibrary", "include"));
 
-        PublicIncludePaths.AddRange(
+		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
 			}

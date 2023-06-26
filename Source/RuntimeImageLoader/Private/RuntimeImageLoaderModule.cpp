@@ -1,8 +1,9 @@
 // Copyright 2022 Peter Leontev. All Rights Reserved.
 
 #include "RuntimeImageLoaderModule.h"
-#include "Core.h"
 #include "Interfaces/IPluginManager.h"
+#include "Misc/MessageDialog.h"
+#include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "FRuntimeImageLoaderModule"
 

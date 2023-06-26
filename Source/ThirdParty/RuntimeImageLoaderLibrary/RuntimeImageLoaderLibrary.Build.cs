@@ -14,14 +14,16 @@ public class RuntimeImageLoaderLibrary : ModuleRules
 			string IncPath = Path.Combine(ModuleDirectory, "include");
 			PublicSystemIncludePaths.Add(IncPath);
 
+			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "include"));
+
 			// Add the import library
 			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.lib"));
 
 			// Delay-load the DLL, so we can load it from the right place first
 			PublicDelayLoadDLLs.Add("libnsgif.dll");
-
+			
 			// Ensure that the DLL is staged along with the executable
-			RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/RuntimeImageLoaderLibrary/Win64/libnsgif.dll");
+			RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.dll"));
         }
 	}
 }
