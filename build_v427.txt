@@ -1,0 +1,322 @@
+Running AutomationTool...
+Parsing command line: BuildPlugin -StrictIncludes -Plugin="C:\Users\charlie\Documents\Unreal Projects\RuntimeImageLoader\RuntimeImageLoader.uplugin" -Package=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader -CreateSubFolder -VS2019 -Rocket
+Copying 222 file(s) using max 64 thread(s)
+Reading plugin from D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin...
+Building with precompiled headers and unity disabled
+Building plugin for host platforms: Win64
+Running: D:\UE_4.27\Engine\Binaries\DotNET\UnrealBuildTool.exe UE4Editor Win64 Development -Project=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject -plugin=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin -iwyu -noubtmakefiles -manifest=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Editor-Win64-Development.xml -nohotreload -NoPCH -NoSharedPCH -DisableUnity -log="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UBT-UE4Editor-Win64-Development.txt"
+  Parsing headers for UE4Editor
+    Running UnrealHeaderTool "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject" "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UHT-UE4Editor-Win64-Development.txt" -installed
+  LogInit: Display: Loading text-based GConfig....
+  Reflection code generated for UE4Editor in 8.7271255 seconds
+  Writing manifest to D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Editor-Win64-Development.xml
+  Building UE4Editor...
+  Using Visual Studio 2019 14.29.30148 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+  Building 28 actions with 12 processes...
+    [1/28] ImageReaderFactory.cpp
+    [2/28] RuntimeImageLoaderLibHandler.cpp
+    [3/28] ImageReaderHttp.cpp
+    [4/28] RuntimeTextureFactory.gen.cpp
+    [5/28] RuntimeImageLoaderModule.cpp
+    [6/28] RuntimeImageData.cpp
+    [7/28] RuntimeTextureCubeResource.cpp
+    [8/28] RuntimeTextureResource.cpp
+    [9/28] RuntimeRHITextureCubeFactory.cpp
+    [10/28] RuntimeImageReader.cpp
+    [11/28] TIFFLoader.cpp
+    [12/28] RuntimeImageLoader.gen.cpp
+    [13/28] RuntimeImageUtils.cpp
+    [14/28] Default.rc2
+    [15/28] ImageReaderLocal.cpp
+    [16/28] PNGHelpers.cpp
+    [17/28] CubemapUtils.cpp
+    [18/28] RuntimeRHITexture2DFactory.cpp
+    [19/28] RuntimeImageLoader.init.gen.cpp
+    [20/28] RuntimeImageReader.gen.cpp
+    [21/28] RuntimeImageLoader.cpp
+    [22/28] RuntimeTexture2DResource.cpp
+    [23/28] QOIHelpers.cpp
+    [24/28] TGAHelpers.cpp
+    [25/28] RuntimeTextureFactory.cpp
+    [26/28] UE4Editor-RuntimeImageLoader.lib
+       Creating library D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\Intermediate\Build\Win64\UE4Editor\Development\RuntimeImageLoader\UE4Editor-RuntimeImageLoader.lib and object D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\Intermediate\Build\Win64\UE4Editor\Development\RuntimeImageLoader\UE4Editor-RuntimeImageLoader.exp
+    [27/28] UE4Editor-RuntimeImageLoader.dll
+       Creating library D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\Intermediate\Build\Win64\UE4Editor\Development\RuntimeImageLoader\UE4Editor-RuntimeImageLoader.suppressed.lib and object D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\Intermediate\Build\Win64\UE4Editor\Development\RuntimeImageLoader\UE4Editor-RuntimeImageLoader.suppressed.exp
+    [28/28] UE4Editor.target
+  Total time in Parallel executor: 67.73 seconds
+  Total execution time: 82.44 seconds
+Took 82.6381354s to run UnrealBuildTool.exe, ExitCode=0
+Building plugin for target platforms: Android, Win64, Win32
+Running: D:\UE_4.27\Engine\Binaries\DotNET\UnrealBuildTool.exe UE4Game Android Development -Project=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject -plugin=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin -iwyu -noubtmakefiles -manifest=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Android-Development.xml -nohotreload -architectures=armv7+arm64 -NoPCH -NoSharedPCH -DisableUnity -log="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UBT-UE4Game-Android-Development.txt"
+  PLATFORM_ANDROID_NDK_VERSION = 210500
+  NDK toolchain: r21e, NDK version: 30, GccVersion: 4.9, ClangVersion: 9.0.9
+  Parsing headers for UE4Game
+    Running UnrealHeaderTool "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject" "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Intermediate\Build\Android\UE4Game\Development\UE4Game.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UHT-UE4Game-Android-Development.txt" -installed
+  LogInit: Display: Loading text-based GConfig....
+  Reflection code generated for UE4Game in 4.3563168 seconds
+  Compiling Native 32-bit code with NDK API 'android-30'
+  Compiling Native 64-bit code with NDK API 'android-30'
+  Writing manifest to D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Android-Development.xml
+  Building UE4Game...
+  Building 48 actions with 12 processes...
+    [1/48] CubemapUtils.cpp [armv7]
+    [2/48] RuntimeImageLoaderModule.cpp [armv7]
+    [3/48] RuntimeImageLoaderLibHandler.cpp [armv7]
+    [4/48] ImageReaderLocal.cpp [armv7]
+    [5/48] RuntimeTextureFactory.gen.cpp [arm64]
+    [6/48] RuntimeTextureResource.cpp [armv7]
+    [7/48] TGAHelpers.cpp [arm64]
+    [8/48] TGAHelpers.cpp [armv7]
+    [9/48] RuntimeImageReader.gen.cpp [armv7]
+    [10/48] RuntimeRHITextureCubeFactory.cpp [armv7]
+    [11/48] RuntimeImageLoader.gen.cpp [arm64]
+    [12/48] RuntimeImageReader.cpp [armv7]
+    [13/48] RuntimeTexture2DResource.cpp [armv7]
+    [14/48] RuntimeTexture2DResource.cpp [arm64]
+    [15/48] RuntimeTextureCubeResource.cpp [arm64]
+    [16/48] RuntimeImageLoader.cpp [armv7]
+    [17/48] PNGHelpers.cpp [arm64]
+    [18/48] RuntimeTextureFactory.gen.cpp [armv7]
+    [19/48] RuntimeImageLoaderModule.cpp [arm64]
+    [20/48] ImageReaderHttp.cpp [arm64]
+    [21/48] RuntimeImageLoader.init.gen.cpp [arm64]
+    [22/48] RuntimeImageLoaderLibHandler.cpp [arm64]
+    [23/48] RuntimeImageData.cpp [armv7]
+    [24/48] ImageReaderFactory.cpp [arm64]
+    [25/48] RuntimeImageLoader.gen.cpp [armv7]
+    [26/48] RuntimeTextureCubeResource.cpp [armv7]
+    [27/48] QOIHelpers.cpp [armv7]
+    [28/48] RuntimeTextureFactory.cpp [arm64]
+    [29/48] RuntimeImageReader.gen.cpp [arm64]
+    [30/48] ImageReaderLocal.cpp [arm64]
+    [31/48] ImageReaderFactory.cpp [armv7]
+    [32/48] RuntimeRHITextureCubeFactory.cpp [arm64]
+    [33/48] ImageReaderHttp.cpp [armv7]
+    [34/48] RuntimeTextureResource.cpp [arm64]
+    [35/48] RuntimeImageData.cpp [arm64]
+    [36/48] CubemapUtils.cpp [arm64]
+    [37/48] RuntimeImageLoader.init.gen.cpp [armv7]
+    [38/48] TIFFLoader.cpp [armv7]
+    [39/48] RuntimeRHITexture2DFactory.cpp [arm64]
+    [40/48] RuntimeImageLoader.cpp [arm64]
+    [41/48] RuntimeRHITexture2DFactory.cpp [armv7]
+    [42/48] RuntimeImageReader.cpp [arm64]
+    [43/48] RuntimeImageUtils.cpp [arm64]
+    [44/48] RuntimeTextureFactory.cpp [armv7]
+    [45/48] QOIHelpers.cpp [arm64]
+    [46/48] PNGHelpers.cpp [armv7]
+    [47/48] TIFFLoader.cpp [arm64]
+    [48/48] RuntimeImageUtils.cpp [armv7]
+  Total time in Parallel executor: 56.03 seconds
+  Total execution time: 63.14 seconds
+Took 63.2585817s to run UnrealBuildTool.exe, ExitCode=0
+Running: D:\UE_4.27\Engine\Binaries\DotNET\UnrealBuildTool.exe UE4Game Android Shipping -Project=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject -plugin=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin -iwyu -noubtmakefiles -manifest=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Android-Shipping.xml -nohotreload -architectures=armv7+arm64 -NoPCH -NoSharedPCH -DisableUnity -log="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UBT-UE4Game-Android-Shipping.txt"
+  PLATFORM_ANDROID_NDK_VERSION = 210500
+  NDK toolchain: r21e, NDK version: 30, GccVersion: 4.9, ClangVersion: 9.0.9
+  Parsing headers for UE4Game
+    Running UnrealHeaderTool "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject" "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Intermediate\Build\Android\UE4Game\Shipping\UE4Game.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UHT-UE4Game-Android-Shipping.txt" -installed
+  LogInit: Display: Loading text-based GConfig....
+  Reflection code generated for UE4Game in 3.9497663 seconds
+  Compiling Native 32-bit code with NDK API 'android-30'
+  Compiling Native 64-bit code with NDK API 'android-30'
+  Writing manifest to D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Android-Shipping.xml
+  Building UE4Game...
+  Building 48 actions with 12 processes...
+    [1/48] CubemapUtils.cpp [armv7]
+    [2/48] ImageReaderLocal.cpp [armv7]
+    [3/48] RuntimeImageLoader.init.gen.cpp [armv7]
+    [4/48] RuntimeTextureFactory.gen.cpp [arm64]
+    [5/48] ImageReaderHttp.cpp [armv7]
+    [6/48] RuntimeTextureFactory.gen.cpp [armv7]
+    [7/48] RuntimeImageData.cpp [armv7]
+    [8/48] TGAHelpers.cpp [armv7]
+    [9/48] QOIHelpers.cpp [armv7]
+    [10/48] RuntimeTextureResource.cpp [armv7]
+    [11/48] RuntimeTextureCubeResource.cpp [arm64]
+    [12/48] RuntimeTextureResource.cpp [arm64]
+    [13/48] RuntimeImageReader.gen.cpp [armv7]
+    [14/48] RuntimeImageReader.cpp [arm64]
+    [15/48] RuntimeTextureCubeResource.cpp [armv7]
+    [16/48] ImageReaderLocal.cpp [arm64]
+    [17/48] RuntimeImageLoader.gen.cpp [arm64]
+    [18/48] RuntimeTextureFactory.cpp [armv7]
+    [19/48] RuntimeImageLoaderLibHandler.cpp [armv7]
+    [20/48] TGAHelpers.cpp [arm64]
+    [21/48] TIFFLoader.cpp [arm64]
+    [22/48] RuntimeImageLoader.gen.cpp [armv7]
+    [23/48] RuntimeImageLoaderModule.cpp [armv7]
+    [24/48] PNGHelpers.cpp [arm64]
+    [25/48] RuntimeImageLoader.cpp [armv7]
+    [26/48] RuntimeImageReader.gen.cpp [arm64]
+    [27/48] RuntimeTextureFactory.cpp [arm64]
+    [28/48] RuntimeImageLoader.cpp [arm64]
+    [29/48] ImageReaderHttp.cpp [arm64]
+    [30/48] CubemapUtils.cpp [arm64]
+    [31/48] RuntimeRHITexture2DFactory.cpp [armv7]
+    [32/48] RuntimeImageLoaderModule.cpp [arm64]
+    [33/48] RuntimeRHITextureCubeFactory.cpp [armv7]
+    [34/48] ImageReaderFactory.cpp [armv7]
+    [35/48] RuntimeImageReader.cpp [armv7]
+    [36/48] RuntimeRHITexture2DFactory.cpp [arm64]
+    [37/48] ImageReaderFactory.cpp [arm64]
+    [38/48] RuntimeImageLoaderLibHandler.cpp [arm64]
+    [39/48] TIFFLoader.cpp [armv7]
+    [40/48] RuntimeImageData.cpp [arm64]
+    [41/48] RuntimeTexture2DResource.cpp [arm64]
+    [42/48] QOIHelpers.cpp [arm64]
+    [43/48] RuntimeImageUtils.cpp [armv7]
+    [44/48] RuntimeImageLoader.init.gen.cpp [arm64]
+    [45/48] RuntimeRHITextureCubeFactory.cpp [arm64]
+    [46/48] PNGHelpers.cpp [armv7]
+    [47/48] RuntimeImageUtils.cpp [arm64]
+    [48/48] RuntimeTexture2DResource.cpp [armv7]
+  Total time in Parallel executor: 50.76 seconds
+  Total execution time: 56.88 seconds
+Took 57.0035138s to run UnrealBuildTool.exe, ExitCode=0
+Running: D:\UE_4.27\Engine\Binaries\DotNET\UnrealBuildTool.exe UE4Game Win64 Development -Project=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject -plugin=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin -iwyu -noubtmakefiles -manifest=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win64-Development.xml -nohotreload -NoPCH -NoSharedPCH -DisableUnity -log="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UBT-UE4Game-Win64-Development.txt"
+  Parsing headers for UE4Game
+    Running UnrealHeaderTool "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject" "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Intermediate\Build\Win64\UE4Game\Development\UE4Game.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UHT-UE4Game-Win64-Development.txt" -installed
+  LogInit: Display: Loading text-based GConfig....
+  Reflection code generated for UE4Game in 4.2793994 seconds
+  Writing manifest to D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win64-Development.xml
+  Building UE4Game...
+  Using Visual Studio 2019 14.29.30148 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+  Building 24 actions with 12 processes...
+    [1/24] CubemapUtils.cpp
+    [2/24] ImageReaderFactory.cpp
+    [3/24] RuntimeImageLoaderModule.cpp
+    [4/24] ImageReaderHttp.cpp
+    [5/24] RuntimeImageLoader.init.gen.cpp
+    [6/24] ImageReaderLocal.cpp
+    [7/24] RuntimeTextureFactory.gen.cpp
+    [8/24] PNGHelpers.cpp
+    [9/24] RuntimeRHITexture2DFactory.cpp
+    [10/24] TGAHelpers.cpp
+    [11/24] RuntimeTextureCubeResource.cpp
+    [12/24] RuntimeRHITextureCubeFactory.cpp
+    [13/24] RuntimeImageLoader.cpp
+    [14/24] RuntimeTextureFactory.cpp
+    [15/24] RuntimeImageLoaderLibHandler.cpp
+    [16/24] QOIHelpers.cpp
+    [17/24] RuntimeImageReader.gen.cpp
+    [18/24] TIFFLoader.cpp
+    [19/24] RuntimeTexture2DResource.cpp
+    [20/24] RuntimeImageData.cpp
+    [21/24] RuntimeTextureResource.cpp
+    [22/24] RuntimeImageReader.cpp
+    [23/24] RuntimeImageLoader.gen.cpp
+    [24/24] RuntimeImageUtils.cpp
+  Total time in Parallel executor: 41.75 seconds
+  Total execution time: 48.15 seconds
+Took 48.2498522s to run UnrealBuildTool.exe, ExitCode=0
+Running: D:\UE_4.27\Engine\Binaries\DotNET\UnrealBuildTool.exe UE4Game Win64 Shipping -Project=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject -plugin=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin -iwyu -noubtmakefiles -manifest=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win64-Shipping.xml -nohotreload -NoPCH -NoSharedPCH -DisableUnity -log="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UBT-UE4Game-Win64-Shipping.txt"
+  Parsing headers for UE4Game
+    Running UnrealHeaderTool "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject" "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Intermediate\Build\Win64\UE4Game\Shipping\UE4Game.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UHT-UE4Game-Win64-Shipping.txt" -installed
+  LogInit: Display: Loading text-based GConfig....
+  Reflection code generated for UE4Game in 4.0903244 seconds
+  Writing manifest to D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win64-Shipping.xml
+  Building UE4Game...
+  Using Visual Studio 2019 14.29.30148 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+  Building 24 actions with 12 processes...
+    [1/24] ImageReaderFactory.cpp
+    [2/24] RuntimeImageLoaderLibHandler.cpp
+    [3/24] ImageReaderLocal.cpp
+    [4/24] CubemapUtils.cpp
+    [5/24] ImageReaderHttp.cpp
+    [6/24] RuntimeImageLoader.init.gen.cpp
+    [7/24] RuntimeTextureFactory.gen.cpp
+    [8/24] RuntimeImageLoaderModule.cpp
+    [9/24] PNGHelpers.cpp
+    [10/24] RuntimeTextureResource.cpp
+    [11/24] RuntimeImageReader.gen.cpp
+    [12/24] RuntimeImageUtils.cpp
+    [13/24] RuntimeImageLoader.gen.cpp
+    [14/24] RuntimeImageData.cpp
+    [15/24] RuntimeTexture2DResource.cpp
+    [16/24] RuntimeRHITexture2DFactory.cpp
+    [17/24] TIFFLoader.cpp
+    [18/24] RuntimeTextureCubeResource.cpp
+    [19/24] QOIHelpers.cpp
+    [20/24] RuntimeRHITextureCubeFactory.cpp
+    [21/24] TGAHelpers.cpp
+    [22/24] RuntimeTextureFactory.cpp
+    [23/24] RuntimeImageReader.cpp
+    [24/24] RuntimeImageLoader.cpp
+  Total time in Parallel executor: 36.29 seconds
+  Total execution time: 42.50 seconds
+Took 42.6140208s to run UnrealBuildTool.exe, ExitCode=0
+Running: D:\UE_4.27\Engine\Binaries\DotNET\UnrealBuildTool.exe UE4Game Win32 Development -Project=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject -plugin=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin -iwyu -noubtmakefiles -manifest=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win32-Development.xml -nohotreload -NoPCH -NoSharedPCH -DisableUnity -log="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UBT-UE4Game-Win32-Development.txt"
+  Parsing headers for UE4Game
+    Running UnrealHeaderTool "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject" "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Intermediate\Build\Win32\UE4Game\Development\UE4Game.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UHT-UE4Game-Win32-Development.txt" -installed
+  LogInit: Display: Loading text-based GConfig....
+  Reflection code generated for UE4Game in 4.2034645 seconds
+  Writing manifest to D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win32-Development.xml
+  Building UE4Game...
+  Using Visual Studio 2019 14.29.30148 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+  Building 24 actions with 12 processes...
+    [1/24] ImageReaderFactory.cpp
+    [2/24] ImageReaderLocal.cpp
+    [3/24] RuntimeImageLoader.init.gen.cpp
+    [4/24] RuntimeImageLoaderLibHandler.cpp
+    [5/24] RuntimeTexture2DResource.cpp
+    [6/24] QOIHelpers.cpp
+    [7/24] RuntimeRHITextureCubeFactory.cpp
+    [8/24] RuntimeImageData.cpp
+    [9/24] RuntimeImageReader.cpp
+    [10/24] TIFFLoader.cpp
+    [11/24] RuntimeTextureFactory.cpp
+    [12/24] RuntimeImageReader.gen.cpp
+    [13/24] RuntimeImageLoader.cpp
+    [14/24] CubemapUtils.cpp
+    [15/24] RuntimeImageLoaderModule.cpp
+    [16/24] ImageReaderHttp.cpp
+    [17/24] RuntimeRHITexture2DFactory.cpp
+    [18/24] RuntimeTextureCubeResource.cpp
+    [19/24] RuntimeTextureFactory.gen.cpp
+    [20/24] RuntimeImageLoader.gen.cpp
+    [21/24] PNGHelpers.cpp
+    [22/24] RuntimeTextureResource.cpp
+    [23/24] TGAHelpers.cpp
+    [24/24] RuntimeImageUtils.cpp
+  Total time in Parallel executor: 41.79 seconds
+  Total execution time: 48.24 seconds
+Took 48.3489284s to run UnrealBuildTool.exe, ExitCode=0
+Running: D:\UE_4.27\Engine\Binaries\DotNET\UnrealBuildTool.exe UE4Game Win32 Shipping -Project=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject -plugin=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\RuntimeImageLoader.uplugin -iwyu -noubtmakefiles -manifest=D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win32-Shipping.xml -nohotreload -NoPCH -NoSharedPCH -DisableUnity -log="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UBT-UE4Game-Win32-Shipping.txt"
+  Parsing headers for UE4Game
+    Running UnrealHeaderTool "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\HostProject.uproject" "D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Intermediate\Build\Win32\UE4Game\Shipping\UE4Game.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -abslog="C:\Users\charlie\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+UE_4.27\UHT-UE4Game-Win32-Shipping.txt" -installed
+  LogInit: Display: Loading text-based GConfig....
+  Reflection code generated for UE4Game in 3.9892833 seconds
+  Writing manifest to D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Saved\Manifest-UE4Game-Win32-Shipping.xml
+  Building UE4Game...
+  Using Visual Studio 2019 14.29.30148 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+  Building 24 actions with 12 processes...
+    [1/24] CubemapUtils.cpp
+    [2/24] ImageReaderLocal.cpp
+    [3/24] RuntimeImageLoaderLibHandler.cpp
+    [4/24] ImageReaderHttp.cpp
+    [5/24] RuntimeTextureFactory.gen.cpp
+    [6/24] RuntimeImageLoaderModule.cpp
+    [7/24] RuntimeTextureResource.cpp
+    [8/24] QOIHelpers.cpp
+    [9/24] RuntimeRHITextureCubeFactory.cpp
+    [10/24] RuntimeRHITexture2DFactory.cpp
+    [11/24] RuntimeImageLoader.cpp
+    [12/24] TIFFLoader.cpp
+    [13/24] RuntimeImageLoader.gen.cpp
+    [14/24] RuntimeImageData.cpp
+    [15/24] RuntimeTextureCubeResource.cpp
+    [16/24] ImageReaderFactory.cpp
+    [17/24] RuntimeImageReader.cpp
+    [18/24] RuntimeImageLoader.init.gen.cpp
+    [19/24] RuntimeImageUtils.cpp
+    [20/24] PNGHelpers.cpp
+    [21/24] RuntimeTexture2DResource.cpp
+    [22/24] RuntimeImageReader.gen.cpp
+    [23/24] RuntimeTextureFactory.cpp
+    [24/24] TGAHelpers.cpp
+  Total time in Parallel executor: 35.15 seconds
+  Total execution time: 41.28 seconds
+Took 41.3901767s to run UnrealBuildTool.exe, ExitCode=0
+Reading filter rules from D:\WorkDirectory\UnrealEventTracking_builds\RuntimeImageLoader\HostProject\Plugins\RuntimeImageLoader\Config\FilterPlugin.ini
+BUILD SUCCESSFUL
+AutomationTool exiting with ExitCode=0 (Success)
