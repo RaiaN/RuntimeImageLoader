@@ -49,8 +49,8 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
-# !Binaries/*
-# !Plugins/*/Binaries/*
+Binaries/*
+Plugins/*/Binaries/*
 
 # Builds
 Build/*
@@ -77,8 +77,5 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Include .dll and .lib files in specific folder structure
-!Binaries/ThirdParty/RuntimeImageLoaderLibrary/Win64/*.dll
-Binaries/Win64/*
-
 !Source/ThirdParty/*/x64/*/*.dll
 !Source/ThirdParty/*/x64/*/*.lib
