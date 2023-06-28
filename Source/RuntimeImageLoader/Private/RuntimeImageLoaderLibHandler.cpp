@@ -5,9 +5,8 @@
 #include "Misc/MessageDialog.h"
 #include "Misc/Paths.h"
 #include "Interfaces/IPluginManager.h"
-#include "Internationalization/Internationalization.h"
 
-#define LOCTEXT_NAMESPACE "RuntimeImageLoaderLibHandler"
+DEFINE_LOG_CATEGORY(RuntimeImageLoader);
 
  //~ Static initialization
  //--------------------------------------------------------------------
@@ -15,6 +14,7 @@ void* FLibnsgifHandler::LibnsgifHandle = nullptr;
 
 bool FLibnsgifHandler::Initialize()
 {
+#if WITH_LIBNSGIF
 	// Get the base directory of this plugin
 	FString BaseDir = IPluginManager::Get().FindPlugin("RuntimeImageLoader")->GetBaseDir();
 
@@ -28,7 +28,7 @@ bool FLibnsgifHandler::Initialize()
 
 	if (LibnsgifHandle)
 	{
-		UE_LOG(LogTemp, Display, TEXT("libnsgif.dll Loaded."));
+		UE_LOG(RuntimeImageLoader, Display, TEXT("libnsgif.dll Loaded."));
 
 		Fn_nsgif_create = (nsgif_create_FnPtr)FPlatformProcess::GetDllExport(LibnsgifHandle, TEXT("nsgif_create"));
 		Fn_nsgif_destroy = (nsgif_destroy_FnPtr)FPlatformProcess::GetDllExport(LibnsgifHandle, TEXT("nsgif_destroy"));
@@ -41,17 +41,20 @@ bool FLibnsgifHandler::Initialize()
 
 		// Throwaway code just check weather Dll get loaded or not. ---- Start ----
 		if (Fn_nsgif_create && Fn_nsgif_destroy && Fn_nsgif_data_scan && Fn_nsgif_data_complete && Fn_nsgif_frame_prepare && Fn_nsgif_frame_decode && Fn_nsgif_reset && Fn_nsgif_get_info)
-			UE_LOG(LogTemp, Display, TEXT("libnsgif methods Loaded."));
+			UE_LOG(RuntimeImageLoader, Display, TEXT("libnsgif methods Loaded."));
 		// ---- End ----
 
 		return true;
 	}
-	else
+	else // Throwaway code just check weather Dll get loaded or not. ---- Start ----
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("ThirdPartyLibraryError", "Failed to load Libnsgif library"));
+		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("RuntimeImageLoaderLibHandler", "ThirdPartyLibraryError", "Failed to load Libnsgif library"));
 		return false;
 	}
+	// ---- End ----
 
+	return false;
+#endif // WITH_LIBNSGIF
 	return false;
 }
 
@@ -62,9 +65,16 @@ bool FLibnsgifHandler::IsInitialized()
 
 void FLibnsgifHandler::Shutdown()
 {
+#if WITH_LIBNSGIF
 	// Free the dll handle
 	FPlatformProcess::FreeDllHandle(LibnsgifHandle);
 	LibnsgifHandle = nullptr;
+#endif // WITH_LIBNSGIF
+}
+
+nsgif_strerror_FnPtr FLibnsgifHandler::FunctionPointerNsgifStrError()
+{
+	return Fn_nsgif_strerror;
 }
 
 nsgif_create_FnPtr FLibnsgifHandler::FunctionPointerNsgifCreate()

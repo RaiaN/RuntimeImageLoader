@@ -3,6 +3,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "HAL/PlatformProcess.h"
+#include "RuntimeImageLoaderLog.h"
 
 THIRD_PARTY_INCLUDES_START
 	#include "nsgif.h"
@@ -10,6 +11,9 @@ THIRD_PARTY_INCLUDES_END
 
 extern "C"
 {
+	/** Funtion Pointer type for nsgif_strerror */
+	typedef const char*(*nsgif_strerror_FnPtr)(nsgif_error err);
+
 	/** Function pointer type for nsgif_create */
 	typedef nsgif_error(*nsgif_create_FnPtr)(
 		const nsgif_bitmap_cb_vt* bitmap_vt,
@@ -53,6 +57,8 @@ extern "C"
 
 }
 
+/** Pointer to nsgif_strerror function. */
+static nsgif_strerror_FnPtr Fn_nsgif_strerror = nullptr;
 /** Pointer to nsgif_create function. */
 static nsgif_create_FnPtr Fn_nsgif_create = nullptr;
 /** Pointer to nsgif_destroy function. */
@@ -83,6 +89,7 @@ private:
 	/** Handle to the libnsgif dll we will load */
 	static void* LibnsgifHandle; /** DLL handle for libnsgif.dll */
 public:
+	static nsgif_strerror_FnPtr FunctionPointerNsgifStrError();
 	static nsgif_create_FnPtr FunctionPointerNsgifCreate();
 	static nsgif_destroy_FnPtr FunctionPointerNsgifDestroy();
 	static nsgif_data_scan_FnPtr FunctionPointerNsgifDataScan();

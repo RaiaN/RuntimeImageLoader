@@ -11,6 +11,8 @@ public class RuntimeImageLoaderLibrary : ModuleRules
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
+			PublicDefinitions.Add("WITH_LIBNSGIF=1");
+
 			string IncPath = Path.Combine(ModuleDirectory, "include");
 			PublicSystemIncludePaths.Add(IncPath);
 
@@ -23,7 +25,14 @@ public class RuntimeImageLoaderLibrary : ModuleRules
 			PublicDelayLoadDLLs.Add("libnsgif.dll");
 			
 			// Ensure that the DLL is staged along with the executable
-			RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.dll"));
-        }
+			RuntimeDependencies.Add(
+				"$(BinaryOutputDir)/ThirdParty/RuntimeImageLoaderLibrary/Win64/libnsgif.dll",
+				Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.dll")
+				);
+		}
+		else
+        {
+			PublicDefinitions.Add("WITH_LIBNSGIF=0");
+		}
 	}
 }
