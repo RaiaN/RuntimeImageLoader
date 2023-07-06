@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 
-#if WITH_LIBNSGIF
-
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
 #endif // PLATFORM_WINDOWS
@@ -13,14 +11,19 @@
 THIRD_PARTY_INCLUDES_START
     #include "nsgif.h"
 THIRD_PARTY_INCLUDES_END
+#include "GIFLoader.generated.h"
 
 #define BYTES_PER_PIXEL 4
 
-class FRuntimeGIFLoaderHelper
+UCLASS()
+class URuntimeGIFLoaderHelper : public UObject
 {
+	GENERATED_BODY()
+
+#if WITH_LIBNSGIF
 public:
-	FRuntimeGIFLoaderHelper();
-	~FRuntimeGIFLoaderHelper();
+	URuntimeGIFLoaderHelper();
+	~URuntimeGIFLoaderHelper();
 
 public:
 	static void* bitmap_create(int width, int height);
@@ -30,6 +33,11 @@ public:
 	void Warning(FString context, nsgif_error err);
 	void Decode(FILE* ppm, const FString& name, nsgif_t* gif, bool first);
 	void GIFDecoding(const FString& FilePath);
+
+public:
+	UTexture2D* ConvertGifToTexture2D(const FString& FilePath);
+	nsgif_error DecodeFrames(nsgif_t* Gif, TArray<FColor>& OutPixels);
+	void LoadGif(const FString& FilePath, UTexture2D*& OutTexture, bool bUseAsync);
 
 private:
 	uint32 Size;
@@ -44,6 +52,6 @@ private:
 		bitmap_destroy,
 		bitmap_get_buffer,
 	};
-};
 
 #endif //WITH_LIBNSGIF
+};

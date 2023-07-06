@@ -12,15 +12,22 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
+void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
+{
+    GifLoader->LoadGif(GIFFilename, OutTexture, bUseAsync);
+}
+
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
+    InitializeGifLoader();
 }
 
 void URuntimeImageLoader::Deinitialize()
 {
     ImageReader->Deinitialize();
     ImageReader = nullptr;
+    GifLoader = nullptr;
 }
 
 bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
@@ -413,4 +420,15 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
 
     ensure(IsValid(ImageReader));
     return ImageReader;
+}
+
+URuntimeGIFLoaderHelper* URuntimeImageLoader::InitializeGifLoader()
+{
+    if (!IsValid(GifLoader))
+    {
+        GifLoader = NewObject<URuntimeGIFLoaderHelper>(this);
+    }
+
+    ensure(IsValid(GifLoader));
+    return GifLoader;
 }

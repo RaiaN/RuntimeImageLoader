@@ -8,22 +8,23 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformFileManager.h"
 #include "Misc/Paths.h"
+#include "Async/Async.h"
 
 DEFINE_LOG_CATEGORY(LibNsgifHelper);
 
 #if WITH_LIBNSGIF
 
-FRuntimeGIFLoaderHelper::FRuntimeGIFLoaderHelper()
+URuntimeGIFLoaderHelper::URuntimeGIFLoaderHelper()
 {
 	/** Ain't Require Implementation At The Moment */
 }
 
-FRuntimeGIFLoaderHelper::~FRuntimeGIFLoaderHelper()
+URuntimeGIFLoaderHelper::~URuntimeGIFLoaderHelper()
 {
 	/** Ain't Require Implementation At The Moment */
 }
 
-void* FRuntimeGIFLoaderHelper::bitmap_create(int width, int height)
+void* URuntimeGIFLoaderHelper::bitmap_create(int width, int height)
 {
 	if (width > 4096 || height > 4096) {
 		return NULL;
@@ -32,17 +33,17 @@ void* FRuntimeGIFLoaderHelper::bitmap_create(int width, int height)
 	return calloc(width * height, BYTES_PER_PIXEL);
 }
 
-unsigned char* FRuntimeGIFLoaderHelper::bitmap_get_buffer(void* bitmap)
+unsigned char* URuntimeGIFLoaderHelper::bitmap_get_buffer(void* bitmap)
 {
 	return (unsigned char*)bitmap;
 }
 
-void FRuntimeGIFLoaderHelper::bitmap_destroy(void* bitmap)
+void URuntimeGIFLoaderHelper::bitmap_destroy(void* bitmap)
 {
 	free(bitmap);
 }
 
-uint8* FRuntimeGIFLoaderHelper::Load_File(const FString& FilePath, uint32& DataSize)
+uint8* URuntimeGIFLoaderHelper::Load_File(const FString& FilePath, uint32& DataSize)
 {
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -75,7 +76,7 @@ uint8* FRuntimeGIFLoaderHelper::Load_File(const FString& FilePath, uint32& DataS
 	return Buffer;
 }
 
-void FRuntimeGIFLoaderHelper::Warning(FString context, nsgif_error err)
+void URuntimeGIFLoaderHelper::Warning(FString context, nsgif_error err)
 {
 	FString ErrorMessage = ANSI_TO_TCHAR(FLibnsgifHandler::FunctionPointerNsgifStrError()(err));
 	const TCHAR* ContextStr = *context;
@@ -84,9 +85,8 @@ void FRuntimeGIFLoaderHelper::Warning(FString context, nsgif_error err)
 	UE_LOG(LibNsgifHelper, Warning, TEXT("%s: %s"), ContextStr, ErrorMessageStr);
 }
 
-void FRuntimeGIFLoaderHelper::Decode(FILE* ppm, const FString& name, nsgif_t* gif, bool first)
+void URuntimeGIFLoaderHelper::Decode(FILE* ppm, const FString& name, nsgif_t* gif, bool first)
 {
-	nsgif_error Err;
 	uint32 FramePrev = 0;
 	const nsgif_info_t* Info;
 
@@ -121,10 +121,10 @@ void FRuntimeGIFLoaderHelper::Decode(FILE* ppm, const FString& name, nsgif_t* gi
 		uint32 DelayCs;
 		nsgif_rect_t Area;
 
-		Err = FLibnsgifHandler::FunctionPointerNsgifFramePrepare()(gif, &Area, &DelayCs, &FrameNew);
-		if (Err != NSGIF_OK)
+		Error = FLibnsgifHandler::FunctionPointerNsgifFramePrepare()(gif, &Area, &DelayCs, &FrameNew);
+		if (Error != NSGIF_OK)
 		{
-			Warning(TEXT("nsgif_frame_prepare"), Err);
+			Warning(TEXT("nsgif_frame_prepare"), Error);
 			return;
 		}
 
@@ -135,10 +135,10 @@ void FRuntimeGIFLoaderHelper::Decode(FILE* ppm, const FString& name, nsgif_t* gi
 		}
 		FramePrev = FrameNew;
 
-		Err = FLibnsgifHandler::FunctionPointerNsgifFrameDecode()(gif, FrameNew, &Bitmap);
-		if (Err != NSGIF_OK)
+		Error = FLibnsgifHandler::FunctionPointerNsgifFrameDecode()(gif, FrameNew, &Bitmap);
+		if (Error != NSGIF_OK)
 		{
-			FString ErrorString = FString::Printf(TEXT("Frame %u: nsgif_decode_frame failed: %s\n"), FrameNew, FLibnsgifHandler::FunctionPointerNsgifStrError()(Err));
+			FString ErrorString = FString::Printf(TEXT("Frame %u: nsgif_decode_frame failed: %s\n"), FrameNew, FLibnsgifHandler::FunctionPointerNsgifStrError()(Error));
 			UE_LOG(LibNsgifHelper, Error, TEXT("%s"), *ErrorString);
 			// Continue decoding the rest of the frames.
 		}
@@ -169,7 +169,7 @@ void FRuntimeGIFLoaderHelper::Decode(FILE* ppm, const FString& name, nsgif_t* gi
 	}
 }
 
-void FRuntimeGIFLoaderHelper::GIFDecoding(const FString& FilePath)
+void URuntimeGIFLoaderHelper::GIFDecoding(const FString& FilePath)
 {
 	/* create our gif animation */
 	Error = FLibnsgifHandler::FunctionPointerNsgifCreate()(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
@@ -207,6 +207,175 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const FString& FilePath)
 	/* clean up */
 	FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
 	free(Data);
+}
+
+UTexture2D* URuntimeGIFLoaderHelper::ConvertGifToTexture2D(const FString& FilePath)
+{
+	// Create the gif animation
+	Error = FLibnsgifHandler::FunctionPointerNsgifCreate()(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
+	if (Error != NSGIF_OK)
+	{
+		UE_LOG(LogTemp, Error, TEXT("nsgif_create error: %d"), Error);
+		return nullptr;
+	}
+
+	// Load file into memory
+	Data = Load_File(TCHAR_TO_UTF8(*FilePath), Size);
+	if (!Data)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load file: %s"), *FilePath);
+		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
+		return nullptr;
+	}
+	
+	// Scan the raw data
+	Error = FLibnsgifHandler::FunctionPointerNsgifDataScan()(Gif, Size, Data);
+	if (Error != NSGIF_OK)
+	{
+		// Not fatal; some GIFs are nasty. Can still try to decode
+		// any frames that were decoded successfully.
+		UE_LOG(LogTemp, Warning, TEXT("nsgif_data_scan warning: %d"), Error);
+	}
+
+	FLibnsgifHandler::FunctionPointerNsgifDataComplete()(Gif);
+
+	// Decode the frames
+	TArray<FColor> Pixels;
+	Error = DecodeFrames(Gif, Pixels);
+	if (Error != NSGIF_OK)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DecodeFrames error: %d"), Error);
+		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
+		free(Data);
+		return nullptr;
+	}
+
+	// Create UTexture2D and initialize it with the pixel data
+	int32 Width = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->width;
+	int32 Height = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->height;
+	UTexture2D* Texture = UTexture2D::CreateTransient(Width, Height, PF_R8G8B8A8);
+
+	if(!Texture)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create UTexture2D"));
+		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
+		free(Data);
+		return nullptr;
+	}
+
+	// Lock the texture and copy the pixel data
+	FTexture2DMipMap& Mip = Texture->PlatformData->Mips[0];
+	void* TextureData = Mip.BulkData.Lock(LOCK_READ_WRITE);
+	if (TextureData)
+	{
+		FMemory::Memcpy(TextureData, Pixels.GetData(), Pixels.Num() * sizeof(FColor));
+		Mip.BulkData.Unlock();
+		Texture->UpdateResource();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to lock UTexture2D for writing"));
+		Texture->ConditionalBeginDestroy();
+		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
+		free(Data);
+		return nullptr;
+	}
+
+	// Clean up
+	FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
+	free(Data);
+
+	return Texture;
+}
+
+nsgif_error URuntimeGIFLoaderHelper::DecodeFrames(nsgif_t* Gif_, TArray<FColor>& OutPixels)
+{
+	uint32_t FramePrev = 0;
+	const nsgif_info_t* Info = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif_);
+
+	// Prepare the output pixel array
+	const uint32_t NumPixels = Info->width * Info->height * Info->frame_count;
+	OutPixels.Empty(NumPixels);
+	OutPixels.AddUninitialized(NumPixels);
+
+	// Decode the frames
+	nsgif_bitmap_t* Bitmap;
+	uint32_t FrameNew;
+	nsgif_rect_t Area;
+	uint32_t Delay_CS;
+	uint32_t FrameIndex = 0;
+	while (true)
+	{
+		Error = FLibnsgifHandler::FunctionPointerNsgifFramePrepare()(Gif_, &Area, &Delay_CS, &FrameNew);
+		if (Error != NSGIF_OK)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("nsgif_frame_prepare warning: %d"), Error);
+		}
+
+		if (FrameNew < FramePrev)
+		{
+			// Must be an animation that loops.
+			// We only care about decoding each frame once in this utility.
+			break;
+		}
+		FramePrev = FrameNew;
+
+		Error = FLibnsgifHandler::FunctionPointerNsgifFrameDecode()(Gif_, FrameNew, &Bitmap);
+		if (Error != NSGIF_OK)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("nsgif_frame_decode warning: %d"), Error);
+		}
+
+		// Copy the decoded frame to the output pixel array
+		const uint8_t* Image = (const uint8_t*)Bitmap;
+		const uint32_t FrameStartIndex = FrameIndex * Info->width * Info->height;
+		for (uint32_t Y = 0; Y < Info->height; Y++)
+		{
+			for (uint32_t X = 0; X < Info->width; X++)
+			{
+				const size_t SrcIndex = (Y * Info->width + X) * 4;
+				const size_t DstIndex = FrameStartIndex + (Y * Info->width + X);
+				OutPixels[DstIndex] = FColor(Image[SrcIndex + 2], Image[SrcIndex + 1], Image[SrcIndex], Image[SrcIndex + 3]);
+			}
+		}
+
+		FrameIndex++;
+
+		if (Delay_CS == NSGIF_INFINITE)
+		{
+			// This frame is the last.
+			break;
+		}
+	}
+
+	return NSGIF_OK;
+}
+
+void URuntimeGIFLoaderHelper::LoadGif(const FString& FilePath, UTexture2D*& OutTexture, bool bUseAsync)
+{
+	// Synchronous loading
+	if (!bUseAsync)
+	{
+		UTexture2D* Texture = ConvertGifToTexture2D(FilePath);
+		OutTexture = Texture;
+		return;
+	}
+
+	// Asynchronous loading
+	FString AsyncFilePath = FilePath;
+	FSimpleDelegateGraphTask::CreateAndDispatchWhenReady(
+		FSimpleDelegateGraphTask::FDelegate::CreateLambda(
+			[&, AsyncFilePath]()
+			{
+				UTexture2D* Texture = ConvertGifToTexture2D(AsyncFilePath);
+				AsyncTask(ENamedThreads::GameThread, [Texture, &OutTexture]()
+					{
+						OutTexture = Texture;
+					}
+				);
+			}),
+		TStatId(), nullptr, ENamedThreads::AnyThread
+	);
 }
 
 #endif //WITH_LIBNSGIF

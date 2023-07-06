@@ -116,5 +116,3 @@ nsgif_get_info_FnPtr FLibnsgifHandler::FunctionPointerNsgifGetInfo()
 {
 	return Fn_nsgif_get_info;
 }
-
-#undef LOCTEXT_NAMESPACE

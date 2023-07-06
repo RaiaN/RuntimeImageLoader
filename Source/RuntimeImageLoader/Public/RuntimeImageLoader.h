@@ -12,6 +12,8 @@
 #include "Materials/MaterialInterface.h"
 #include "Subsystems/WorldSubsystem.h"
 
+#include "Helpers/GIFLoader.h"
+
 #include "RuntimeImageReader.h"
 #include "RuntimeImageLoader.generated.h"
 
@@ -82,6 +84,10 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Runtime Image Loader | Utilities")
     static FString GetThisPluginResourcesDirectory();
 
+    //------------------ GIF --------------------
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
+    void LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject = nullptr);
+
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
@@ -93,10 +99,13 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
+    URuntimeGIFLoaderHelper* InitializeGifLoader();
 
 private:
     UPROPERTY()
     URuntimeImageReader* ImageReader = nullptr;
+    UPROPERTY()
+    URuntimeGIFLoaderHelper* GifLoader = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;
