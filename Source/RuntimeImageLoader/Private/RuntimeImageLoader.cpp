@@ -14,7 +14,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
 void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
 {
-    GifLoader->LoadGif(GIFFilename, OutTexture, bUseAsync);
+    GifLoader->GIFDecoding(TCHAR_TO_UTF8(*GIFFilename));
+    OutTexture = GifLoader->ConvertPPMToTexture2D();
 }
 
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)

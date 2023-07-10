@@ -43,134 +43,124 @@ void URuntimeGIFLoaderHelper::bitmap_destroy(void* bitmap)
 	free(bitmap);
 }
 
-uint8* URuntimeGIFLoaderHelper::Load_File(const FString& FilePath, uint32& DataSize)
+uint8_t* URuntimeGIFLoaderHelper::Load_File(const char* path, size_t* data_size)
 {
-	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	FILE* fd;
+	struct stat sb;
+	unsigned char* buffer;
+	size_t size;
+	size_t n;
 
-	// Open the file for reading
-	IFileHandle* FileHandle = PlatformFile.OpenRead(*FilePath);
-	if (!FileHandle)
-	{
-		UE_LOG(LibNsgifHelper, Error, TEXT("Failed to open file: %s"), *FilePath);
-		return nullptr;
+	fd = fopen(path, "rb");
+	if (!fd) {
+		perror(path);
+		exit(EXIT_FAILURE);
 	}
 
-	// Get the file size
-	DataSize = FileHandle->Size();
+	if (stat(path, &sb)) {
+		perror(path);
+		exit(EXIT_FAILURE);
+	}
+	size = sb.st_size;
 
-	// Allocate buffer for file data
-	uint8* Buffer = new uint8[DataSize];
-
-	// Read the file data into the buffer
-	if (!FileHandle->Read(Buffer, DataSize))
-	{
-		UE_LOG(LibNsgifHelper, Error, TEXT("Failed to read file: %s"), *FilePath);
-		delete[] Buffer;
-		Buffer = nullptr;
+	buffer = (unsigned char*)malloc(size);
+	if (!buffer) {
+		fprintf(stderr, "Unable to allocate %lld bytes\n",
+			(long long)size);
+		exit(EXIT_FAILURE);
 	}
 
-	// Close the file handle
-	delete FileHandle;
-	FileHandle = nullptr;
+	n = fread(buffer, 1, size, fd);
+	if (n != size) {
+		perror(path);
+		exit(EXIT_FAILURE);
+	}
 
-	return Buffer;
+	fclose(fd);
+
+	*data_size = size;
+	return buffer;
 }
 
-void URuntimeGIFLoaderHelper::Warning(FString context, nsgif_error err)
+void URuntimeGIFLoaderHelper::Warning(const char* context, nsgif_error err)
 {
 	FString ErrorMessage = ANSI_TO_TCHAR(FLibnsgifHandler::FunctionPointerNsgifStrError()(err));
-	const TCHAR* ContextStr = *context;
 	const TCHAR* ErrorMessageStr = *ErrorMessage;
 
-	UE_LOG(LibNsgifHelper, Warning, TEXT("%s: %s"), ContextStr, ErrorMessageStr);
+	UE_LOG(LibNsgifHelper, Warning, TEXT("%s: %s\n"), context, ErrorMessageStr);
 }
 
-void URuntimeGIFLoaderHelper::Decode(FILE* ppm, const FString& name, nsgif_t* gif, bool first)
+void URuntimeGIFLoaderHelper::Decode(FILE* ppm, const char* name, nsgif_t* gif, bool first)
 {
-	uint32 FramePrev = 0;
-	const nsgif_info_t* Info;
+	nsgif_error err;
+	uint32_t frame_prev = 0;
+	const nsgif_info_t* info;
+	info = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(gif);
 
-	Info = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(gif);
-
-	FString PPM = FPaths::GetPath(FString::Printf(TEXT("%p"), ppm));
-
-	if (first && ppm != nullptr)
-	{
-		FString PPMHeader = FString::Printf(TEXT("P3\n"));
-		FString PPMComment = FString::Printf(TEXT("# %s\n"), *name);
-		FString PPMWidth = FString::Printf(TEXT("# width                %u \n"), Info->width);
-		FString PPMHeight = FString::Printf(TEXT("# height               %u \n"), Info->height);
-		FString PPMFrameCount = FString::Printf(TEXT("# frame_count          %u \n"), Info->frame_count);
-		FString PPMLoopMax = FString::Printf(TEXT("# loop_max             %u \n"), Info->loop_max);
-		FString PPMImageSize = FString::Printf(TEXT("%u %u 256\n"), Info->width, Info->height * Info->frame_count);
-
-		FFileHelper::SaveStringToFile(PPMHeader, *PPM);
-		FFileHelper::SaveStringToFile(PPMComment, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
-		FFileHelper::SaveStringToFile(PPMWidth, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
-		FFileHelper::SaveStringToFile(PPMHeight, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
-		FFileHelper::SaveStringToFile(PPMFrameCount, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
-		FFileHelper::SaveStringToFile(PPMLoopMax, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
-		FFileHelper::SaveStringToFile(PPMImageSize, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+	if (ppm != NULL) {
+		fprintf(ppm, "P3\n");
+		fprintf(ppm, "# %s\n", name);
+		fprintf(ppm, "# width                %u \n", info->width);
+		fprintf(ppm, "# height               %u \n", info->height);
+		fprintf(ppm, "# frame_count          %u \n", info->frame_count);
+		fprintf(ppm, "# loop_max             %u \n", info->loop_max);
+		fprintf(ppm, "%u %u 256\n", info->width, info->height * info->frame_count);
+		fprintf(ppm, "*");
 	}
 
-	while (true)
-	{
-		nsgif_bitmap_t* Bitmap;
-		const uint8_t* Image;
-		uint32 FrameNew;
-		uint32 DelayCs;
-		nsgif_rect_t Area;
+	/* decode the frames */
+	while (true) {
+		nsgif_bitmap_t* bitmap;
+		const uint8_t* image;
+		uint32_t frame_new;
+		uint32_t delay_cs;
+		nsgif_rect_t area;
 
-		Error = FLibnsgifHandler::FunctionPointerNsgifFramePrepare()(gif, &Area, &DelayCs, &FrameNew);
-		if (Error != NSGIF_OK)
-		{
-			Warning(TEXT("nsgif_frame_prepare"), Error);
+		err = FLibnsgifHandler::FunctionPointerNsgifFramePrepare()(gif, &area, &delay_cs, &frame_new);
+		if (err != NSGIF_OK) {
+			Warning("nsgif_frame_prepare", err);
 			return;
 		}
 
-		if (FrameNew < FramePrev)
-		{
-			// Must be an animation that loops. We only care about decoding each frame once in this utility.
+		if (frame_new < frame_prev) {
+			/* Must be an animation that loops. We only care about
+			* decoding each frame once in this utility. */
 			return;
 		}
-		FramePrev = FrameNew;
+		frame_prev = frame_new;
 
-		Error = FLibnsgifHandler::FunctionPointerNsgifFrameDecode()(gif, FrameNew, &Bitmap);
-		if (Error != NSGIF_OK)
-		{
-			FString ErrorString = FString::Printf(TEXT("Frame %u: nsgif_decode_frame failed: %s\n"), FrameNew, FLibnsgifHandler::FunctionPointerNsgifStrError()(Error));
-			UE_LOG(LibNsgifHelper, Error, TEXT("%s"), *ErrorString);
-			// Continue decoding the rest of the frames.
+		err = FLibnsgifHandler::FunctionPointerNsgifFrameDecode()(gif, frame_new, &bitmap);
+		if (err != NSGIF_OK) {
+			/* Continue decoding the rest of the frames. */
+
 		}
-		else if (first && ppm != nullptr)
-		{
-			FString FrameComment = FString::Printf(TEXT("# frame %u:\n"), FrameNew);
-			FFileHelper::SaveStringToFile(FrameComment, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
-
-			Image = reinterpret_cast<const uint8_t*>(Bitmap);
-			for (uint32 y = 0; y != Info->height; y++)
-			{
-				for (uint32 x = 0; x != Info->width; x++)
-				{
-					size_t Z = (y * Info->width + x) * 4;
-					FString ColorString = FString::Printf(TEXT("%u %u %u "), Image[Z], Image[Z + 1], Image[Z + 2]);
-					FFileHelper::SaveStringToFile(ColorString, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+		else if (ppm != NULL) {
+			/*fprintf(ppm, "# frame %u:\n", frame_new);*/
+			image = (const uint8_t*)bitmap;
+			for (uint32_t y = 0; y != info->height; y++) {
+				for (uint32_t x = 0; x != info->width; x++) {
+					size_t z = (y * info->width + x) * 4;
+					fprintf(ppm, "%u %u %u ",
+						image[z],
+						image[z + 1],
+						image[z + 2]);
 				}
-				FString NewLine = FString::Printf(TEXT("\n"));
-				FFileHelper::SaveStringToFile(NewLine, *PPM, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+				fprintf(ppm, "\n");
 			}
 		}
 
-		if (DelayCs == NSGIF_INFINITE)
-		{
-			// This frame is the last.
+		if (delay_cs == NSGIF_INFINITE) {
+			/** This frame is the last. */
 			return;
 		}
 	}
 }
 
-void URuntimeGIFLoaderHelper::GIFDecoding(const FString& FilePath)
+void URuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 {
+	fopen_s(&PortablePixMap, TCHAR_TO_UTF8(*ppmFile), "w+");
+	if (!PortablePixMap) return;
+
 	/* create our gif animation */
 	Error = FLibnsgifHandler::FunctionPointerNsgifCreate()(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
 	if (Error != NSGIF_OK) {
@@ -179,7 +169,7 @@ void URuntimeGIFLoaderHelper::GIFDecoding(const FString& FilePath)
 	}
 
 	/* load file into memory */
-	Data = Load_File(FilePath, Size);
+	Data = Load_File(FilePath, &Size);
 
 	Error = FLibnsgifHandler::FunctionPointerNsgifDataScan()(Gif, Size, Data);
 	if (Error != NSGIF_OK)
@@ -191,7 +181,11 @@ void URuntimeGIFLoaderHelper::GIFDecoding(const FString& FilePath)
 
 	FLibnsgifHandler::FunctionPointerNsgifDataComplete()(Gif);
 
-	for (uint64 i = 0; i < 1; i++)
+	auto LoopMax = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->loop_max;
+	if (FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->loop_max == 0)
+		LoopMax = 1;
+
+	for (uint64 i = 0; i < LoopMax; i++)
 	{
 		Decode(PortablePixMap, FilePath, Gif, i == 0);
 		
@@ -209,173 +203,103 @@ void URuntimeGIFLoaderHelper::GIFDecoding(const FString& FilePath)
 	free(Data);
 }
 
-UTexture2D* URuntimeGIFLoaderHelper::ConvertGifToTexture2D(const FString& FilePath)
+UTexture2D* URuntimeGIFLoaderHelper::ConvertPPMToTexture2D()
 {
-	// Create the gif animation
-	Error = FLibnsgifHandler::FunctionPointerNsgifCreate()(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
-	if (Error != NSGIF_OK)
+	const FString& FilePath = ppmFile;
+	// Load PPM file into memory
+	TArray<uint8> ImageData;
+	if (!FFileHelper::LoadFileToArray(ImageData, *FilePath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("nsgif_create error: %d"), Error);
+		UE_LOG(LogTemp, Error, TEXT("Failed to load PPM file: %s"), *FilePath);
 		return nullptr;
 	}
 
-	// Load file into memory
-	Data = Load_File(TCHAR_TO_UTF8(*FilePath), Size);
-	if (!Data)
+	// Parse PPM header to extract image dimensions and pixel data
+	int32 Width = 0;
+	int32 Height = 0;
+	int32 MaxValue = 0;
+	TArray<uint8> Pixels;
+
+	FString ImageDataAsString(reinterpret_cast<const ANSICHAR*>(ImageData.GetData()));
+	TArray<FString> Lines;
+	ImageDataAsString.ParseIntoArrayLines(Lines);
+
+	// Sherading an image array to Remove Header
+	int32 RemoveIndex = ImageData.Find('*');
+	if (RemoveIndex != INDEX_NONE)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load file: %s"), *FilePath);
-		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
-		return nullptr;
-	}
-	
-	// Scan the raw data
-	Error = FLibnsgifHandler::FunctionPointerNsgifDataScan()(Gif, Size, Data);
-	if (Error != NSGIF_OK)
-	{
-		// Not fatal; some GIFs are nasty. Can still try to decode
-		// any frames that were decoded successfully.
-		UE_LOG(LogTemp, Warning, TEXT("nsgif_data_scan warning: %d"), Error);
+		ImageData.RemoveAt(0, RemoveIndex + 1);
 	}
 
-	FLibnsgifHandler::FunctionPointerNsgifDataComplete()(Gif);
-
-	// Decode the frames
-	TArray<FColor> Pixels;
-	Error = DecodeFrames(Gif, Pixels);
-	if (Error != NSGIF_OK)
+	// Validating PPM File
+	if (Lines.Num() < 3)
 	{
-		UE_LOG(LogTemp, Error, TEXT("DecodeFrames error: %d"), Error);
-		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
-		free(Data);
+		UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
 		return nullptr;
+	}
+
+	// Check if it's a valid PPM file
+	if (Lines[0] != "P3")
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
+		return nullptr;
+	}
+
+	// Extracting Height &  Width Of The Frame
+	Width = ExtractDimensions(Lines[2]);
+	Height = ExtractDimensions(Lines[3]);
+
+	if (Width == -1 && Height == -1)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
+		return nullptr;
+	}
+
+	// Copy pixel data from PPM image
+	int32 PixelIndex = 0; 
+	for (int32 i = 0; i < ImageData.Num(); ++i)
+	{
+		FString PixelValueString;
+		while (i < ImageData.Num() && ImageData[i] != ' ' && ImageData[i] != '\n')
+		{
+			PixelValueString.AppendChar(ImageData[i]);
+			++i;
+		}
+
+		uint8 PixelValue = FCString::Atoi(*PixelValueString);
+		
+		Pixels.Add(PixelValue);
 	}
 
 	// Create UTexture2D and initialize it with the pixel data
-	int32 Width = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->width;
-	int32 Height = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->height;
 	UTexture2D* Texture = UTexture2D::CreateTransient(Width, Height, PF_R8G8B8A8);
 
-	if(!Texture)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to create UTexture2D"));
-		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
-		free(Data);
-		return nullptr;
-	}
-
 	// Lock the texture and copy the pixel data
-	FTexture2DMipMap& Mip = Texture->PlatformData->Mips[0];
-	void* TextureData = Mip.BulkData.Lock(LOCK_READ_WRITE);
-	if (TextureData)
-	{
-		FMemory::Memcpy(TextureData, Pixels.GetData(), Pixels.Num() * sizeof(FColor));
-		Mip.BulkData.Unlock();
-		Texture->UpdateResource();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to lock UTexture2D for writing"));
-		Texture->ConditionalBeginDestroy();
-		FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
-		free(Data);
-		return nullptr;
-	}
+	uint8* TextureData = static_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+	FMemory::Memcpy(TextureData, Pixels.GetData(), Width * Height * 4);
 
-	// Clean up
-	FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
-	free(Data);
+	// Unlock the texture and update it
+	Texture->PlatformData->Mips[0].BulkData.Unlock();
+	Texture->UpdateResource();
 
 	return Texture;
 }
 
-nsgif_error URuntimeGIFLoaderHelper::DecodeFrames(nsgif_t* Gif_, TArray<FColor>& OutPixels)
+int32 URuntimeGIFLoaderHelper::ExtractDimensions(FString PPMDimension)
 {
-	uint32_t FramePrev = 0;
-	const nsgif_info_t* Info = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif_);
+	TArray<FString> Substrings;
+	PPMDimension.ParseIntoArrayWS(Substrings); // Split the string by whitespace
 
-	// Prepare the output pixel array
-	const uint32_t NumPixels = Info->width * Info->height * Info->frame_count;
-	OutPixels.Empty(NumPixels);
-	OutPixels.AddUninitialized(NumPixels);
-
-	// Decode the frames
-	nsgif_bitmap_t* Bitmap;
-	uint32_t FrameNew;
-	nsgif_rect_t Area;
-	uint32_t Delay_CS;
-	uint32_t FrameIndex = 0;
-	while (true)
+	for (const FString& Substring : Substrings)
 	{
-		Error = FLibnsgifHandler::FunctionPointerNsgifFramePrepare()(Gif_, &Area, &Delay_CS, &FrameNew);
-		if (Error != NSGIF_OK)
+		int32 Number = FCString::Atoi(*Substring);
+		if (Number != 0)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("nsgif_frame_prepare warning: %d"), Error);
-		}
-
-		if (FrameNew < FramePrev)
-		{
-			// Must be an animation that loops.
-			// We only care about decoding each frame once in this utility.
-			break;
-		}
-		FramePrev = FrameNew;
-
-		Error = FLibnsgifHandler::FunctionPointerNsgifFrameDecode()(Gif_, FrameNew, &Bitmap);
-		if (Error != NSGIF_OK)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("nsgif_frame_decode warning: %d"), Error);
-		}
-
-		// Copy the decoded frame to the output pixel array
-		const uint8_t* Image = (const uint8_t*)Bitmap;
-		const uint32_t FrameStartIndex = FrameIndex * Info->width * Info->height;
-		for (uint32_t Y = 0; Y < Info->height; Y++)
-		{
-			for (uint32_t X = 0; X < Info->width; X++)
-			{
-				const size_t SrcIndex = (Y * Info->width + X) * 4;
-				const size_t DstIndex = FrameStartIndex + (Y * Info->width + X);
-				OutPixels[DstIndex] = FColor(Image[SrcIndex + 2], Image[SrcIndex + 1], Image[SrcIndex], Image[SrcIndex + 3]);
-			}
-		}
-
-		FrameIndex++;
-
-		if (Delay_CS == NSGIF_INFINITE)
-		{
-			// This frame is the last.
-			break;
+			return Number;
 		}
 	}
 
-	return NSGIF_OK;
-}
-
-void URuntimeGIFLoaderHelper::LoadGif(const FString& FilePath, UTexture2D*& OutTexture, bool bUseAsync)
-{
-	// Synchronous loading
-	if (!bUseAsync)
-	{
-		UTexture2D* Texture = ConvertGifToTexture2D(FilePath);
-		OutTexture = Texture;
-		return;
-	}
-
-	// Asynchronous loading
-	FString AsyncFilePath = FilePath;
-	FSimpleDelegateGraphTask::CreateAndDispatchWhenReady(
-		FSimpleDelegateGraphTask::FDelegate::CreateLambda(
-			[&, AsyncFilePath]()
-			{
-				UTexture2D* Texture = ConvertGifToTexture2D(AsyncFilePath);
-				AsyncTask(ENamedThreads::GameThread, [Texture, &OutTexture]()
-					{
-						OutTexture = Texture;
-					}
-				);
-			}),
-		TStatId(), nullptr, ENamedThreads::AnyThread
-	);
+	return -1;
 }
 
 #endif //WITH_LIBNSGIF
