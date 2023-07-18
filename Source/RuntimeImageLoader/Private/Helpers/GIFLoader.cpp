@@ -8,23 +8,11 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformFileManager.h"
 #include "Misc/Paths.h"
-#include "Async/Async.h"
 
 DEFINE_LOG_CATEGORY(LibNsgifHelper);
 
 #if WITH_LIBNSGIF
-
-URuntimeGIFLoaderHelper::URuntimeGIFLoaderHelper()
-{
-	/** Ain't Require Implementation At The Moment */
-}
-
-URuntimeGIFLoaderHelper::~URuntimeGIFLoaderHelper()
-{
-	/** Ain't Require Implementation At The Moment */
-}
-
-void* URuntimeGIFLoaderHelper::bitmap_create(int width, int height)
+void* FRuntimeGIFLoaderHelper::bitmap_create(int width, int height)
 {
 	if (width > 4096 || height > 4096) {
 		return NULL;
@@ -33,17 +21,17 @@ void* URuntimeGIFLoaderHelper::bitmap_create(int width, int height)
 	return calloc(width * height, BYTES_PER_PIXEL);
 }
 
-unsigned char* URuntimeGIFLoaderHelper::bitmap_get_buffer(void* bitmap)
+unsigned char* FRuntimeGIFLoaderHelper::bitmap_get_buffer(void* bitmap)
 {
 	return (unsigned char*)bitmap;
 }
 
-void URuntimeGIFLoaderHelper::bitmap_destroy(void* bitmap)
+void FRuntimeGIFLoaderHelper::bitmap_destroy(void* bitmap)
 {
 	free(bitmap);
 }
 
-uint8_t* URuntimeGIFLoaderHelper::Load_File(const char* path, size_t* data_size)
+uint8_t* FRuntimeGIFLoaderHelper::Load_File(const char* path, size_t* data_size)
 {
 	FILE* fd;
 	struct stat sb;
@@ -82,15 +70,17 @@ uint8_t* URuntimeGIFLoaderHelper::Load_File(const char* path, size_t* data_size)
 	return buffer;
 }
 
-void URuntimeGIFLoaderHelper::Warning(const char* context, nsgif_error err)
+void FRuntimeGIFLoaderHelper::Warning(const char* context, nsgif_error err)
 {
-	FString ErrorMessage = ANSI_TO_TCHAR(FLibnsgifHandler::FunctionPointerNsgifStrError()(err));
+	/*FString ErrorMessage = ANSI_TO_TCHAR(FLibnsgifHandler::FunctionPointerNsgifStrError()(err));
+	const TCHAR* ContextStr = *context;
 	const TCHAR* ErrorMessageStr = *ErrorMessage;
 
-	UE_LOG(LibNsgifHelper, Warning, TEXT("%s: %s\n"), context, ErrorMessageStr);
+	UE_LOG(LibNsgifHelper, Warning, TEXT("%s: %s"), ContextStr, ErrorMessageStr);*/
+	fprintf(stderr, "%s: %s\n", context, FLibnsgifHandler::FunctionPointerNsgifStrError()(err));
 }
 
-void URuntimeGIFLoaderHelper::Decode(FILE* ppm, const char* name, nsgif_t* gif, bool first)
+void FRuntimeGIFLoaderHelper::Decode(FILE* ppm, const char* name, nsgif_t* gif, bool first)
 {
 	nsgif_error err;
 	uint32_t frame_prev = 0;
@@ -104,8 +94,8 @@ void URuntimeGIFLoaderHelper::Decode(FILE* ppm, const char* name, nsgif_t* gif, 
 		fprintf(ppm, "# height               %u \n", info->height);
 		fprintf(ppm, "# frame_count          %u \n", info->frame_count);
 		fprintf(ppm, "# loop_max             %u \n", info->loop_max);
-		fprintf(ppm, "%u %u 256\n", info->width, info->height * info->frame_count);
-		fprintf(ppm, "*");
+		fprintf(ppm, "%u %u %u 256\n", info->width, info->height, info->height * info->frame_count);
+		/*fprintf(ppm, "*");*/
 	}
 
 	/* decode the frames */
@@ -156,7 +146,7 @@ void URuntimeGIFLoaderHelper::Decode(FILE* ppm, const char* name, nsgif_t* gif, 
 	}
 }
 
-void URuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
+void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 {
 	fopen_s(&PortablePixMap, TCHAR_TO_UTF8(*ppmFile), "w+");
 	if (!PortablePixMap) return;
@@ -201,9 +191,12 @@ void URuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 	/* clean up */
 	FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
 	free(Data);
+
+	// Updating TextureData with Pixel values of PPM File.
+	ConvertPPMToTextureData();
 }
 
-UTexture2D* URuntimeGIFLoaderHelper::ConvertPPMToTexture2D()
+void FRuntimeGIFLoaderHelper::ConvertPPMToTextureData()
 {
 	const FString& FilePath = ppmFile;
 	// Load PPM file into memory
@@ -211,81 +204,64 @@ UTexture2D* URuntimeGIFLoaderHelper::ConvertPPMToTexture2D()
 	if (!FFileHelper::LoadFileToArray(ImageData, *FilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load PPM file: %s"), *FilePath);
-		return nullptr;
+		return;
 	}
 
 	// Parse PPM header to extract image dimensions and pixel data
 	int32 Width = 0;
 	int32 Height = 0;
 	int32 MaxValue = 0;
-	TArray<uint8> Pixels;
 
 	FString ImageDataAsString(reinterpret_cast<const ANSICHAR*>(ImageData.GetData()));
 	TArray<FString> Lines;
 	ImageDataAsString.ParseIntoArrayLines(Lines);
 
-	// Sherading an image array to Remove Header
-	int32 RemoveIndex = ImageData.Find('*');
-	if (RemoveIndex != INDEX_NONE)
-	{
-		ImageData.RemoveAt(0, RemoveIndex + 1);
-	}
+	int32 RemoveIndex;
+	if (ImageDataAsString.FindChar('*', RemoveIndex))
+		ImageDataAsString = ImageDataAsString.RightChop(RemoveIndex + 1);
 
-	// Validating PPM File
 	if (Lines.Num() < 3)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
-		return nullptr;
+		return;
 	}
 
 	// Check if it's a valid PPM file
 	if (Lines[0] != "P3")
 	{
 		UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
-		return nullptr;
+		return;
 	}
 
-	// Extracting Height &  Width Of The Frame
 	Width = ExtractDimensions(Lines[2]);
 	Height = ExtractDimensions(Lines[3]);
 
 	if (Width == -1 && Height == -1)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
-		return nullptr;
+		return;
 	}
 
-	// Copy pixel data from PPM image
-	int32 PixelIndex = 0; 
-	for (int32 i = 0; i < ImageData.Num(); ++i)
+	// Reading PPM File To Decode The Pixel Data.
+	TArray<TArray<FColor>> GifColor = ReadPPMFile(FilePath, Width, Height);
+
+	//Creating TextureData of Frame Size
+	TextureData.SetNum(Width * Height);
+
+	// Updating TextureData from the Pixel Data in PPM file
+	for (int32 Y = 0; Y < Height; Y++)
 	{
-		FString PixelValueString;
-		while (i < ImageData.Num() && ImageData[i] != ' ' && ImageData[i] != '\n')
+		for (int32 X = 0; X < Width; X++)
 		{
-			PixelValueString.AppendChar(ImageData[i]);
-			++i;
+			int32 Index = Y * Width + X;
+			FColor PixelColor = GifColor[Y][X];
+
+			TextureData[Index] = PixelColor;
 		}
-
-		uint8 PixelValue = FCString::Atoi(*PixelValueString);
-		
-		Pixels.Add(PixelValue);
 	}
-
-	// Create UTexture2D and initialize it with the pixel data
-	UTexture2D* Texture = UTexture2D::CreateTransient(Width, Height, PF_R8G8B8A8);
-
-	// Lock the texture and copy the pixel data
-	uint8* TextureData = static_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
-	FMemory::Memcpy(TextureData, Pixels.GetData(), Width * Height * 4);
-
-	// Unlock the texture and update it
-	Texture->PlatformData->Mips[0].BulkData.Unlock();
-	Texture->UpdateResource();
-
-	return Texture;
 }
 
-int32 URuntimeGIFLoaderHelper::ExtractDimensions(FString PPMDimension)
+int32 FRuntimeGIFLoaderHelper::ExtractDimensions(FString PPMDimension)
 {
 	TArray<FString> Substrings;
 	PPMDimension.ParseIntoArrayWS(Substrings); // Split the string by whitespace
@@ -300,6 +276,95 @@ int32 URuntimeGIFLoaderHelper::ExtractDimensions(FString PPMDimension)
 	}
 
 	return -1;
+}
+
+TArray<TArray<FColor>> FRuntimeGIFLoaderHelper::ReadPPMFile(const FString& FilePath, int32& Width, int32& Height)
+{
+	TArray<TArray<FColor>> Pixels;
+
+	// Read the PPM file.
+	FString FileContent;
+	if (!FFileHelper::LoadFileToString(FileContent, *FilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to read PPM file: %s"), *FilePath);
+		return Pixels;
+	}
+
+	// Split the file content into lines.
+	TArray<FString> Lines;
+	FileContent.ParseIntoArrayLines(Lines);
+
+	// Extract the header information.
+	int32 LineIndex = 0;
+	FString MagicNumber = Lines[LineIndex++];
+	if (MagicNumber != "P3")
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
+		return Pixels;
+	}
+
+	// Skip comment lines.
+	while (LineIndex < Lines.Num() && Lines[LineIndex].StartsWith("#"))
+	{
+		LineIndex++;
+	}
+
+	// Extract the width, height, and maximum color value.
+	TArray<FString> Dimensions;
+	FString HeaderInfo = Lines[LineIndex++].TrimStartAndEnd();
+	HeaderInfo.ParseIntoArray(Dimensions, TEXT(" "));
+	Width = FCString::Atoi(*Dimensions[0]);
+	Height = FCString::Atoi(*Dimensions[1]);
+
+	// Skip the maximum color value line.
+	LineIndex++;
+
+	// Read the pixel values.
+	Pixels.Reserve(Height);
+	for (int32 Y = 0; Y < Height; Y++)
+	{
+		FString Line = Lines[LineIndex++].TrimStartAndEnd();
+		TArray<FString> Values;
+		Line.ParseIntoArray(Values, TEXT(" "));
+
+		// Check if the number of pixel values in the line matches the expected width.
+		if (Values.Num() != Width * 3)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Invalid PPM file format: %s"), *FilePath);
+			return TArray<TArray<FColor>>();
+		}
+
+		TArray<FColor> RowPixels;
+		RowPixels.Reserve(Width);
+		for (int32 X = 0; X < Width; X++)
+		{
+			int32 Red = FCString::Atoi(*Values[X * 3]);
+			int32 Green = FCString::Atoi(*Values[X * 3 + 1]);
+			int32 Blue = FCString::Atoi(*Values[X * 3 + 2]);
+
+			FColor PixelColor(Red, Green, Blue);
+			RowPixels.Add(PixelColor);
+		}
+
+		Pixels.Add(RowPixels);
+	}
+
+	return Pixels;
+}
+
+const FColor* FRuntimeGIFLoaderHelper::GetFrameBuffer() const
+{
+	return TextureData.GetData();
+}
+
+int32 FRuntimeGIFLoaderHelper::GetWidth() const
+{
+	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->width;
+}
+
+int32 FRuntimeGIFLoaderHelper::GetHeight() const
+{
+	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->height;
 }
 
 #endif //WITH_LIBNSGIF

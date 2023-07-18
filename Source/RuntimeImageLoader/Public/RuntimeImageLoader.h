@@ -19,7 +19,8 @@
 
 
 class URuntimeImageReader;
-
+class UAnimatedTexture2D;
+class URenderGIFTexture;
 
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
@@ -99,13 +100,17 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
-    URuntimeGIFLoaderHelper* InitializeGifLoader();
+    void InitializeGifLoader();
 
 private:
     UPROPERTY()
     URuntimeImageReader* ImageReader = nullptr;
     UPROPERTY()
-    URuntimeGIFLoaderHelper* GifLoader = nullptr;
+    UAnimatedTexture2D* AnimatedTexture = nullptr;
+
+    URenderGIFTexture* RenderGIFTexture = nullptr;
+
+    TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> GifLoader = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;

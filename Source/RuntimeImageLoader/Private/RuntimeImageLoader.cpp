@@ -10,18 +10,29 @@
 #include "Interfaces/IPluginManager.h"
 #include "RuntimeImageUtils.h"
 
+#include "Texture2DAnimation/AnimatedTexture2D.h"
+#include "Texture2DAnimation/RenderGIFTexture.h"
+
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
 void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
 {
-    GifLoader->GIFDecoding(TCHAR_TO_UTF8(*GIFFilename));
-    OutTexture = GifLoader->ConvertPPMToTexture2D();
+    OutTexture = (UTexture2D*)RenderGIFTexture->HandleGIFRequest(GIFFilename);
 }
 
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
     InitializeGifLoader();
+
+    if (!AnimatedTexture)
+    {
+        AnimatedTexture = NewObject<UAnimatedTexture2D>(this);
+    }
+    if (!RenderGIFTexture)
+    {
+        RenderGIFTexture = NewObject<URenderGIFTexture>(this);
+    }
 }
 
 void URuntimeImageLoader::Deinitialize()
@@ -29,6 +40,7 @@ void URuntimeImageLoader::Deinitialize()
     ImageReader->Deinitialize();
     ImageReader = nullptr;
     GifLoader = nullptr;
+    AnimatedTexture = nullptr;
 }
 
 bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
@@ -423,13 +435,10 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
     return ImageReader;
 }
 
-URuntimeGIFLoaderHelper* URuntimeImageLoader::InitializeGifLoader()
+void URuntimeImageLoader::InitializeGifLoader()
 {
-    if (!IsValid(GifLoader))
+    if (!GifLoader)
     {
-        GifLoader = NewObject<URuntimeGIFLoaderHelper>(this);
+        GifLoader = MakeShared<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe>();
     }
-
-    ensure(IsValid(GifLoader));
-    return GifLoader;
 }
