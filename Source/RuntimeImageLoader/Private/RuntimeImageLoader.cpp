@@ -15,11 +15,6 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
-void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
-{
-    OutTexture = (UTexture2D*)RenderGIFTexture->HandleGIFRequest(GIFFilename);
-}
-
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
@@ -308,6 +303,11 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
     }
 
     Requests.Enqueue(Request);
+}
+
+void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
+{
+    OutTexture = (UTexture2D*)RenderGIFTexture->HandleGIFRequest(GIFFilename);
 }
 
 void URuntimeImageLoader::CancelAll()

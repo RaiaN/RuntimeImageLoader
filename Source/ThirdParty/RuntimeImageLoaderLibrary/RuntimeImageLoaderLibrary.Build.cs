@@ -19,7 +19,7 @@ public class RuntimeImageLoaderLibrary : ModuleRules
 			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "include"));
 
 			// Add the import library
-			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.lib"));
+			// PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.lib"));
 
 			// Delay-load the DLL, so we can load it from the right place first
 			PublicDelayLoadDLLs.Add("libnsgif.dll");

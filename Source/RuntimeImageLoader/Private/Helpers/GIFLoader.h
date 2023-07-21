@@ -49,7 +49,7 @@ private:
 	uint8* Data;
 	nsgif_error Error;
 	FILE* PortablePixMap = nullptr;
-	FString ppmFile = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("RuntimeImageLoader/Content/Output.ppm"));
+	FString ppmFile = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("RuntimeImageLoader/temp.ppm"));
 	TArray<FColor> TextureData;
 
 private:

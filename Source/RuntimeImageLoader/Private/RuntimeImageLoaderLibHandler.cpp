@@ -21,7 +21,7 @@ bool FLibnsgifHandler::Initialize()
 	// Add on the relative location of the third party dll and load it
 	FString LibraryPath;
 #if PLATFORM_WINDOWS
-	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/RuntimeImageLoaderLibrary/Win64/libnsgif.dll"));
+	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/RuntimeImageLoaderLibrary/x64/Release/libnsgif.dll"));
 #endif // PLATFORM_WINDOWS
 
 	LibnsgifHandle = !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
