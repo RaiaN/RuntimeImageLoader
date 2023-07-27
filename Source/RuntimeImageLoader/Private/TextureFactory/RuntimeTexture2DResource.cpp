@@ -5,8 +5,9 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeTexture2DResource, Log, All);
 
-FRuntimeTexture2DResource::FRuntimeTexture2DResource(UTexture2D* InOwner, FTexture2DRHIRef InRHITexture2D)
-: FRuntimeTextureResource(CastChecked<UTexture>(InOwner), TRefCountPtr<FRHITexture>(InRHITexture2D))
+FRuntimeTexture2DResource::FRuntimeTexture2DResource(UTexture2D* InOwner, FTexture2DRHIRef InRHITexture2D, TextureFilter InFilterMode)
+: FRuntimeTextureResource(CastChecked<UTexture>(InOwner), TRefCountPtr<FRHITexture>(InRHITexture2D)),
+    FilterMode(InFilterMode)
 {
     UE_LOG(LogRuntimeTexture2DResource, Verbose, TEXT("RuntimeTexture2DResource has been created!"))
 }
@@ -20,13 +21,31 @@ void FRuntimeTexture2DResource::InitRHI()
 {
     // TODO: this should be reevaluated as runtime textures do not have mips just yet
 
+    // Default to point filtering.
+    ESamplerFilter Filter = ESamplerFilter::SF_Trilinear;
+
+    switch (FilterMode)
+    {
+        case TF_Nearest:
+            Filter = ESamplerFilter::SF_Point;
+            break;
+        case TF_Bilinear:
+            Filter = ESamplerFilter::SF_Bilinear;
+            break;
+        case TF_Trilinear:
+            Filter = ESamplerFilter::SF_Trilinear;
+            break;
+        default:
+            break;
+    }
+
     // Create the sampler state RHI resource.
-    FSamplerStateInitializerRHI SamplerStateInitializer(SF_Trilinear);
+    FSamplerStateInitializerRHI SamplerStateInitializer(Filter);
     SamplerStateRHI = GetOrCreateSamplerState(SamplerStateInitializer);
 
     // Create a custom sampler state for using this texture in a deferred pass, where ddx / ddy are discontinuous
     FSamplerStateInitializerRHI DeferredPassSamplerStateInitializer(
-        SF_Trilinear,
+        Filter,
         AM_Wrap,
         AM_Wrap,
         AM_Wrap,

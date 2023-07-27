@@ -474,7 +474,7 @@ namespace FRuntimeImageUtils
 
         NewTexture->NeverStream = true;
         NewTexture->SRGB = ImageData.SRGB;
-        NewTexture->Filter = ImageData.FilteringMode;
+        NewTexture->Filter = ImageData.FilterMode;
 
         {
             QUICK_SCOPE_CYCLE_COUNTER(STAT_RuntimeImageReader_ImportFileAsTexture_NewTexture);

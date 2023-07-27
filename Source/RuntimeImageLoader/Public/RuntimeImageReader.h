@@ -47,7 +47,7 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
     bool bForUI = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
-    TEnumAsByte<TextureFilter> FilteringMode = TextureFilter::TF_Default;
+    TEnumAsByte<TextureFilter> FilterMode = TextureFilter::TF_Default;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
     int32 PercentSizeX = 100;

@@ -192,7 +192,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Other()
 void FRuntimeRHITexture2DFactory::FinalizeRHITexture2D()
 {
     // Create texture resource that returns actual texture size so that UMG can display the texture
-    FRuntimeTextureResource* NewTextureResource = new FRuntimeTexture2DResource(NewTexture, RHITexture2D);
+    FRuntimeTextureResource* NewTextureResource = new FRuntimeTexture2DResource(NewTexture, RHITexture2D, ImageData.FilterMode);
     NewTexture->SetResource(NewTextureResource);
 
     FGraphEventRef UpdateResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
