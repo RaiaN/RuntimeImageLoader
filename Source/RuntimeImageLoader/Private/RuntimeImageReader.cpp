@@ -355,5 +355,7 @@ void URuntimeImageReader::ApplySizeFormatTransformations(FRuntimeImageData& Imag
         ImageData.PixelFormat = DeterminePixelFormat(CubemapMip.Format, TransformParams);
         ImageData.GammaSpace = CubemapMip.GammaSpace;
     }
+
+    ImageData.FilteringMode = TransformParams.FilteringMode;
 }
 
