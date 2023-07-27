@@ -30,6 +30,7 @@ Discord: https://discord.gg/Ujw7QVrWxG
 - Supports PNG, JPEG, BMP, TGA, OpenEXR, TIFF and QOI
 - Supports 8, 16, 32 bit per channel (or up to 128 bit *pixel depth* images)
 - Can generate UI ready texture format (RGBA8 or 'float' RGBA)
+- Allows to set texture filtering mode
 - Blueprint friendly
 - No static libraries or external dependencies (except for single-header libraries)
 
