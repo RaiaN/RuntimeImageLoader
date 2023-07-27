@@ -6,14 +6,11 @@
 #include "PixelFormat.h"
 #include "ImageCore.h"
 #include "Launch/Resources/Version.h"
-
-#if ENGINE_MAJOR_VERSION < 5
 #include "Engine/Texture.h"
-#else
+
+#if ENGINE_MAJOR_VERSION == 5
 #include "Engine/TextureDefines.h"
 #endif
-
-enum TextureFilter : int;
 
 struct RUNTIMEIMAGELOADER_API FRuntimeImageData : public FImage
 {

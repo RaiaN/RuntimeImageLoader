@@ -20,8 +20,6 @@ class UTexture2D;
 class UTextureCube;
 class IImageReader;
 
-enum TextureFilter: int;
-
 
 USTRUCT(BlueprintType)
 struct RUNTIMEIMAGELOADER_API FInputImageDescription
