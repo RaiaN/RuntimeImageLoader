@@ -21,7 +21,7 @@ struct RUNTIMEIMAGELOADER_API FRuntimeImageData : public FImage
 
     int32 NumMips = 1;
     bool SRGB = true;
-    TextureFilter FilteringMode = TF_Default;
+    TextureFilter FilteringMode = TextureFilter::TF_Default;
     ETextureSourceFormat TextureSourceFormat = TSF_Invalid;
     TextureCompressionSettings CompressionSettings;
     EPixelFormat PixelFormat = PF_B8G8R8A8;
