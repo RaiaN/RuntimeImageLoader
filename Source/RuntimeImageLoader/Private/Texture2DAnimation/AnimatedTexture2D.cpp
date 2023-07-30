@@ -5,21 +5,21 @@
 
 float UAnimatedTexture2D::GetSurfaceWidth() const
 {
-	if (Decoder) return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Decoder->GetGif())->width;
+	if (Decoder) return Decoder->GetWidth();
 	return 1.0f;
 }
 
 float UAnimatedTexture2D::GetSurfaceHeight() const
 {
-	if (Decoder) return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Decoder->GetGif())->height;
+	if (Decoder) return Decoder->GetHeight();
 	return 1.0f;
 }
 
 FTextureResource* UAnimatedTexture2D::CreateResource()
 {
-	UE_LOG(LogTemp, Error, TEXT("CreateResource() Get Called."));
+	/*UE_LOG(LogTemp, Error, TEXT("CreateResource() Get Called."));
 
-	Decoder = MakeShared<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe>();
+	Decoder = MakeShared<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe>();*/
 
 	// create RHI resource object
 	FTextureResource* NewResource = new FAnimatedTextureResource(this);
@@ -28,7 +28,7 @@ FTextureResource* UAnimatedTexture2D::CreateResource()
 
 void UAnimatedTexture2D::Tick(float DeltaTime)
 {
-	if (!bPlaying)
+	/*if (!bPlaying)
 		return;
 	if (!Decoder)
 		return;
@@ -38,7 +38,7 @@ void UAnimatedTexture2D::Tick(float DeltaTime)
 		return;
 
 	FrameTime = 0;
-	FrameDelay = RenderFrameToTexture();
+	FrameDelay = RenderFrameToTexture();*/
 }
 
 
@@ -96,7 +96,7 @@ float UAnimatedTexture2D::RenderFrameToTexture()
 	typedef TSharedPtr<FRenderCommandData, ESPMode::ThreadSafe> FCommandDataPtr;
 	FCommandDataPtr CommandData = MakeShared<FRenderCommandData, ESPMode::ThreadSafe>();
 	CommandData->RHIResource = Resource;
-	CommandData->FrameBuffer = (const uint8*)(Decoder->GetFrameBuffer());
+	CommandData->FrameBuffer = 0;
 
 	//-- equeue render command
 	ENQUEUE_RENDER_COMMAND(AnimTexture2D_RenderFrame)(
@@ -122,6 +122,65 @@ float UAnimatedTexture2D::RenderFrameToTexture()
 		});
 
 	return nFrameDelay / 1000.0f;
+}
+
+UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, const FAnimatedTexture2DCreateInfo& InCreateInfo)
+{
+	EPixelFormat DesiredFormat = EPixelFormat(InCreateInfo.Format);
+	if (InSizeX > 0 && InSizeY > 0)
+	{
+
+		auto NewTexture = NewObject<UAnimatedTexture2D>(GetTransientPackage(), NAME_None, RF_Transient);
+		if (NewTexture != NULL)
+		{
+			NewTexture->Filter = InCreateInfo.Filter;
+			NewTexture->SamplerAddressMode = InCreateInfo.SamplerAddressMode;
+			NewTexture->SRGB = InCreateInfo.bSRGB;
+
+			// Disable compression
+			NewTexture->CompressionSettings = TC_Default;
+#if WITH_EDITORONLY_DATA
+			NewTexture->CompressionNone = true;
+			NewTexture->MipGenSettings = TMGS_NoMipmaps;
+			NewTexture->CompressionNoAlpha = true;
+			NewTexture->DeferCompression = false;
+#endif // #if WITH_EDITORONLY_DATA
+			if (InCreateInfo.bIsResolveTarget)
+			{
+				NewTexture->bNoTiling = false;
+			}
+			else
+			{
+				// Untiled format
+				NewTexture->bNoTiling = true;
+			}
+
+			NewTexture->Init(InSizeX, InSizeY, DesiredFormat, InCreateInfo.bIsResolveTarget);
+		}
+		return NewTexture;
+	}
+	else
+	{
+		UE_LOG(LogTexture, Warning, TEXT("Invalid parameters specified for UTexture2DDynamic::Create()"));
+		return NULL;
+	}
+}
+
+void UAnimatedTexture2D::Init(int32 InSizeX, int32 InSizeY, EPixelFormat InFormat/*=2*/, bool InIsResolveTarget/*=false*/)
+{
+	SizeX = InSizeX;
+	SizeY = InSizeY;
+	Format = (EPixelFormat)InFormat;
+	NumMips = 1;
+	bIsResolveTarget = InIsResolveTarget;
+
+	// Initialize the resource.
+	UpdateResource();
+}
+
+void UAnimatedTexture2D::SetDecoder(TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> DecoderState)
+{
+	Decoder = DecoderState;
 }
 
 float UAnimatedTexture2D::GetAnimationLength() const

@@ -87,7 +87,7 @@ public:
 
     //------------------ GIF --------------------
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject = nullptr);
+    void LoadGIF(const FString& GIFFilename, int32 CurrentFrame, UAnimatedTexture2D*& OutTexture, int32& Current_Frame, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject = nullptr);
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;

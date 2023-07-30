@@ -75,6 +75,11 @@ void FAnimatedTextureResource::ReleaseRHI()
 	FTextureResource::ReleaseRHI();
 }
 
+FTexture2DRHIRef FAnimatedTextureResource::GetTexture2DRHI()
+{
+	return Texture2DRHI;
+}
+
 int32 FAnimatedTextureResource::GetDefaultMipMapBias() const
 {
 	return 0;

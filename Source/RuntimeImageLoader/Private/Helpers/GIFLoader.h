@@ -10,46 +10,41 @@
 THIRD_PARTY_INCLUDES_START
 #include "nsgif.h"
 THIRD_PARTY_INCLUDES_END
-//#include "GIFLoader.generated.h"
 
 #define BYTES_PER_PIXEL 4
 
-//UCLASS()
-class FRuntimeGIFLoaderHelper/* : public UObject*/
+class FRuntimeGIFLoaderHelper
 {
-	/*GENERATED_BODY()*/
-
 #if WITH_LIBNSGIF
 public:
 	FRuntimeGIFLoaderHelper() = default;
 	~FRuntimeGIFLoaderHelper() {}
 
-public:
+public: /** Bitmap Callbacks Methods */
 	static void* bitmap_create(int width, int height);
 	static unsigned char* bitmap_get_buffer(void* bitmap);
 	static void bitmap_destroy(void* bitmap);
+
+public: /** Gif Decoding Methods */
 	uint8_t* Load_File(const char* path, size_t* data_size);
 	void Warning(const char* context, nsgif_error err);
-	void Decode(FILE* ppm, const char* name, nsgif_t* gif, bool first);
+	void Decode(nsgif_t* gif, bool first);
 	void GIFDecoding(const char* FilePath);
 
-public:
-	void ConvertPPMToTextureData();
-	int32 ExtractDimensions(FString PPMDimension);
-	TArray<TArray<FColor>> ReadPPMFile(const FString& FilePath, int32& Width, int32& Height);
-	const FColor* GetFrameBuffer() const;
-public:
+public: /** Gif Data Method */
 	nsgif_t* GetGif() const { return Gif; }
 	int32 GetWidth() const;
 	int32 GetHeight() const;
+	int32 GetTotalFrames() const;
+	
+public: /** Get Next Frame Texture Data*/
+	void GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex, int32 FrameWidth, int32 FrameHeight, int32 FrameCount);
 
-private:
+private: /** Gif Data*/
 	size_t Size;
 	nsgif_t* Gif;
 	uint8* Data;
 	nsgif_error Error;
-	FILE* PortablePixMap = nullptr;
-	FString ppmFile = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("RuntimeImageLoader/temp.ppm"));
 	TArray<FColor> TextureData;
 
 private:
@@ -58,6 +53,7 @@ private:
 		bitmap_destroy,
 		bitmap_get_buffer,
 	};
+
 public:
 	FRuntimeGIFLoaderHelper(const FRuntimeGIFLoaderHelper&) = delete;
 	FRuntimeGIFLoaderHelper& operator=(const FRuntimeGIFLoaderHelper&) = delete;

@@ -305,9 +305,10 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UTexture2D*& OutTexture, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
+void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, int32 CurrentFrame, UAnimatedTexture2D*& OutTexture, int32& Current_Frame, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
 {
-    OutTexture = (UTexture2D*)RenderGIFTexture->HandleGIFRequest(GIFFilename);
+    OutTexture = RenderGIFTexture->RenderGIFData(GIFFilename, CurrentFrame);
+    Current_Frame = CurrentFrame; // Just Checking On KeyStrokes So Making A Loop (Soon Discarded)
 }
 
 void URuntimeImageLoader::CancelAll()

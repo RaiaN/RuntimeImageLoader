@@ -19,6 +19,8 @@ public:
 	virtual uint32 GetSizeY() const override;
 	virtual void InitRHI() override;
 	virtual void ReleaseRHI() override;
+	/** Returns the Texture2DRHI, which can be used for locking/unlocking the mips. */
+	FTexture2DRHIRef GetTexture2DRHI();
 	//~ End FTextureResource Interface.
 
 private:
@@ -28,5 +30,7 @@ private:
 
 private:
 	UAnimatedTexture2D* Owner;
+	/** Texture2D reference, used for locking/unlocking the mips. */
+	FTexture2DRHIRef Texture2DRHI;
 
 };

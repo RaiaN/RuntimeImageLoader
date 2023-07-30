@@ -1,47 +1,13 @@
+// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
 
 #include "Texture2DAnimation/RenderGIFTexture.h"
+#include "Texture2DAnimation/AnimatedTexture2D.h"
+#include "Texture2DAnimation/AnimatedTextureResource.h"
 #include "Helpers/GifLoader.h"
 #include "Engine/Texture2D.h"
 #include "Engine/Texture2DDynamic.h"
 
-#if !UE_SERVER
-
-static void WriteRawToTexture_RenderThread(FTexture2DDynamicResource* TextureResource, const FColor* RawData, bool bUseSRGB = true)
-{
-	check(IsInRenderingThread());
-
-	if (TextureResource)
-	{
-		FRHITexture2D* TextureRHI = TextureResource->GetTexture2DRHI();
-
-		int32 Width = TextureRHI->GetSizeX();
-		int32 Height = TextureRHI->GetSizeY();
-
-		uint32 DestStride = 0;
-		uint8* DestData = reinterpret_cast<uint8*>(RHILockTexture2D(TextureRHI, 0, RLM_WriteOnly, DestStride, false, false));
-
-		for (int32 y = 0; y < Height; y++)
-		{
-			uint8* DestPtr = &DestData[((int64)Height - 1 - y) * DestStride];
-
-			const FColor* SrcPtr = &((FColor*)(RawData))[((int64)Height - 1 - y) * Width];
-			for (int32 x = 0; x < Width; x++)
-			{
-				*DestPtr++ = SrcPtr->B;
-				*DestPtr++ = SrcPtr->G;
-				*DestPtr++ = SrcPtr->R;
-				*DestPtr++ = SrcPtr->A;
-				SrcPtr++;
-			}
-		}
-
-		RHIUnlockTexture2D(TextureRHI, 0, false, false);
-	}
-}
-
-#endif
-
-UTexture2DDynamic* URenderGIFTexture::HandleGIFRequest(const FString& GIFFilename)
+UAnimatedTexture2D* URenderGIFTexture::RenderGIFData(const FString& GIFFilename, int32 Current_Frame)
 {
 	TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> Decoder = 
 		MakeShared<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe>();
@@ -49,15 +15,27 @@ UTexture2DDynamic* URenderGIFTexture::HandleGIFRequest(const FString& GIFFilenam
 	if (Decoder)
 	{
 		Decoder->GIFDecoding(TCHAR_TO_UTF8(*GIFFilename));
+		
+		TArray<FColor> NextFramePixels;
+		int32 Width = Decoder->GetWidth();
+		int32 Height = Decoder->GetHeight();
+		int32 TotalFrames = Decoder->GetTotalFrames();
 
-		const FColor* RawData = Decoder->GetFrameBuffer();
-		UTexture2DDynamic* Texture = UTexture2DDynamic::Create(Decoder->GetWidth(), Decoder->GetHeight());
+		if (Current_Frame >= TotalFrames) Current_Frame = 0;
+
+		Decoder->GetNextFrame(NextFramePixels, Current_Frame, Width, Height, TotalFrames);
+ 
+		const uint8* RawData = (const uint8*)NextFramePixels.GetData();
+
+		UAnimatedTexture2D* Texture = UAnimatedTexture2D::Create(Width, Height);
+		Texture->SetDecoder(Decoder);
+
 		if (Texture)
 		{
 			Texture->SRGB = true;
 			Texture->UpdateResource();
 
-			FTexture2DDynamicResource* TextureResource = static_cast<FTexture2DDynamicResource*>(Texture->Resource);
+			FAnimatedTextureResource* TextureResource = static_cast<FAnimatedTextureResource*>(Texture->Resource);
 			if (TextureResource)
 			{
 				ENQUEUE_RENDER_COMMAND(FWriteRawDataToTexture)(
@@ -76,10 +54,9 @@ UTexture2DDynamic* URenderGIFTexture::HandleGIFRequest(const FString& GIFFilenam
 						Region.Width = TexWidth;
 						Region.Height = TexHeight;
 
-						RHIUpdateTexture2D(Texture2DRHI, 0, Region, SrcPitch, (const uint8*)RawData);
-
-						WriteRawToTexture_RenderThread(TextureResource, RawData);
-					});
+						RHIUpdateTexture2D(Texture2DRHI, 0, Region, SrcPitch, RawData);
+					}
+				);
 			}
 		}
 		return Texture;
