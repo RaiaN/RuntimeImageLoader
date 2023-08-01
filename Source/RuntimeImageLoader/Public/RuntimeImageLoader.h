@@ -12,15 +12,12 @@
 #include "Materials/MaterialInterface.h"
 #include "Subsystems/WorldSubsystem.h"
 
-#include "Helpers/GIFLoader.h"
-
 #include "RuntimeImageReader.h"
 #include "RuntimeImageLoader.generated.h"
 
 
 class URuntimeImageReader;
-class UAnimatedTexture2D;
-class URenderGIFTexture;
+class UGIFTexture;
 
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
@@ -41,8 +38,6 @@ public:
     FImageReadRequest Params;
     FOnRequestCompleted OnRequestCompleted;
 };
-
-
 
 /**
  * 
@@ -87,7 +82,7 @@ public:
 
     //------------------ GIF --------------------
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadGIF(const FString& GIFFilename, int32 CurrentFrame, UAnimatedTexture2D*& OutTexture, int32& Current_Frame, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject = nullptr);
+    void LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture);
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -100,17 +95,13 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
-    void InitializeGifLoader();
+    UGIFTexture* InitializeGIFTexture();
 
 private:
     UPROPERTY()
     URuntimeImageReader* ImageReader = nullptr;
     UPROPERTY()
-    UAnimatedTexture2D* AnimatedTexture = nullptr;
-
-    URenderGIFTexture* RenderGIFTexture = nullptr;
-
-    TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> GifLoader = nullptr;
+    UGIFTexture* GIFTexture = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;

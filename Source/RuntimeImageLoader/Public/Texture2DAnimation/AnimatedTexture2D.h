@@ -1,16 +1,12 @@
+// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/Texture.h"
 #include "Tickable.h"	// Engine
+#include "Helpers/GifLoader.h"
 #include "AnimatedTexture2D.generated.h"
-
-/**
- * Animated Texutre
- * @see class UTexture2D
- */
-
-class FRuntimeGIFLoaderHelper;
 
 /** @See Texture2DDynamic Class
 	Helper to set properties on the UAnimatedTexture2D so it doesn't need to be reinitialized. */
@@ -63,16 +59,13 @@ public:
 		TEnumAsByte<enum TextureAddress> AddressY;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimatedTexture)
-		bool SupportsTransparency = true;
+	float DefaultFrameDelay = 1.0f / 10;	// used while Frame.Delay==0
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimatedTexture)
-		float DefaultFrameDelay = 1.0f / 10;	// used while Frame.Delay==0
+	float PlayRate = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimatedTexture)
-		float PlayRate = 1.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimatedTexture)
-		bool bLooping = true;
+	bool bLooping = true;
 
 public:	// Playback APIs
 	UFUNCTION(BlueprintCallable, Category = AnimatedTexture)
@@ -98,9 +91,6 @@ public:	// Playback APIs
 
 	UFUNCTION(BlueprintCallable, Category = AnimatedTexture)
 		float GetPlayRate() const { return PlayRate; }
-
-	UFUNCTION(BlueprintCallable, Category = AnimatedTexture)
-		float GetAnimationLength() const;
 
 public:	// UTexture Interface
 	virtual float GetSurfaceWidth() const override;
@@ -128,14 +118,6 @@ public:	// FTickableGameObject Interface
 	{
 		return GetWorld();
 	}
-public:	// UObject Interface.
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif // WITH_EDITOR
-
-public: // Internal APIs
-	void ImportFile(const FString& GIFFilename);
-	float RenderFrameToTexture();
 
 public:
 	/** @See Texture2DDynamic Class
@@ -156,14 +138,13 @@ public:
 	void SetDecoder(TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> DecoderState);
 
 private:
-	UPROPERTY()
-		TArray<uint8> FileBlob;
-
-private:
 	TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> Decoder;
 
-	float AnimationLength = 0.0f;
 	float FrameDelay = 0.0f;
 	float FrameTime = 0.0f;
 	bool bPlaying = true;
+
+private:
+	int32 CurrentFrame = 0;
+	TArray<FColor> NextFramePixels;
 };

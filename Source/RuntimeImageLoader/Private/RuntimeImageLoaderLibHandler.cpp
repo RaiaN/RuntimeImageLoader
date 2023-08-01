@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
 
 #include "RuntimeImageLoaderLibHandler.h"
 #include "RuntimeImageLoaderModule.h"
@@ -6,7 +6,7 @@
 #include "Misc/Paths.h"
 #include "Interfaces/IPluginManager.h"
 
-DEFINE_LOG_CATEGORY(RuntimeImageLoader);
+DEFINE_LOG_CATEGORY(RuntimeImageLoaderLibHandler);
 
  //~ Static initialization
  //--------------------------------------------------------------------
@@ -28,7 +28,7 @@ bool FLibnsgifHandler::Initialize()
 
 	if (LibnsgifHandle)
 	{
-		UE_LOG(RuntimeImageLoader, Display, TEXT("libnsgif.dll Loaded."));
+		UE_LOG(RuntimeImageLoaderLibHandler, Display, TEXT("libnsgif.dll Loaded."));
 
 		Fn_nsgif_create = (nsgif_create_FnPtr)FPlatformProcess::GetDllExport(LibnsgifHandle, TEXT("nsgif_create"));
 		Fn_nsgif_destroy = (nsgif_destroy_FnPtr)FPlatformProcess::GetDllExport(LibnsgifHandle, TEXT("nsgif_destroy"));
@@ -41,7 +41,7 @@ bool FLibnsgifHandler::Initialize()
 
 		// Throwaway code just check weather Dll get loaded or not. ---- Start ----
 		if (Fn_nsgif_create && Fn_nsgif_destroy && Fn_nsgif_data_scan && Fn_nsgif_data_complete && Fn_nsgif_frame_prepare && Fn_nsgif_frame_decode && Fn_nsgif_reset && Fn_nsgif_get_info)
-			UE_LOG(RuntimeImageLoader, Display, TEXT("libnsgif methods Loaded."));
+			UE_LOG(RuntimeImageLoaderLibHandler, Display, TEXT("libnsgif methods Loaded."));
 		// ---- End ----
 
 		return true;

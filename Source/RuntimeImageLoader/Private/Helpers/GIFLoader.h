@@ -1,4 +1,5 @@
-// Copyright Peter Leontev
+// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -38,7 +39,7 @@ public: /** Gif Data Method */
 	int32 GetTotalFrames() const;
 	
 public: /** Get Next Frame Texture Data*/
-	void GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex, int32 FrameWidth, int32 FrameHeight, int32 FrameCount);
+	void GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex);
 
 private: /** Gif Data*/
 	size_t Size;

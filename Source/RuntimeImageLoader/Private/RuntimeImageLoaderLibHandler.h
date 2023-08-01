@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
 
 #pragma once
 #include "CoreMinimal.h"

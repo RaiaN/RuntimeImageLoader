@@ -8,5 +8,6 @@
  * Runtime Image Loader Custom Logging Category
  */
 
-DECLARE_LOG_CATEGORY_EXTERN(RuntimeImageLoader, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(RuntimeImageLoaderLibHandler, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LibNsgifHelper, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(GifTexture, Log, All);

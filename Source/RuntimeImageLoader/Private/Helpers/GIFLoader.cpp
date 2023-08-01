@@ -1,13 +1,8 @@
-// Copyright Peter Leontev
+// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
 
 #include "GIFLoader.h"
 #include "RuntimeImageLoaderLog.h"
 #include "RuntimeImageLoaderLibHandler.h"
-#include "Misc/FileHelper.h"
-#include "GenericPlatform/GenericPlatformFile.h"
-#include "HAL/FileManager.h"
-#include "HAL/PlatformFileManager.h"
-#include "Misc/Paths.h"
 
 DEFINE_LOG_CATEGORY(LibNsgifHelper);
 
@@ -193,14 +188,14 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 	}
 }
 
-void FRuntimeGIFLoaderHelper::GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex, int32 FrameWidth, int32 FrameHeight, int32 FrameCount)
+void FRuntimeGIFLoaderHelper::GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex)
 {
-	if (FrameIndex > GetTotalFrames()) FrameIndex = 0;
+	if (FrameIndex > GetTotalFrames() - 1) FrameIndex = 0;
 	// Calculate the starting index of the desired frame in the OutPixels array
-	int32 StartIndex = FrameIndex * FrameWidth * FrameHeight;
+	int32 StartIndex = FrameIndex * GetWidth() * GetHeight();
 
 	// Calculate the number of pixels in a single frame
-	int32 FramePixels = FrameWidth * FrameHeight;
+	int32 FramePixels = GetWidth() * GetHeight();
 
 	// Resize the SingleFramePixels array to hold the pixel data for the single frame
 	NextFramePixels.Empty(FramePixels);

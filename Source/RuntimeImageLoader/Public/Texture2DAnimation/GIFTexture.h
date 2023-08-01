@@ -5,21 +5,20 @@
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
+#include "GIFTexture.generated.h"
 
-#include "RenderGIFTexture.generated.h"
-
-class UTexture2DDynamic;
 class UAnimatedTexture2D;
 
 UCLASS()
-class URenderGIFTexture : public UBlueprintAsyncActionBase
+class UGIFTexture : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
 
 public:
 	/** Handles GIF Texture requests coming from the Raw Data */
-	UAnimatedTexture2D* RenderGIFData(const FString& GIFFilename, int32 Current_Frame);
+	UAnimatedTexture2D* Init(const FString& GIFFilename);
 
 private:
-	int32 CurrentFrame = 12;
+	int32 Width = 0;
+	int32 Height = 0;
 };

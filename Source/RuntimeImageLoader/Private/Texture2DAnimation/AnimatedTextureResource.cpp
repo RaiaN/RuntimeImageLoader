@@ -1,3 +1,5 @@
+// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
+
 #include "AnimatedTextureResource.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 

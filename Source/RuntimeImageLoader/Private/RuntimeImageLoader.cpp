@@ -9,33 +9,22 @@
 #include "Misc/FileHelper.h"
 #include "Interfaces/IPluginManager.h"
 #include "RuntimeImageUtils.h"
+#include "Texture2DAnimation/GIFTexture.h"
 
-#include "Texture2DAnimation/AnimatedTexture2D.h"
-#include "Texture2DAnimation/RenderGIFTexture.h"
+#include "Async/Async.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
-    InitializeGifLoader();
-
-    if (!AnimatedTexture)
-    {
-        AnimatedTexture = NewObject<UAnimatedTexture2D>(this);
-    }
-    if (!RenderGIFTexture)
-    {
-        RenderGIFTexture = NewObject<URenderGIFTexture>(this);
-    }
+    InitializeGIFTexture();   
 }
 
 void URuntimeImageLoader::Deinitialize()
 {
     ImageReader->Deinitialize();
     ImageReader = nullptr;
-    GifLoader = nullptr;
-    AnimatedTexture = nullptr;
 }
 
 bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
@@ -305,10 +294,9 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, int32 CurrentFrame, UAnimatedTexture2D*& OutTexture, int32& Current_Frame, bool bUseAsync, const FTransformImageParams& TransformParams, UObject* WorldContextObject)
+void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture)
 {
-    OutTexture = RenderGIFTexture->RenderGIFData(GIFFilename, CurrentFrame);
-    Current_Frame = CurrentFrame; // Just Checking On KeyStrokes So Making A Loop (Soon Discarded)
+    OutTexture = GIFTexture->Init(GIFFilename);
 }
 
 void URuntimeImageLoader::CancelAll()
@@ -436,10 +424,13 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
     return ImageReader;
 }
 
-void URuntimeImageLoader::InitializeGifLoader()
+UGIFTexture* URuntimeImageLoader::InitializeGIFTexture()
 {
-    if (!GifLoader)
+    if (!IsValid(GIFTexture))
     {
-        GifLoader = MakeShared<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe>();
+        GIFTexture = NewObject<UGIFTexture>(this);
     }
+
+    ensure(IsValid(GIFTexture));
+    return GIFTexture;
 }
