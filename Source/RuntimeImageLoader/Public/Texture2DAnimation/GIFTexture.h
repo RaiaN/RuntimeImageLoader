@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
+#include "Texture2DAnimation/AnimatedTexture2D.h"
 #include "GIFTexture.generated.h"
 
 class UAnimatedTexture2D;

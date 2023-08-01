@@ -135,10 +135,10 @@ public:
 	void Init(int32 InSizeX, int32 InSizeY, EPixelFormat InFormat = PF_B8G8R8A8, bool InIsResolveTarget = false);
 
 public:
-	void SetDecoder(TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> DecoderState);
+	void SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState);
 
 private:
-	TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> Decoder;
+	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder;
 
 	float FrameDelay = 0.0f;
 	float FrameTime = 0.0f;

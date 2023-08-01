@@ -204,7 +204,17 @@ void FRuntimeGIFLoaderHelper::GetNextFrame(TArray<FColor>& NextFramePixels, int3
 	// Copy the pixel data for the single frame into SingleFramePixels
 	for (int32 i = 0; i < FramePixels; i++)
 	{
-		NextFramePixels[i] = TextureData[StartIndex + i];
+		int32 index = StartIndex + i;
+
+		if (index >= 0 && index < TextureData.Num())
+		{
+			NextFramePixels[i] = TextureData[index];
+		}
+		else
+		{
+			// Handling the case where the index is out of bounds
+			NextFramePixels[i] = FColor::Black;
+		}
 	}
 }
 #endif //WITH_LIBNSGIF

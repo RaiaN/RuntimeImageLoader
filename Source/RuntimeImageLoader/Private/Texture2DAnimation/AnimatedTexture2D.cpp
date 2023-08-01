@@ -118,9 +118,9 @@ void UAnimatedTexture2D::Init(int32 InSizeX, int32 InSizeY, EPixelFormat InForma
 	UpdateResource();
 }
 
-void UAnimatedTexture2D::SetDecoder(TSharedPtr<FRuntimeGIFLoaderHelper, ESPMode::ThreadSafe> DecoderState)
+void UAnimatedTexture2D::SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState)
 {
-	Decoder = DecoderState;
+	Decoder = MoveTemp(DecoderState);
 }
 
 void UAnimatedTexture2D::Play()
