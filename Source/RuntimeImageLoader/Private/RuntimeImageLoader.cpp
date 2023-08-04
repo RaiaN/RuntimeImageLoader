@@ -18,7 +18,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
-    InitializeGIFTexture();   
+    GetOrCreateGIFTexture();
 }
 
 void URuntimeImageLoader::Deinitialize()
@@ -296,7 +296,7 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
 
 void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture)
 {
-    OutTexture = GIFTexture->Init(GIFFilename);
+    OutTexture = CachedGIFTexture->Init(GIFFilename);
 }
 
 void URuntimeImageLoader::CancelAll()
@@ -424,13 +424,13 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
     return ImageReader;
 }
 
-UGIFTexture* URuntimeImageLoader::InitializeGIFTexture()
+UGIFTexture* URuntimeImageLoader::GetOrCreateGIFTexture()
 {
-    if (!IsValid(GIFTexture))
+    if (!IsValid(CachedGIFTexture))
     {
-        GIFTexture = NewObject<UGIFTexture>(this);
+        CachedGIFTexture = NewObject<UGIFTexture>(this);
     }
 
-    ensure(IsValid(GIFTexture));
-    return GIFTexture;
+    ensure(IsValid(CachedGIFTexture));
+    return CachedGIFTexture;
 }

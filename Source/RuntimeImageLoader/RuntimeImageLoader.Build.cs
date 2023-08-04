@@ -55,7 +55,7 @@ public class RuntimeImageLoader : ModuleRules
 				"ImageCore",
 				"FreeImage",
 				"HTTP",
-				"RuntimeImageLoaderLibrary",
+                "RuntimeGifLibrary",
 				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
@@ -72,5 +72,10 @@ public class RuntimeImageLoader : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
-	}
+
+        if (Target.Platform == UnrealTargetPlatform.Android)
+        {
+            DynamicallyLoadedModuleNames.Add("RuntimeGifLibrary");
+        }
+    }
 }

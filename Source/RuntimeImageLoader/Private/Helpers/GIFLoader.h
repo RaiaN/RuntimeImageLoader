@@ -37,6 +37,7 @@ public: /** Gif Data Method */
 	int32 GetWidth() const;
 	int32 GetHeight() const;
 	int32 GetTotalFrames() const;
+	int32 GetFramePixels() const { return GetWidth() * GetHeight(); }
 	
 public: /** Get Next Frame Texture Data*/
 	void GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex);

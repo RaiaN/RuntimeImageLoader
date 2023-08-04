@@ -61,7 +61,8 @@ void UAnimatedTexture2D::Tick(float DeltaTime)
 			}
 		);
 	}
-	CurrentFrame++;
+
+	if(bLooping) CurrentFrame++;
 }
 
 UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, const FAnimatedTexture2DCreateInfo& InCreateInfo)

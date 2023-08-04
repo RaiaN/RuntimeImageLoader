@@ -96,9 +96,8 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 
 	FLibnsgifHandler::FunctionPointerNsgifDataComplete()(Gif);
 
-	auto LoopMax = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->loop_max;
-	if (FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->loop_max == 0)
-		LoopMax = 1;
+	int32 LoopMax = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->loop_max;
+	if (LoopMax == 0) LoopMax = 1;
 
 	for (uint64 i = 0; i < LoopMax; i++)
 	{
@@ -167,17 +166,18 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 		}
 		else {
 			image = (const uint8*)bitmap;
-			for (uint32_t y = 0; y != info->height; y++) {
-				for (uint32_t x = 0; x != info->width; x++) {
-					size_t z = (y * info->width + x) * 4;
-					uint8 Red = image[z];
-					uint8 Green = image[z + 1];
-					uint8 Blue = image[z + 2];
-					uint8 Alpha = image[z + 3];
+			for (uint32_t i = 0; i < info->height * info->width; i++) {
+				uint32_t y = i / info->width;
+				uint32_t x = i % info->width;
 
-					int32 PixelIndex = ((frame_new * info->height + y) * info->width + x);
-					TextureData[PixelIndex] = FColor(Red, Green, Blue, Alpha);
-				}
+				size_t z = (y * info->width + x) * 4;
+				uint8 Red = image[z];
+				uint8 Green = image[z + 1];
+				uint8 Blue = image[z + 2];
+				uint8 Alpha = image[z + 3];
+
+				int32 PixelIndex = ((frame_new * info->height + y) * info->width + x);
+				TextureData[PixelIndex] = FColor(Red, Green, Blue, Alpha);
 			}
 		}
 
@@ -194,15 +194,12 @@ void FRuntimeGIFLoaderHelper::GetNextFrame(TArray<FColor>& NextFramePixels, int3
 	// Calculate the starting index of the desired frame in the OutPixels array
 	int32 StartIndex = FrameIndex * GetWidth() * GetHeight();
 
-	// Calculate the number of pixels in a single frame
-	int32 FramePixels = GetWidth() * GetHeight();
-
 	// Resize the SingleFramePixels array to hold the pixel data for the single frame
-	NextFramePixels.Empty(FramePixels);
-	NextFramePixels.AddUninitialized(FramePixels);
+	NextFramePixels.Empty(GetFramePixels());
+	NextFramePixels.AddUninitialized(GetFramePixels());
 
 	// Copy the pixel data for the single frame into SingleFramePixels
-	for (int32 i = 0; i < FramePixels; i++)
+	for (int32 i = 0; i < GetFramePixels(); i++)
 	{
 		int32 index = StartIndex + i;
 

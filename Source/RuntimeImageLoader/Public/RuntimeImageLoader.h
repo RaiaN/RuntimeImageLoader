@@ -80,7 +80,7 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Runtime Image Loader | Utilities")
     static FString GetThisPluginResourcesDirectory();
 
-    //------------------ GIF --------------------
+    /** GIF */
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture);
 
@@ -95,13 +95,13 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
-    UGIFTexture* InitializeGIFTexture();
+    UGIFTexture* GetOrCreateGIFTexture();
 
 private:
     UPROPERTY()
     URuntimeImageReader* ImageReader = nullptr;
     UPROPERTY()
-    UGIFTexture* GIFTexture = nullptr;
+    UGIFTexture* CachedGIFTexture = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;
