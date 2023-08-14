@@ -16,15 +16,12 @@ public class RuntimeGifLibrary : ModuleRules
 			string IncPath = Path.Combine(ModuleDirectory, "include");
 			PublicSystemIncludePaths.Add(IncPath);
 
-			// Add the import library
-			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.lib"));
-
-			// Delay-load the DLL, so we can load it from the right place first
+			// Delay - load the DLL, so we can load it from the right place first
 			PublicDelayLoadDLLs.Add("libnsgif.dll");
-			
+
 			// Ensure that the DLL is staged along with the executable
 			RuntimeDependencies.Add(
-                "$(BinaryOutputDir)/ThirdParty/RuntimeGifLibrary/Win64/libnsgif.dll",
+				"$(BinaryOutputDir)/ThirdParty/RuntimeGifLibrary/Win64/libnsgif.dll",
 				Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.dll")
 				);
 		}

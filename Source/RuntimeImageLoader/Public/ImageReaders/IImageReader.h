@@ -12,3 +12,12 @@ public:
     virtual void Flush() = 0;
     virtual void Cancel() = 0;
 };
+
+class IGIFReader
+{
+public:
+    virtual uint8* ReadGIF(const FString& ImageURI) = 0;
+    virtual FString GetLastError() const { return TEXT(""); };
+    virtual void Flush() = 0;
+    virtual void Cancel() = 0;
+};

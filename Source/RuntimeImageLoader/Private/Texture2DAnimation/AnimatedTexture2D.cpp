@@ -17,6 +17,8 @@ float UAnimatedTexture2D::GetSurfaceHeight() const
 
 FTextureResource* UAnimatedTexture2D::CreateResource()
 {
+	FScopeLock ResultsLock(&ResultsMutex);
+
 	// create RHI resource object
 	FTextureResource* NewResource = new FAnimatedTextureResource(this);
 	return NewResource;
@@ -84,6 +86,8 @@ UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, con
 
 void UAnimatedTexture2D::Init(int32 InSizeX, int32 InSizeY, EPixelFormat InFormat/*=2*/, bool InIsResolveTarget/*=false*/)
 {
+	FScopeLock ResultsLock(&ResultsMutex);
+
 	SizeX = InSizeX;
 	SizeY = InSizeY;
 	Format = (EPixelFormat)InFormat;
@@ -101,6 +105,8 @@ void UAnimatedTexture2D::SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderS
 
 void UAnimatedTexture2D::RenderFrameToTexture()
 {
+	FScopeLock ResultsLock(&ResultsMutex);
+
 	if (CurrentFrame > Decoder->GetTotalFrames() - 1 && bLooping) CurrentFrame = 0;
 
 	FRenderCommandData CommandData;

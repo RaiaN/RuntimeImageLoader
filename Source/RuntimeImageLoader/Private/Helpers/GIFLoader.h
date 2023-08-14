@@ -40,6 +40,7 @@ public: /** Gif Data Method */
 	
 public: /** Get Next Frame Texture Data*/
 	const FColor* GetNextFrame(int32 FrameIndex);
+	const TArray<FColor> GetTextureData() const { return TextureData; }
 
 private: /** Gif Data*/
 	size_t Size;

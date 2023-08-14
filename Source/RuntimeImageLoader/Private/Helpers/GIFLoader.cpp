@@ -33,7 +33,7 @@ uint8* FRuntimeGIFLoaderHelper::LoadFile(const char* FilePath, size_t& DataSize)
 
 	if (!FileHandle)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Unable to open file: %s"), ANSI_TO_TCHAR(FilePath));
+		UE_LOG(LibNsgifHelper, Error, TEXT("Unable to open file: %s"), ANSI_TO_TCHAR(FilePath));
 		return nullptr;
 	}
 
@@ -42,14 +42,14 @@ uint8* FRuntimeGIFLoaderHelper::LoadFile(const char* FilePath, size_t& DataSize)
 
 	if (!Buffer)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Unable to allocate memory: %d bytes"), DataSize);
+		UE_LOG(LibNsgifHelper, Error, TEXT("Unable to allocate memory: %d bytes"), DataSize);
 		FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
 		return nullptr;
 	}
 
 	if (!FileHandle->Read(Buffer, DataSize))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to read file: %s"), ANSI_TO_TCHAR(FilePath));
+		UE_LOG(LibNsgifHelper, Error, TEXT("Failed to read file: %s"), ANSI_TO_TCHAR(FilePath));
 		FMemory::Free(Buffer);
 		FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
 		return nullptr;

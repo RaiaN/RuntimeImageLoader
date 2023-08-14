@@ -294,9 +294,13 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture)
+void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
 {
-    OutTexture = CachedGIFLoader->Init(GIFFilename);
+    UAsyncGIFLoader* AnimatedGIFLoader = NewObject<UAsyncGIFLoader>();
+    OutTexture = AnimatedGIFLoader->Init(GIFFilename);
+    
+    if (OutTexture) bSuccess = true;
+    else OutError = FString::Printf(TEXT("Failed to Load Gif. For Error's Check Logs"));
 }
 
 void URuntimeImageLoader::CancelAll()

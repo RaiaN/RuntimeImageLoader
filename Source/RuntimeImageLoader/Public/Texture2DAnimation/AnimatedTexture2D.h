@@ -144,7 +144,7 @@ public:
 public:
 	void SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState);
 
-private:
+public:
 	void RenderFrameToTexture();
 
 private:
@@ -156,4 +156,5 @@ private:
 
 private:
 	int32 CurrentFrame = 0;
+	FCriticalSection ResultsMutex;
 };

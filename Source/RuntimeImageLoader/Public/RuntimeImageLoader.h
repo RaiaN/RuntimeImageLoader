@@ -11,13 +11,11 @@
 #include "Tickable.h"
 #include "Materials/MaterialInterface.h"
 #include "Subsystems/WorldSubsystem.h"
-
 #include "RuntimeImageReader.h"
 #include "RuntimeImageLoader.generated.h"
 
-
-class URuntimeImageReader;
 class UAsyncGIFLoader;
+class UAnimatedTexture2D;
 
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
@@ -82,7 +80,7 @@ public:
 
     /** GIF */
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
-    void LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture);
+    void LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
 
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;

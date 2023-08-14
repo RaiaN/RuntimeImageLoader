@@ -4,7 +4,7 @@
 #include "Async/Async.h"
 #include "RuntimeImageLoaderLog.h"
 
-DEFINE_LOG_CATEGORY(GifTexture);
+DEFINE_LOG_CATEGORY(GifLoaderAsyncTask);
 
 UAnimatedTexture2D* UAsyncGIFLoader::Init(const FString& GIFFilename)
 {
@@ -23,7 +23,7 @@ UAnimatedTexture2D* UAsyncGIFLoader::Init(const FString& GIFFilename)
 		);
 		
 		bool bResult = CurrentTask.Get();
-		
+
 		Width = Decoder->GetWidth();
 		Height = Decoder->GetHeight();
 
@@ -38,7 +38,12 @@ UAnimatedTexture2D* UAsyncGIFLoader::Init(const FString& GIFFilename)
 		return Texture;
 	}
 
-	UE_LOG(GifTexture, Error, TEXT("Gif Texture isn't Initialized"));
+	UE_LOG(GifLoaderAsyncTask, Error, TEXT("Gif Decoder Unable to Decode Gif"));
 	
 	return nullptr;
+}
+
+void UAsyncGIFLoader::Cancel()
+{
+	CurrentTask.Reset();
 }

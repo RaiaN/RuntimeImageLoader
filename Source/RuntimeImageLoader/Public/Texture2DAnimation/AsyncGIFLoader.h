@@ -20,6 +20,9 @@ public:
 	/** Handles GIF Texture requests coming from the Raw Data */
 	UAnimatedTexture2D* Init(const FString& GIFFilename);
 
+public:
+	void Cancel();
+
 private:
 	int32 Width = 0;
 	int32 Height = 0;
