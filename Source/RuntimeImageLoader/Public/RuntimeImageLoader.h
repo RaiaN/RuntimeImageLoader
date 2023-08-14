@@ -17,7 +17,7 @@
 
 
 class URuntimeImageReader;
-class UGIFTexture;
+class UAsyncGIFLoader;
 
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
@@ -95,13 +95,13 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
-    UGIFTexture* GetOrCreateGIFTexture();
+    UAsyncGIFLoader* GetOrCreateGIFLoader();
 
 private:
     UPROPERTY()
     URuntimeImageReader* ImageReader = nullptr;
     UPROPERTY()
-    UGIFTexture* CachedGIFTexture = nullptr;
+    UAsyncGIFLoader* CachedGIFLoader = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;

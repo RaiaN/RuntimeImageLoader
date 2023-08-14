@@ -24,6 +24,9 @@ FTextureResource* UAnimatedTexture2D::CreateResource()
 
 void UAnimatedTexture2D::Tick(float DeltaTime)
 {
+	if (!bPlaying)
+		return;
+
 	if (!Decoder) return;
 
 	FrameTime += DeltaTime * PlayRate;
@@ -32,37 +35,9 @@ void UAnimatedTexture2D::Tick(float DeltaTime)
 
 	FrameTime = 0;
 
-	if (CurrentFrame > Decoder->GetTotalFrames() - 1) CurrentFrame = 0;
+	RenderFrameToTexture();
 
-	Decoder->GetNextFrame(NextFramePixels, CurrentFrame);
-
-	const uint8* RawData = (const uint8*)NextFramePixels.GetData();
-	/** @See AsyncTaskDownloadImage Class, How to Pass Texture Content Data To Render QUEUE at Runtime */
-	FAnimatedTextureResource* TextureResource = static_cast<FAnimatedTextureResource*>(GetResource());
-	if (TextureResource)
-	{
-		ENQUEUE_RENDER_COMMAND(FWriteRawDataToTexture)(
-			[TextureResource, RawData](FRHICommandListImmediate& RHICmdList)
-			{
-				FTexture2DRHIRef Texture2DRHI = TextureResource->TextureRHI->GetTexture2D();
-				if (!Texture2DRHI)
-					return;
-
-				uint32 TexWidth = Texture2DRHI->GetSizeX();
-				uint32 TexHeight = Texture2DRHI->GetSizeY();
-				uint32 SrcPitch = TexWidth * sizeof(FColor);
-
-				FUpdateTextureRegion2D Region;
-				Region.SrcX = Region.SrcY = Region.DestX = Region.DestY = 0;
-				Region.Width = TexWidth;
-				Region.Height = TexHeight;
-
-				RHIUpdateTexture2D(Texture2DRHI, 0, Region, SrcPitch, RawData);
-			}
-		);
-	}
-
-	if(bLooping) CurrentFrame++;
+	CurrentFrame++;
 }
 
 UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, const FAnimatedTexture2DCreateInfo& InCreateInfo)
@@ -124,6 +99,40 @@ void UAnimatedTexture2D::SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderS
 	Decoder = MoveTemp(DecoderState);
 }
 
+void UAnimatedTexture2D::RenderFrameToTexture()
+{
+	if (CurrentFrame > Decoder->GetTotalFrames() - 1 && bLooping) CurrentFrame = 0;
+
+	FRenderCommandData CommandData;
+
+	CommandData.RHIResource = GetResource();
+	CommandData.RawData = (const uint8*)Decoder->GetNextFrame(CurrentFrame);
+
+	/** @See AsyncTaskDownloadImage Class, How to Pass Texture Content Data To Render QUEUE at Runtime */
+	ENQUEUE_RENDER_COMMAND(AnimTexture2D_RenderFrame)(
+		[CommandData](FRHICommandListImmediate& RHICmdList)
+		{
+			if (!CommandData.RHIResource || !CommandData.RHIResource->TextureRHI)
+			return;
+
+			FTexture2DRHIRef Texture2DRHI = CommandData.RHIResource->TextureRHI->GetTexture2D();
+			if (!Texture2DRHI)
+				return;
+
+			uint32 TexWidth = Texture2DRHI->GetSizeX();
+			uint32 TexHeight = Texture2DRHI->GetSizeY();
+			uint32 SrcPitch = TexWidth * sizeof(FColor);
+
+			FUpdateTextureRegion2D Region;
+			Region.SrcX = Region.SrcY = Region.DestX = Region.DestY = 0;
+			Region.Width = TexWidth;
+			Region.Height = TexHeight;
+
+			RHIUpdateTexture2D(Texture2DRHI, 0, Region, SrcPitch, CommandData.RawData);
+		}
+	);
+}
+
 void UAnimatedTexture2D::Play()
 {
 	bPlaying = true;
@@ -134,7 +143,7 @@ void UAnimatedTexture2D::PlayFromStart()
 	FrameTime = 0;
 	FrameDelay = 0;
 	bPlaying = true;
-	/*if (Decoder) Decoder->Reset();*/
+	CurrentFrame = 0;
 }
 
 void UAnimatedTexture2D::Stop()

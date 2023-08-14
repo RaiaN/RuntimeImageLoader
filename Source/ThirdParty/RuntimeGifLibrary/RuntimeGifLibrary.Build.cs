@@ -16,8 +16,6 @@ public class RuntimeGifLibrary : ModuleRules
 			string IncPath = Path.Combine(ModuleDirectory, "include");
 			PublicSystemIncludePaths.Add(IncPath);
 
-			PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "include"));
-
 			// Add the import library
 			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.lib"));
 

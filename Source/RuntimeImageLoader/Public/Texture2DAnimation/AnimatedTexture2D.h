@@ -8,6 +8,13 @@
 #include "Helpers/GifLoader.h"
 #include "AnimatedTexture2D.generated.h"
 
+/** Copy Frame TO RHITexture */
+struct FRenderCommandData
+{
+	FTextureResource* RHIResource;
+	const uint8* RawData;
+};
+
 /** @See Texture2DDynamic Class
 	Helper to set properties on the UAnimatedTexture2D so it doesn't need to be reinitialized. */
 struct FAnimatedTexture2DCreateInfo
@@ -138,6 +145,9 @@ public:
 	void SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState);
 
 private:
+	void RenderFrameToTexture();
+
+private:
 	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder;
 
 	float FrameDelay = 0.0f;
@@ -146,5 +156,4 @@ private:
 
 private:
 	int32 CurrentFrame = 0;
-	TArray<FColor> NextFramePixels;
 };

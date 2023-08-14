@@ -1,11 +1,11 @@
 // Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
 
-#include "Texture2DAnimation/GIFTexture.h"
+#include "Texture2DAnimation/AsyncGIFLoader.h"
 #include "RuntimeImageLoaderLog.h"
 
 DEFINE_LOG_CATEGORY(GifTexture);
 
-UAnimatedTexture2D* UGIFTexture::Init(const FString& GIFFilename)
+UAnimatedTexture2D* UAsyncGIFLoader::Init(const FString& GIFFilename)
 {
 	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder = MakeUnique<FRuntimeGIFLoaderHelper>();
 

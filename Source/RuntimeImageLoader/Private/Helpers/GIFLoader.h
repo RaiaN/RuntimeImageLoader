@@ -27,20 +27,19 @@ public: /** Bitmap Callbacks Methods */
 	static void bitmap_destroy(void* bitmap);
 
 public: /** Gif Decoding Methods */
-	uint8_t* Load_File(const char* path, size_t* data_size);
+	uint8* LoadFile(const char* FilePath, size_t& DataSize);
 	void Warning(const char* context, nsgif_error err);
 	void Decode(nsgif_t* gif, bool first);
 	void GIFDecoding(const char* FilePath);
 
 public: /** Gif Data Method */
-	nsgif_t* GetGif() const { return Gif; }
-	int32 GetWidth() const;
-	int32 GetHeight() const;
-	int32 GetTotalFrames() const;
-	int32 GetFramePixels() const { return GetWidth() * GetHeight(); }
+	const int32 GetWidth() const;
+	const int32 GetHeight() const;
+	const int32 GetTotalFrames() const;
+	const int32 GetFramePixels() const { return GetWidth() * GetHeight(); }
 	
 public: /** Get Next Frame Texture Data*/
-	void GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex);
+	const FColor* GetNextFrame(int32 FrameIndex);
 
 private: /** Gif Data*/
 	size_t Size;

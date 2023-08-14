@@ -6,12 +6,12 @@
 #include "UObject/ObjectMacros.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
-#include "GIFTexture.generated.h"
+#include "AsyncGIFLoader.generated.h"
 
 class UAnimatedTexture2D;
 
 UCLASS()
-class UGIFTexture : public UBlueprintAsyncActionBase
+class UAsyncGIFLoader : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
 

@@ -9,7 +9,7 @@
 #include "Misc/FileHelper.h"
 #include "Interfaces/IPluginManager.h"
 #include "RuntimeImageUtils.h"
-#include "Texture2DAnimation/GIFTexture.h"
+#include "Texture2DAnimation/AsyncGIFLoader.h"
 
 #include "Async/Async.h"
 
@@ -18,7 +18,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
-    GetOrCreateGIFTexture();
+    GetOrCreateGIFLoader();
 }
 
 void URuntimeImageLoader::Deinitialize()
@@ -296,7 +296,7 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
 
 void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture)
 {
-    OutTexture = CachedGIFTexture->Init(GIFFilename);
+    OutTexture = CachedGIFLoader->Init(GIFFilename);
 }
 
 void URuntimeImageLoader::CancelAll()
@@ -424,13 +424,13 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
     return ImageReader;
 }
 
-UGIFTexture* URuntimeImageLoader::GetOrCreateGIFTexture()
+UAsyncGIFLoader* URuntimeImageLoader::GetOrCreateGIFLoader()
 {
-    if (!IsValid(CachedGIFTexture))
+    if (!IsValid(CachedGIFLoader))
     {
-        CachedGIFTexture = NewObject<UGIFTexture>(this);
+        CachedGIFLoader = NewObject<UAsyncGIFLoader>(this);
     }
 
-    ensure(IsValid(CachedGIFTexture));
-    return CachedGIFTexture;
+    ensure(IsValid(CachedGIFLoader));
+    return CachedGIFLoader;
 }

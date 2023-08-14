@@ -26,43 +26,37 @@ void FRuntimeGIFLoaderHelper::bitmap_destroy(void* bitmap)
 	free(bitmap);
 }
 
-uint8_t* FRuntimeGIFLoaderHelper::Load_File(const char* path, size_t* data_size)
+uint8* FRuntimeGIFLoaderHelper::LoadFile(const char* FilePath, size_t& DataSize)
 {
-	FILE* fd;
-	struct stat sb;
-	unsigned char* buffer;
-	size_t size;
-	size_t n;
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	IFileHandle* FileHandle = PlatformFile.OpenRead(ANSI_TO_TCHAR(FilePath));
 
-	fd = fopen(path, "rb");
-	if (!fd) {
-		perror(path);
-		exit(EXIT_FAILURE);
+	if (!FileHandle)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Unable to open file: %s"), ANSI_TO_TCHAR(FilePath));
+		return nullptr;
 	}
 
-	if (stat(path, &sb)) {
-		perror(path);
-		exit(EXIT_FAILURE);
-	}
-	size = sb.st_size;
+	DataSize = FileHandle->Size();
+	uint8* Buffer = reinterpret_cast<uint8*>(FMemory::Malloc(DataSize));
 
-	buffer = (unsigned char*)malloc(size);
-	if (!buffer) {
-		fprintf(stderr, "Unable to allocate %lld bytes\n",
-			(long long)size);
-		exit(EXIT_FAILURE);
+	if (!Buffer)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Unable to allocate memory: %d bytes"), DataSize);
+		FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
+		return nullptr;
 	}
 
-	n = fread(buffer, 1, size, fd);
-	if (n != size) {
-		perror(path);
-		exit(EXIT_FAILURE);
+	if (!FileHandle->Read(Buffer, DataSize))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to read file: %s"), ANSI_TO_TCHAR(FilePath));
+		FMemory::Free(Buffer);
+		FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
+		return nullptr;
 	}
 
-	fclose(fd);
-
-	*data_size = size;
-	return buffer;
+	FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
+	return Buffer;
 }
 
 void FRuntimeGIFLoaderHelper::Warning(const char* context, nsgif_error err)
@@ -84,7 +78,7 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 	}
 
 	/* load file into memory */
-	Data = Load_File(FilePath, &Size);
+	Data = LoadFile(FilePath, Size);
 
 	Error = FLibnsgifHandler::FunctionPointerNsgifDataScan()(Gif, Size, Data);
 	if (Error != NSGIF_OK)
@@ -109,20 +103,20 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 
 	/* clean up */
 	FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
-	free(Data);
+	FMemory::Free(Data);
 }
 
-int32 FRuntimeGIFLoaderHelper::GetWidth() const
+const int32 FRuntimeGIFLoaderHelper::GetWidth() const
 {
 	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->width;
 }
 
-int32 FRuntimeGIFLoaderHelper::GetHeight() const
+const int32 FRuntimeGIFLoaderHelper::GetHeight() const
 {
 	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->height;
 }
 
-int32 FRuntimeGIFLoaderHelper::GetTotalFrames() const
+const int32 FRuntimeGIFLoaderHelper::GetTotalFrames() const
 {
 	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->frame_count;
 }
@@ -188,30 +182,20 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 	}
 }
 
-void FRuntimeGIFLoaderHelper::GetNextFrame(TArray<FColor>& NextFramePixels, int32 FrameIndex)
+const FColor* FRuntimeGIFLoaderHelper::GetNextFrame(int32 FrameIndex)
 {
 	if (FrameIndex > GetTotalFrames() - 1) FrameIndex = 0;
-	// Calculate the starting index of the desired frame in the OutPixels array
+	// Calculate the starting index of the desired frame in the TextureData array
 	int32 StartIndex = FrameIndex * GetWidth() * GetHeight();
 
-	// Resize the SingleFramePixels array to hold the pixel data for the single frame
-	NextFramePixels.Empty(GetFramePixels());
-	NextFramePixels.AddUninitialized(GetFramePixels());
-
-	// Copy the pixel data for the single frame into SingleFramePixels
-	for (int32 i = 0; i < GetFramePixels(); i++)
+	if (StartIndex >= 0 && StartIndex < TextureData.Num())
 	{
-		int32 index = StartIndex + i;
-
-		if (index >= 0 && index < TextureData.Num())
-		{
-			NextFramePixels[i] = TextureData[index];
-		}
-		else
-		{
-			// Handling the case where the index is out of bounds
-			NextFramePixels[i] = FColor::Black;
-		}
+		return &TextureData[StartIndex];
+	}
+	else
+	{
+		// Handling the case where the index is out of bounds
+		return &FColor::Black; // return a default FColor value, like FColor::Black
 	}
 }
 #endif //WITH_LIBNSGIF
