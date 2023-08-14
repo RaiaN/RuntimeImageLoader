@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Async/Future.h"
 #include "UObject/ObjectMacros.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
@@ -22,4 +23,7 @@ public:
 private:
 	int32 Width = 0;
 	int32 Height = 0;
+
+private:
+	TFuture<bool> CurrentTask;
 };

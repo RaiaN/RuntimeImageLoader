@@ -1,6 +1,7 @@
 // Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
 
 #include "Texture2DAnimation/AsyncGIFLoader.h"
+#include "Async/Async.h"
 #include "RuntimeImageLoaderLog.h"
 
 DEFINE_LOG_CATEGORY(GifTexture);
@@ -11,7 +12,17 @@ UAnimatedTexture2D* UAsyncGIFLoader::Init(const FString& GIFFilename)
 
 	if (Decoder)
 	{
-		Decoder->GIFDecoding(TCHAR_TO_UTF8(*GIFFilename));
+		CurrentTask = Async(
+			EAsyncExecution::Thread,
+			[GIFFilename, &Decoder]()
+			{
+				Decoder->GIFDecoding(TCHAR_TO_UTF8(*GIFFilename));
+				
+				return !Decoder->GetTextureData().IsEmpty();
+			}
+		);
+		
+		bool bResult = CurrentTask.Get();
 		
 		Width = Decoder->GetWidth();
 		Height = Decoder->GetHeight();
