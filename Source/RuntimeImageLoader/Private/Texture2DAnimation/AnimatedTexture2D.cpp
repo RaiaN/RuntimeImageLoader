@@ -48,8 +48,8 @@ UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, con
 	if (InSizeX > 0 && InSizeY > 0)
 	{
 
-		auto NewTexture = NewObject<UAnimatedTexture2D>(GetTransientPackage(), NAME_None, RF_Transient);
-		if (NewTexture != NULL)
+		UAnimatedTexture2D* NewTexture = NewObject<UAnimatedTexture2D>(GetTransientPackage(), NAME_None, RF_Transient);
+		check(IsValid(NewTexture));
 		{
 			NewTexture->Filter = InCreateInfo.Filter;
 			NewTexture->SamplerAddressMode = InCreateInfo.SamplerAddressMode;
@@ -57,12 +57,6 @@ UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, con
 
 			// Disable compression
 			NewTexture->CompressionSettings = TC_Default;
-#if WITH_EDITORONLY_DATA
-			NewTexture->CompressionNone = true;
-			NewTexture->MipGenSettings = TMGS_NoMipmaps;
-			NewTexture->CompressionNoAlpha = true;
-			NewTexture->DeferCompression = false;
-#endif // #if WITH_EDITORONLY_DATA
 			if (InCreateInfo.bIsResolveTarget)
 			{
 				NewTexture->bNoTiling = false;
