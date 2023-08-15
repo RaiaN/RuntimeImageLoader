@@ -20,7 +20,7 @@ uint32 FAnimatedTextureResource::GetSizeY() const
 	return Owner->GetSurfaceHeight();
 }
 
-static ESamplerAddressMode _ConvertAddressMode(enum TextureAddress addr)
+static ESamplerAddressMode ConvertAddressMode(enum TextureAddress addr)
 {
 	ESamplerAddressMode ret = AM_Wrap;
 	switch (addr)
@@ -41,8 +41,8 @@ static ESamplerAddressMode _ConvertAddressMode(enum TextureAddress addr)
 void FAnimatedTextureResource::InitRHI()
 {
 	// Create the sampler state RHI resource.
-	ESamplerAddressMode AddressU = _ConvertAddressMode(Owner->AddressX);
-	ESamplerAddressMode AddressV = _ConvertAddressMode(Owner->AddressY);
+	ESamplerAddressMode AddressU = ConvertAddressMode(Owner->AddressX);
+	ESamplerAddressMode AddressV = ConvertAddressMode(Owner->AddressY);
 	ESamplerAddressMode AddressW = AM_Wrap;
 
 	FSamplerStateInitializerRHI SamplerStateInitializer

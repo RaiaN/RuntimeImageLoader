@@ -6,7 +6,7 @@
 
 THIRD_PARTY_INCLUDES_START
 extern "C" {
-#include "nsgif.h"
+	#include "nsgif.h"
 }
 THIRD_PARTY_INCLUDES_END
 
