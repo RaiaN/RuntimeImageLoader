@@ -6,41 +6,65 @@
 
 DEFINE_LOG_CATEGORY(GifLoaderAsyncTask);
 
-UAnimatedTexture2D* UAsyncGIFLoader::Init(const FString& GIFFilename)
+void UAsyncGIFLoader::Init(const FString& InGifFilename)
 {
-	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder = MakeUnique<FRuntimeGIFLoaderHelper>();
+	GifFilename = InGifFilename;
 
-	if (Decoder)
-	{
-		CurrentTask = Async(
-			EAsyncExecution::Thread,
-			[GIFFilename, &Decoder]()
-			{
-				Decoder->GIFDecoding(TCHAR_TO_UTF8(*GIFFilename));
-				
-				return !Decoder->GetTextureData().IsEmpty();
-			}
-		);
-		
-		bool bResult = CurrentTask.Get();
+	Decoder = MakeUnique<FRuntimeGIFLoaderHelper>();
+	check (Decoder.IsValid());
 
-		Width = Decoder->GetWidth();
-		Height = Decoder->GetHeight();
+	OnGifDecoded.BindUObject(this, &UAsyncGIFLoader::OnGifDecodedHandler);
+	
+	Activate();
+}
 
-		UAnimatedTexture2D* Texture = UAnimatedTexture2D::Create(Width, Height);
-		Texture->SetDecoder(MoveTemp(Decoder));
 
-		if (Texture)
+void UAsyncGIFLoader::Activate()
+{
+    Super::Activate();
+
+	CurrentTask = Async(
+		EAsyncExecution::Thread,
+		[this]()
 		{
+			bool bRes = Decoder->DecodeGIF(GifFilename);
+
+			OnGifDecoded.Execute(bRes);
+		}
+	);
+}
+
+
+void UAsyncGIFLoader::OnGifDecodedHandler(bool bRes)
+{
+	TFuture<UAnimatedTexture2D*> Texture = Async(
+		EAsyncExecution::TaskGraphMainThread,
+		[bRes, this]()
+		{
+			if (!bRes)
+			{
+				return (UAnimatedTexture2D*)nullptr;
+			}
+
+			UAnimatedTexture2D* Texture = UAnimatedTexture2D::Create(Decoder->GetWidth(), Decoder->GetHeight());
+			if (!IsValid(Texture))
+			{
+				UE_LOG(GifLoaderAsyncTask, Error, TEXT("Gif Decoder Unable to Decode Gif"));
+				return (UAnimatedTexture2D*)nullptr;
+			}
+
+			Texture->SetDecoder(MoveTemp(Decoder));
+
 			Texture->SRGB = true;
 			Texture->UpdateResource();
-		}
-		return Texture;
-	}
 
-	UE_LOG(GifLoaderAsyncTask, Error, TEXT("Gif Decoder Unable to Decode Gif"));
-	
-	return nullptr;
+			return Texture;
+		}
+	);
+
+	OnGifLoaded.Execute(Texture.Get(), Decoder->GetDecodeError());
+
+	SetReadyToDestroy();
 }
 
 void UAsyncGIFLoader::Cancel()

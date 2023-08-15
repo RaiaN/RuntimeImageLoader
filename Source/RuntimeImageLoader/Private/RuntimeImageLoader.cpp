@@ -296,11 +296,19 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
 
 void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
 {
-    UAsyncGIFLoader* AnimatedGIFLoader = NewObject<UAsyncGIFLoader>();
-    OutTexture = AnimatedGIFLoader->Init(GIFFilename);
-    
-    if (OutTexture) bSuccess = true;
-    else OutError = FString::Printf(TEXT("Failed to Load Gif. For Error's Check Logs"));
+    UAsyncGIFLoader* AnimatedGifLoader = NewObject<UAsyncGIFLoader>();
+    check (IsValid(AnimatedGifLoader));
+
+    AnimatedGifLoader->OnGifLoaded.BindLambda(
+        [&OutTexture, &bSuccess, &OutError](UAnimatedTexture2D* NewTexture, const FString& DecodeError)
+        {
+            OutTexture = NewTexture;
+            bSuccess = IsValid(OutTexture);
+            OutError = DecodeError;
+        }
+    );
+
+    AnimatedGifLoader->Init(GIFFilename);
 }
 
 void URuntimeImageLoader::CancelAll()

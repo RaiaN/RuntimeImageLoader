@@ -17,16 +17,27 @@ class UAsyncGIFLoader : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
-	/** Handles GIF Texture requests coming from the Raw Data */
-	UAnimatedTexture2D* Init(const FString& GIFFilename);
+	DECLARE_DELEGATE_TwoParams(FOnGifLoaded, UAnimatedTexture2D*, const FString&);
+	FOnGifLoaded OnGifLoaded;
 
-public:
+	/** Handles GIF Texture requests coming from the Raw Data */
+	void Init(const FString& InGifFilename);
 	void Cancel();
 
-private:
-	int32 Width = 0;
-	int32 Height = 0;
+protected:
+	void Activate() override;
 
 private:
-	TFuture<bool> CurrentTask;
+	UFUNCTION()
+	void OnGifDecodedHandler(bool bRes);
+
+private:
+	FString GifFilename;
+
+	TUniquePtr<class FRuntimeGIFLoaderHelper> Decoder;
+
+	TFuture<void> CurrentTask;
+
+	DECLARE_DELEGATE_OneParam(FOnGifDecoded, bool);
+	FOnGifDecoded OnGifDecoded;
 };

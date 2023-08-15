@@ -19,33 +19,36 @@ public:
 	FRuntimeGIFLoaderHelper() = default;
 	~FRuntimeGIFLoaderHelper() {}
 
-public: /** Bitmap Callbacks Methods */
-	static void* bitmap_create(int width, int height);
-	static unsigned char* bitmap_get_buffer(void* bitmap);
-	static void bitmap_destroy(void* bitmap);
-
-public: /** Gif Decoding Methods */
-	uint8* LoadFile(const char* FilePath, size_t& DataSize);
-	void Warning(const char* context, nsgif_error err);
-	void Decode(nsgif_t* gif, bool first);
-	void GIFDecoding(const char* FilePath);
-
 public: /** Gif Data Method */
 	const int32 GetWidth() const;
 	const int32 GetHeight() const;
 	const int32 GetTotalFrames() const;
 	const int32 GetFramePixels() const { return GetWidth() * GetHeight(); }
-	
+
 public: /** Get Next Frame Texture Data*/
-	const FColor* GetNextFrame(int32 FrameIndex);
-	const TArray<FColor> GetTextureData() const { return TextureData; }
+    const FColor* GetNextFrame(int32 FrameIndex);
+    const TArray<FColor>& GetTextureData() const { return TextureData; }
+
+	FString GetDecodeError() const;
+
+	bool DecodeGIF(const FString& FilePath);
+
+protected: /** Bitmap Callbacks Methods */
+	static void* bitmap_create(int width, int height);
+	static unsigned char* bitmap_get_buffer(void* bitmap);
+	static void bitmap_destroy(void* bitmap);
+	
+	bool DecodeInternal(nsgif_t* gif, bool first);
+
+	void Warning(const char* context);
 
 private: /** Gif Data*/
-	size_t Size;
 	nsgif_t* Gif;
-	uint8* Data;
-	nsgif_error Error;
+	TArray<uint8> Data;
 	TArray<FColor> TextureData;
+
+	nsgif_error LastError;
+	FString LastContext;
 
 private:
 	const nsgif_bitmap_cb_vt bitmap_callbacks = {
@@ -53,10 +56,6 @@ private:
 		bitmap_destroy,
 		bitmap_get_buffer,
 	};
-
-public:
-	FRuntimeGIFLoaderHelper(const FRuntimeGIFLoaderHelper&) = delete;
-	FRuntimeGIFLoaderHelper& operator=(const FRuntimeGIFLoaderHelper&) = delete;
 
 #endif //WITH_LIBNSGIF
 };

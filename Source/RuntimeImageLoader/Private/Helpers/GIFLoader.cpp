@@ -1,6 +1,7 @@
 // Copyright 2023 Peter Leontev. All Rights Reserved.
 
 #include "GIFLoader.h"
+#include "Misc/FileHelper.h"
 #include "RuntimeImageLoaderLog.h"
 
 DEFINE_LOG_CATEGORY(LibNsgifHelper);
@@ -25,66 +26,44 @@ void FRuntimeGIFLoaderHelper::bitmap_destroy(void* bitmap)
 	free(bitmap);
 }
 
-uint8* FRuntimeGIFLoaderHelper::LoadFile(const char* FilePath, size_t& DataSize)
+void FRuntimeGIFLoaderHelper::Warning(const char* context)
 {
-	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-	IFileHandle* FileHandle = PlatformFile.OpenRead(ANSI_TO_TCHAR(FilePath));
+	LastContext = ANSI_TO_TCHAR(context);
 
-	if (!FileHandle)
-	{
-		UE_LOG(LibNsgifHelper, Error, TEXT("Unable to open file: %s"), ANSI_TO_TCHAR(FilePath));
-		return nullptr;
-	}
-
-	DataSize = FileHandle->Size();
-	uint8* Buffer = reinterpret_cast<uint8*>(FMemory::Malloc(DataSize));
-
-	if (!Buffer)
-	{
-		UE_LOG(LibNsgifHelper, Error, TEXT("Unable to allocate memory: %d bytes"), DataSize);
-		FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
-		return nullptr;
-	}
-
-	if (!FileHandle->Read(Buffer, DataSize))
-	{
-		UE_LOG(LibNsgifHelper, Error, TEXT("Failed to read file: %s"), ANSI_TO_TCHAR(FilePath));
-		FMemory::Free(Buffer);
-		FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
-		return nullptr;
-	}
-
-	FileHandle->~IFileHandle(); /** @See GenericPlatformFile.h. Destructor, also the only way to close the file handle **/
-	return Buffer;
+	UE_LOG(LibNsgifHelper, Warning, TEXT("%s"), *GetDecodeError());
 }
 
-void FRuntimeGIFLoaderHelper::Warning(const char* context, nsgif_error err)
-{
-	FString ErrorMessage = ANSI_TO_TCHAR(nsgif_strerror(err));
-	const TCHAR* ContextStr = ANSI_TO_TCHAR(context);
-	const TCHAR* ErrorMessageStr = *ErrorMessage;
 
-	UE_LOG(LibNsgifHelper, Warning, TEXT("%s: %s"), ContextStr, ErrorMessageStr);
+FString FRuntimeGIFLoaderHelper::GetDecodeError() const
+{
+	return FString::Printf(TEXT("%s: %s"), *LastContext, nsgif_strerror(LastError));
 }
 
-void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
+bool FRuntimeGIFLoaderHelper::DecodeGIF(const FString& FilePath)
 {
 	/* create our gif animation */
-	Error = nsgif_create(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
-	if (Error != NSGIF_OK) {
-		Warning("nsgif_create", Error);
-		return;
+	LastError = nsgif_create(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
+	if (LastError != NSGIF_OK)
+	{
+		Warning("nsgif_create");
+		return false;
 	}
 
 	/* load file into memory */
-	Data = LoadFile(FilePath, Size);
+	if (!FFileHelper::LoadFileToArray(Data, *FilePath))
+	{
+		const FString FileError = FString::Printf(TEXT("LoadFileToArray: %s"), *FilePath);
+		Warning(TCHAR_TO_ANSI(*FileError));
+		return false;
+	}
 
-	Error = nsgif_data_scan(Gif, Size, Data);
-	if (Error != NSGIF_OK)
+	LastError = nsgif_data_scan(Gif, Data.Num(), Data.GetData());
+	if (LastError != NSGIF_OK)
 	{
 		/* Not fatal; some GIFs are nasty. Can still try to decode
 		 * any frames that were decoded successfully. */
-		Warning("nsgif_data_scan", Error);
+		Warning("nsgif_data_scan");
+		return false;
 	}
 
 	nsgif_data_complete(Gif);
@@ -94,7 +73,7 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 
 	for (uint64 i = 0; i < LoopMax; i++)
 	{
-		Decode(Gif, i==0);
+		DecodeInternal(Gif, i==0);
 		
 		/* We want to ignore any loop limit in the GIF. */
 		nsgif_reset(Gif);
@@ -102,7 +81,8 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 
 	/* clean up */
 	nsgif_destroy(Gif);
-	FMemory::Free(Data);
+
+	return !TextureData.IsEmpty();
 }
 
 const int32 FRuntimeGIFLoaderHelper::GetWidth() const
@@ -120,15 +100,14 @@ const int32 FRuntimeGIFLoaderHelper::GetTotalFrames() const
 	return nsgif_get_info(Gif)->frame_count;
 }
 
-void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
+bool FRuntimeGIFLoaderHelper::DecodeInternal(nsgif_t* gif, bool first)
 {
-	nsgif_error err;
 	uint32_t frame_prev = 0;
 	const nsgif_info_t* info;
 	info = nsgif_get_info(gif);
 
 	// Calculate the total number of pixels (frame_count * width * height)
-	int32 TotalPixels = info->frame_count * info->width * info->height;
+	const int32 TotalPixels = info->frame_count * info->width * info->height;
 	TextureData.Empty(TotalPixels);
 	TextureData.AddUninitialized(TotalPixels);
 
@@ -140,21 +119,21 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 		uint32_t delay_cs;
 		nsgif_rect_t area;
 
-		err = nsgif_frame_prepare(gif, &area, &delay_cs, &frame_new);
-		if (err != NSGIF_OK) {
-			Warning("nsgif_frame_prepare", err);
-			return;
+		LastError = nsgif_frame_prepare(gif, &area, &delay_cs, &frame_new);
+		if (LastError != NSGIF_OK) {
+			Warning("nsgif_frame_prepare");
+			return false;
 		}
 
 		if (frame_new < frame_prev) {
 			// Must be an animation that loops. We only care about
 			// decoding each frame once in this utility.
-			return;
+			return true;
 		}
 		frame_prev = frame_new;
 
-		err = nsgif_frame_decode(gif, frame_new, &bitmap);
-		if (err != NSGIF_OK) {
+		LastError = nsgif_frame_decode(gif, frame_new, &bitmap);
+		if (LastError != NSGIF_OK) {
 			// Continue decoding the rest of the frames.
 		}
 		else {
@@ -176,14 +155,20 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 
 		if (delay_cs == NSGIF_INFINITE) {
 			// This frame is the last.
-			return;
+			return true;
 		}
 	}
+
+	return true;
 }
 
 const FColor* FRuntimeGIFLoaderHelper::GetNextFrame(int32 FrameIndex)
 {
-	if (FrameIndex > GetTotalFrames() - 1) FrameIndex = 0;
+	if (FrameIndex > GetTotalFrames() - 1)
+	{
+		FrameIndex = 0;
+	}
+
 	// Calculate the starting index of the desired frame in the TextureData array
 	int32 StartIndex = FrameIndex * GetWidth() * GetHeight();
 
