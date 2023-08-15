@@ -294,17 +294,33 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
+void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject)
 {
     UAsyncGIFLoader* AnimatedGifLoader = NewObject<UAsyncGIFLoader>();
     check (IsValid(AnimatedGifLoader));
 
+    AnimatedGifLoader->RegisterWithGameInstance(WorldContextObject);
+
     AnimatedGifLoader->OnGifLoaded.BindLambda(
-        [&OutTexture, &bSuccess, &OutError](UAnimatedTexture2D* NewTexture, const FString& DecodeError)
+        [&OutTexture, &bSuccess, &OutError, LatentInfo](UAnimatedTexture2D* NewTexture, const FString& DecodeError)
         {
-            OutTexture = NewTexture;
-            bSuccess = IsValid(OutTexture);
-            OutError = DecodeError;
+            FWeakObjectPtr CallbackTargetPtr = LatentInfo.CallbackTarget;
+            if (UObject* CallbackTarget = CallbackTargetPtr.Get())
+            {
+                UFunction* ExecutionFunction = CallbackTarget->FindFunction(LatentInfo.ExecutionFunction);
+                if (IsValid(ExecutionFunction))
+                {
+                    OutTexture = NewTexture;
+                    bSuccess = IsValid(OutTexture);
+                    OutError = DecodeError;
+
+                    int32 Linkage = LatentInfo.Linkage;
+                    if (Linkage != -1)
+                    {
+                        CallbackTarget->ProcessEvent(ExecutionFunction, &Linkage);
+                    }
+                }
+            }
         }
     );
 

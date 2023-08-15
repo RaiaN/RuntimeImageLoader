@@ -24,20 +24,11 @@ public:
 	void Init(const FString& InGifFilename);
 	void Cancel();
 
-protected:
-	void Activate() override;
+private:
+	void OnPostGifDecode(bool bRes);
 
 private:
-	UFUNCTION()
-	void OnGifDecodedHandler(bool bRes);
-
-private:
-	FString GifFilename;
-
 	TUniquePtr<class FRuntimeGIFLoaderHelper> Decoder;
 
 	TFuture<void> CurrentTask;
-
-	DECLARE_DELEGATE_OneParam(FOnGifDecoded, bool);
-	FOnGifDecoded OnGifDecoded;
 };
