@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Peter Leontev. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.IO;
@@ -16,7 +16,7 @@ public class RuntimeImageLoader : ModuleRules
             PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         }
 		
-		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../", "ThirdParty", "RuntimeImageLoaderLibrary", "include"));
+		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../", "ThirdParty", "RuntimeGifLibrary", "include"));
 
 		PublicIncludePaths.AddRange(
 			new string[] {

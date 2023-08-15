@@ -1,8 +1,7 @@
-// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
+// Copyright 2023 Peter Leontev. All Rights Reserved.
 
 #include "GIFLoader.h"
 #include "RuntimeImageLoaderLog.h"
-#include "RuntimeImageLoaderLibHandler.h"
 
 DEFINE_LOG_CATEGORY(LibNsgifHelper);
 
@@ -61,7 +60,7 @@ uint8* FRuntimeGIFLoaderHelper::LoadFile(const char* FilePath, size_t& DataSize)
 
 void FRuntimeGIFLoaderHelper::Warning(const char* context, nsgif_error err)
 {
-	FString ErrorMessage = ANSI_TO_TCHAR(FLibnsgifHandler::FunctionPointerNsgifStrError()(err));
+	FString ErrorMessage = ANSI_TO_TCHAR(nsgif_strerror(err));
 	const TCHAR* ContextStr = ANSI_TO_TCHAR(context);
 	const TCHAR* ErrorMessageStr = *ErrorMessage;
 
@@ -71,7 +70,7 @@ void FRuntimeGIFLoaderHelper::Warning(const char* context, nsgif_error err)
 void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 {
 	/* create our gif animation */
-	Error = FLibnsgifHandler::FunctionPointerNsgifCreate()(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
+	Error = nsgif_create(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
 	if (Error != NSGIF_OK) {
 		Warning("nsgif_create", Error);
 		return;
@@ -80,7 +79,7 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 	/* load file into memory */
 	Data = LoadFile(FilePath, Size);
 
-	Error = FLibnsgifHandler::FunctionPointerNsgifDataScan()(Gif, Size, Data);
+	Error = nsgif_data_scan(Gif, Size, Data);
 	if (Error != NSGIF_OK)
 	{
 		/* Not fatal; some GIFs are nasty. Can still try to decode
@@ -88,9 +87,9 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 		Warning("nsgif_data_scan", Error);
 	}
 
-	FLibnsgifHandler::FunctionPointerNsgifDataComplete()(Gif);
+	nsgif_data_complete(Gif);
 
-	int32 LoopMax = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->loop_max;
+	int32 LoopMax = nsgif_get_info(Gif)->loop_max;
 	if (LoopMax == 0) LoopMax = 1;
 
 	for (uint64 i = 0; i < LoopMax; i++)
@@ -98,27 +97,27 @@ void FRuntimeGIFLoaderHelper::GIFDecoding(const char* FilePath)
 		Decode(Gif, i==0);
 		
 		/* We want to ignore any loop limit in the GIF. */
-		FLibnsgifHandler::FunctionPointerNsgifReset()(Gif);
+		nsgif_reset(Gif);
 	}
 
 	/* clean up */
-	FLibnsgifHandler::FunctionPointerNsgifDestroy()(Gif);
+	nsgif_destroy(Gif);
 	FMemory::Free(Data);
 }
 
 const int32 FRuntimeGIFLoaderHelper::GetWidth() const
 {
-	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->width;
+	return nsgif_get_info(Gif)->width;
 }
 
 const int32 FRuntimeGIFLoaderHelper::GetHeight() const
 {
-	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->height;
+	return nsgif_get_info(Gif)->height;
 }
 
 const int32 FRuntimeGIFLoaderHelper::GetTotalFrames() const
 {
-	return FLibnsgifHandler::FunctionPointerNsgifGetInfo()(Gif)->frame_count;
+	return nsgif_get_info(Gif)->frame_count;
 }
 
 void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
@@ -126,7 +125,7 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 	nsgif_error err;
 	uint32_t frame_prev = 0;
 	const nsgif_info_t* info;
-	info = FLibnsgifHandler::FunctionPointerNsgifGetInfo()(gif);
+	info = nsgif_get_info(gif);
 
 	// Calculate the total number of pixels (frame_count * width * height)
 	int32 TotalPixels = info->frame_count * info->width * info->height;
@@ -141,7 +140,7 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 		uint32_t delay_cs;
 		nsgif_rect_t area;
 
-		err = FLibnsgifHandler::FunctionPointerNsgifFramePrepare()(gif, &area, &delay_cs, &frame_new);
+		err = nsgif_frame_prepare(gif, &area, &delay_cs, &frame_new);
 		if (err != NSGIF_OK) {
 			Warning("nsgif_frame_prepare", err);
 			return;
@@ -154,7 +153,7 @@ void FRuntimeGIFLoaderHelper::Decode(nsgif_t* gif, bool first)
 		}
 		frame_prev = frame_new;
 
-		err = FLibnsgifHandler::FunctionPointerNsgifFrameDecode()(gif, frame_new, &bitmap);
+		err = nsgif_frame_decode(gif, frame_new, &bitmap);
 		if (err != NSGIF_OK) {
 			// Continue decoding the rest of the frames.
 		}

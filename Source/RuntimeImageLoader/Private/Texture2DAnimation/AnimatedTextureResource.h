@@ -1,4 +1,4 @@
-// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
+// Copyright 2023 Peter Leontev. All Rights Reserved.
 
 #pragma once
 

@@ -1,15 +1,13 @@
-// Copyright 2023 Peter Leontev and Muhammad Ahmed Saleem. All Rights Reserved.
+// Copyright 2023 Peter Leontev. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 
-#if PLATFORM_WINDOWS
-#include "Windows/AllowWindowsPlatformTypes.h"
-#endif // PLATFORM_WINDOWS
-
 THIRD_PARTY_INCLUDES_START
+extern "C" {
 #include "nsgif.h"
+}
 THIRD_PARTY_INCLUDES_END
 
 #define BYTES_PER_PIXEL 4
