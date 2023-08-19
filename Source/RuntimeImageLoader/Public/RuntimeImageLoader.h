@@ -97,7 +97,6 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
-    URuntimeGifReader* InitializeGifReader();
     UAsyncGIFLoader* GetOrCreateGIFLoader();
 
 private:
@@ -105,9 +104,6 @@ private:
     URuntimeImageReader* ImageReader = nullptr;
     UPROPERTY()
     UAsyncGIFLoader* CachedGIFLoader = nullptr;
-
-    UPROPERTY()
-    URuntimeGifReader* GifReader = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;

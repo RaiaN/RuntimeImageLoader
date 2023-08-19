@@ -19,16 +19,13 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
-    InitializeGifReader();
     GetOrCreateGIFLoader();
 }
 
 void URuntimeImageLoader::Deinitialize()
 {
     ImageReader->Deinitialize();
-    GifReader->Deinitialize();
     ImageReader = nullptr;
-    GifReader = nullptr;
 }
 
 bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
@@ -333,6 +330,9 @@ void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D
 
 void URuntimeImageLoader::LoadGIFSync(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
 {
+    URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>(this);
+    GifReader->Initialize();
+
     GifReader->BlockTillAllRequestsFinished();
     GifReader->AddRequest(GIFFilename);
     GifReader->BlockTillAllRequestsFinished();
@@ -343,6 +343,9 @@ void URuntimeImageLoader::LoadGIFSync(const FString& GIFFilename, UAnimatedTextu
     bSuccess = ReadResult.OutError.IsEmpty();
     OutTexture = ReadResult.OutTexture;
     OutError = ReadResult.OutError;
+
+    GifReader->Deinitialize();
+    GifReader = nullptr;
 }
 
 void URuntimeImageLoader::CancelAll()
@@ -468,18 +471,6 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
 
     ensure(IsValid(ImageReader));
     return ImageReader;
-}
-
-URuntimeGifReader* URuntimeImageLoader::InitializeGifReader()
-{
-    if (!IsValid(GifReader))
-    {
-        GifReader = NewObject<URuntimeGifReader>(this);
-        GifReader->Initialize();
-    }
-
-    ensure(IsValid(GifReader));
-    return GifReader;
 }
 
 UAsyncGIFLoader* URuntimeImageLoader::GetOrCreateGIFLoader()
