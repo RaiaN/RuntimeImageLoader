@@ -10,6 +10,7 @@
 #include "Interfaces/IPluginManager.h"
 #include "RuntimeImageUtils.h"
 #include "Texture2DAnimation/AsyncGIFLoader.h"
+#include "RuntimeGifReader.h"
 
 #include "Async/Async.h"
 
@@ -18,13 +19,16 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
+    InitializeGifReader();
     GetOrCreateGIFLoader();
 }
 
 void URuntimeImageLoader::Deinitialize()
 {
     ImageReader->Deinitialize();
+    GifReader->Deinitialize();
     ImageReader = nullptr;
+    GifReader = nullptr;
 }
 
 bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
@@ -327,6 +331,20 @@ void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D
     AnimatedGifLoader->Init(GIFFilename);
 }
 
+void URuntimeImageLoader::LoadGIFSync(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
+{
+    GifReader->BlockTillAllRequestsFinished();
+    GifReader->AddRequest(GIFFilename);
+    GifReader->BlockTillAllRequestsFinished();
+
+    FGifReadResult ReadResult;
+    GifReader->GetResult(ReadResult);
+
+    bSuccess = ReadResult.OutError.IsEmpty();
+    OutTexture = ReadResult.OutTexture;
+    OutError = ReadResult.OutError;
+}
+
 void URuntimeImageLoader::CancelAll()
 {
     check (IsInGameThread());
@@ -450,6 +468,18 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
 
     ensure(IsValid(ImageReader));
     return ImageReader;
+}
+
+URuntimeGifReader* URuntimeImageLoader::InitializeGifReader()
+{
+    if (!IsValid(GifReader))
+    {
+        GifReader = NewObject<URuntimeGifReader>(this);
+        GifReader->Initialize();
+    }
+
+    ensure(IsValid(GifReader));
+    return GifReader;
 }
 
 UAsyncGIFLoader* URuntimeImageLoader::GetOrCreateGIFLoader()

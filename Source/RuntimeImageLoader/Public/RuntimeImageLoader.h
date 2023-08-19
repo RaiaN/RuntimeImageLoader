@@ -16,6 +16,7 @@
 
 class UAsyncGIFLoader;
 class UAnimatedTexture2D;
+class URuntimeGifReader;
 
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
@@ -82,6 +83,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
 
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
+    void LoadGIFSync(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
+
 protected:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
@@ -93,6 +97,7 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
+    URuntimeGifReader* InitializeGifReader();
     UAsyncGIFLoader* GetOrCreateGIFLoader();
 
 private:
@@ -100,6 +105,9 @@ private:
     URuntimeImageReader* ImageReader = nullptr;
     UPROPERTY()
     UAsyncGIFLoader* CachedGIFLoader = nullptr;
+
+    UPROPERTY()
+    URuntimeGifReader* GifReader = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;
