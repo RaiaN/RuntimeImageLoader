@@ -79,6 +79,16 @@ bool FRuntimeGIFLoaderHelper::DecodeGIF(const FString& FilePath)
 		nsgif_reset(Gif);
 	}
 
+	/** Gif Info */
+	Info = nsgif_get_info(Gif);
+
+	if (Width == -1 && Height == -1 && TotalFrameCount == -1)
+	{
+		Width = Info->width;
+		Height = Info->height;
+		TotalFrameCount = Info->frame_count;
+	}
+
 	/* clean up */
 	nsgif_destroy(Gif);
 
@@ -87,17 +97,17 @@ bool FRuntimeGIFLoaderHelper::DecodeGIF(const FString& FilePath)
 
 const int32 FRuntimeGIFLoaderHelper::GetWidth() const
 {
-	return nsgif_get_info(Gif)->width;
+	return Width;
 }
 
 const int32 FRuntimeGIFLoaderHelper::GetHeight() const
 {
-	return nsgif_get_info(Gif)->height;
+	return Height;
 }
 
 const int32 FRuntimeGIFLoaderHelper::GetTotalFrames() const
 {
-	return nsgif_get_info(Gif)->frame_count;
+	return TotalFrameCount;
 }
 
 bool FRuntimeGIFLoaderHelper::DecodeInternal(nsgif_t* gif, bool first)

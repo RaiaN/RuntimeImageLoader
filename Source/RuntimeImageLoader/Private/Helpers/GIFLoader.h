@@ -46,6 +46,9 @@ private: /** Gif Data*/
 	nsgif_t* Gif;
 	TArray<uint8> Data;
 	TArray<FColor> TextureData;
+	const nsgif_info_t* Info;
+
+	int32 Width = -1, Height = -1, TotalFrameCount = -1;
 
 	nsgif_error LastError;
 	FString LastContext;
