@@ -30,10 +30,10 @@ struct RUNTIMEIMAGELOADER_API FInputImageDescription
     FInputImageDescription(const FString& InputImageFilename): ImageFilename(InputImageFilename) {}
     FInputImageDescription(TArray<uint8>&& InputImageBytes) : ImageBytes(InputImageBytes) {}
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     FString ImageFilename = TEXT("");
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     TArray<uint8> ImageBytes;
 };
 
