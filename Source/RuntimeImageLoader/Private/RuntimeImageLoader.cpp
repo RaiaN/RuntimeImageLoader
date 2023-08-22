@@ -9,9 +9,8 @@
 #include "Misc/FileHelper.h"
 #include "Interfaces/IPluginManager.h"
 #include "RuntimeImageUtils.h"
-#include "Texture2DAnimation/AsyncGIFLoader.h"
 #include "RuntimeGifReader.h"
-
+#include "Texture2DAnimation/AnimatedTexture2D.h"
 #include "Async/Async.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
@@ -19,13 +18,15 @@ DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
-    GetOrCreateGIFLoader();
+    InitializeGifReader();
 }
 
 void URuntimeImageLoader::Deinitialize()
 {
     ImageReader->Deinitialize();
+    GifReader->Deinitialize();
     ImageReader = nullptr;
+    GifReader = nullptr;
 }
 
 bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
@@ -297,12 +298,7 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
 
 void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject)
 {
-    UAsyncGIFLoader* AnimatedGifLoader = NewObject<UAsyncGIFLoader>();
-    check (IsValid(AnimatedGifLoader));
-
-    AnimatedGifLoader->RegisterWithGameInstance(WorldContextObject);
-
-    AnimatedGifLoader->OnGifLoaded.BindLambda(
+    GifReader->OnGifLoaded.BindLambda(
         [&OutTexture, &bSuccess, &OutError, LatentInfo](UAnimatedTexture2D* NewTexture, const FString& DecodeError)
         {
             FWeakObjectPtr CallbackTargetPtr = LatentInfo.CallbackTarget;
@@ -325,14 +321,11 @@ void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D
         }
     );
 
-    AnimatedGifLoader->Init(GIFFilename);
+    GifReader->Init(GIFFilename);
 }
 
 void URuntimeImageLoader::LoadGIFSync(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
 {
-    URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>(this);
-    GifReader->Initialize();
-
     GifReader->BlockTillAllRequestsFinished();
     GifReader->AddRequest(GIFFilename);
     GifReader->BlockTillAllRequestsFinished();
@@ -343,9 +336,6 @@ void URuntimeImageLoader::LoadGIFSync(const FString& GIFFilename, UAnimatedTextu
     bSuccess = ReadResult.OutError.IsEmpty();
     OutTexture = ReadResult.OutTexture;
     OutError = ReadResult.OutError;
-
-    GifReader->Deinitialize();
-    GifReader = nullptr;
 }
 
 void URuntimeImageLoader::CancelAll()
@@ -473,13 +463,14 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
     return ImageReader;
 }
 
-UAsyncGIFLoader* URuntimeImageLoader::GetOrCreateGIFLoader()
+URuntimeGifReader* URuntimeImageLoader::InitializeGifReader()
 {
-    if (!IsValid(CachedGIFLoader))
+    if (!IsValid(GifReader))
     {
-        CachedGIFLoader = NewObject<UAsyncGIFLoader>(this);
+        GifReader = NewObject<URuntimeGifReader>(this);
+        GifReader->Initialize();
     }
 
-    ensure(IsValid(CachedGIFLoader));
-    return CachedGIFLoader;
+    ensure(IsValid(GifReader));
+    return GifReader;
 }

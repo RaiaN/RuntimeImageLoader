@@ -146,6 +146,51 @@ bool URuntimeGifReader::ProcessRequest(const FString& InGifFilename)
 	return true;
 }
 
+void URuntimeGifReader::Init(const FString& InGifFilename)
+{
+	Decoder = MakeUnique<FRuntimeGIFLoaderHelper>();
+	check(Decoder.IsValid());
+
+	CurrentTask = Async(
+		EAsyncExecution::Thread,
+		[this, InGifFilename]()
+		{
+			bool bRes = Decoder->DecodeGIF(InGifFilename);
+
+			OnPostGifDecode(bRes);
+		}
+	);
+}
+
+void URuntimeGifReader::OnPostGifDecode(bool bRes)
+{
+	Async(
+		EAsyncExecution::TaskGraphMainThread,
+		[bRes, this]()
+		{
+			UAnimatedTexture2D* Texture = UAnimatedTexture2D::Create(Decoder->GetWidth(), Decoder->GetHeight());
+			if (!bRes || !IsValid(Texture))
+			{
+				UE_LOG(RuntimeGifReader, Error, TEXT("Gif Decoder Unable to Decode Gif"));
+				OnGifLoaded.Execute(Texture, Decoder->GetDecodeError());
+			}
+
+			Texture->SetDecoder(MoveTemp(Decoder));
+
+			Texture->SRGB = true;
+			Texture->UpdateResource();
+
+			OnGifLoaded.Execute(Texture, TEXT(""));
+		}
+	).Wait();
+}
+
+void URuntimeGifReader::Cancel()
+{
+	CurrentTask.Reset();
+}
+
+
 bool URuntimeGifReader::Init()
 {
 	return true;

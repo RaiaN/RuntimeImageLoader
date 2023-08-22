@@ -46,6 +46,17 @@ public:
 	void BlockTillAllRequestsFinished();
 	bool ProcessRequest(const FString& InGifFilename);
 
+public:
+	DECLARE_DELEGATE_TwoParams(FOnGifLoaded, UAnimatedTexture2D*, const FString&);
+	FOnGifLoaded OnGifLoaded;
+
+	/** Handles GIF Texture requests coming from the Raw Data */
+	void Init(const FString& InGifFilename);
+	void Cancel();
+
+private:
+	void OnPostGifDecode(bool bRes);
+
 protected:
 	/* FRunnable interface */
 	bool Init() override;
@@ -70,6 +81,9 @@ private:
 
 private:
 	FCriticalSection ResultsMutex;
+
+private:
+	TFuture<void> CurrentTask;
 
 private:
 	FRunnableThread* Thread = nullptr;

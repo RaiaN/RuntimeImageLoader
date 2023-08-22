@@ -14,7 +14,6 @@
 #include "RuntimeImageReader.h"
 #include "RuntimeImageLoader.generated.h"
 
-class UAsyncGIFLoader;
 class UAnimatedTexture2D;
 class URuntimeGifReader;
 
@@ -97,13 +96,13 @@ private:
     virtual bool IsAllowedToTick() const override;
 
     URuntimeImageReader* InitializeImageReader();
-    UAsyncGIFLoader* GetOrCreateGIFLoader();
+    URuntimeGifReader* InitializeGifReader();
 
 private:
     UPROPERTY()
     URuntimeImageReader* ImageReader = nullptr;
     UPROPERTY()
-    UAsyncGIFLoader* CachedGIFLoader = nullptr;
+    URuntimeGifReader* GifReader = nullptr;
 
     TQueue<FLoadImageRequest> Requests;
     FLoadImageRequest ActiveRequest;
