@@ -71,11 +71,6 @@ public class RuntimeImageLoader : ModuleRules
 			{
 				// ... add any modules that your module loads dynamically here ...
 			}
-			);
-
-        if (Target.Platform == UnrealTargetPlatform.Android)
-        {
-            DynamicallyLoadedModuleNames.Add("RuntimeGifLibrary");
-        }
+		);
     }
 }
