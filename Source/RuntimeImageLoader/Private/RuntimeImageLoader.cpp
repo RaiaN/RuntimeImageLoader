@@ -141,10 +141,10 @@ void URuntimeImageLoader::LoadHDRIAsCubemapAsync(const FString& ImageFilename, c
         return;
     }
 
-    // TODO: loading cubemaps is not supported on Android platform! Use at your own risk!
-    // TODO: opportunity for a pull request!
-#if PLATFORM_ANDROID
-    OutError = TEXT("Loading cubemaps is not supported on Android platform! Please build plugin from source to change this behaviour..");
+    // TODO: loading cubemaps is not supported on Android & Mac platforms! You can fix the behaviour at your own risk!
+    // TODO: Pull requests are appreciated!
+#if PLATFORM_ANDROID || PLATFORM_MAC
+    OutError = TEXT("Loading cubemaps is not supported on Android & Mac platforms!");
     bSuccess = false;
     UE_LOG(LogRuntimeImageLoader, Warning, TEXT("%s"), *OutError);
     return;
