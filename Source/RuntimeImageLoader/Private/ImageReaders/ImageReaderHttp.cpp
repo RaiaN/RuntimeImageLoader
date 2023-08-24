@@ -4,7 +4,7 @@
 #include "Launch/Resources/Version.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
-#include "HTTPManager.h"
+#include "HttpManager.h"
 #include "HttpModule.h"
 
 FImageReaderHttp::~FImageReaderHttp()
