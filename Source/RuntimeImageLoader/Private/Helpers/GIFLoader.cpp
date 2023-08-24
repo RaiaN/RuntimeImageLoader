@@ -92,7 +92,7 @@ bool FRuntimeGIFLoaderHelper::DecodeGIF(const FString& FilePath)
 	/* clean up */
 	nsgif_destroy(Gif);
 
-	return !TextureData.IsEmpty();
+	return TextureData.Num() > 0;
 }
 
 const int32 FRuntimeGIFLoaderHelper::GetWidth() const
