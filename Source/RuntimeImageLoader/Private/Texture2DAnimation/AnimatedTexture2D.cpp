@@ -2,7 +2,7 @@
 
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 #include "RenderingThread.h"
-#include "RHICommandlist.h"
+#include "RHICommandList.h"
 #include "AnimatedTextureResource.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAnimatedTexture, Log, All);
