@@ -49,9 +49,9 @@ UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, con
 	EPixelFormat DesiredFormat = EPixelFormat(InCreateInfo.Format);
 	if (InSizeX > 0 && InSizeY > 0)
 	{
-		UTexture2D* NewTexture = NewObject<UTexture2D>(
+		UAnimatedTexture2D* NewTexture = NewObject<UAnimatedTexture2D>(
 			(UObject*)GetTransientPackage(),
-			MakeUniqueObjectName((UObject*)GetTransientPackage(), UTexture2D::StaticClass()),
+			MakeUniqueObjectName((UObject*)GetTransientPackage(), UAnimatedTexture2D::StaticClass()),
 			RF_Public | RF_Transient
 		);
 
