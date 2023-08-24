@@ -3,6 +3,8 @@
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 #include "AnimatedTextureResource.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogAnimatedTexture, Log, All);
+
 float UAnimatedTexture2D::GetSurfaceWidth() const
 {
 	if (Decoder) return Decoder->GetWidth();
@@ -73,7 +75,7 @@ UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, con
 	}
 	else
 	{
-		UE_LOG(LogTexture, Warning, TEXT("Invalid parameters specified for UTexture2DDynamic::Create()"));
+		UE_LOG(LogAnimatedTexture, Warning, TEXT("Invalid parameters specified for UTexture2DDynamic::Create()"));
 		return NULL;
 	}
 }
