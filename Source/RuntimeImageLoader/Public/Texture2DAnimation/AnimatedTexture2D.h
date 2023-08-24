@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/Texture.h"
 #include "Tickable.h"
-#include "Helpers/GifLoader.h"
+#include "Helpers/GIFLoader.h"
 #include "AnimatedTexture2D.generated.h"
 
 /** Copy Frame TO RHITexture */
