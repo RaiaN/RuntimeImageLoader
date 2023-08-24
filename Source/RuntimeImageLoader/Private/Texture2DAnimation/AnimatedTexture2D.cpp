@@ -1,6 +1,8 @@
 // Copyright 2023 Peter Leontev. All Rights Reserved.
 
 #include "Texture2DAnimation/AnimatedTexture2D.h"
+#include "RenderingThread.h"
+#include "RHICommandlist.h"
 #include "AnimatedTextureResource.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAnimatedTexture, Log, All);
