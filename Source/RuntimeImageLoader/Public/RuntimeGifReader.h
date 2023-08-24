@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HAL/Runnable.h"
+#include "Containers/Queue.h"
 #include "RuntimeGifReader.generated.h"
 
 class UAnimatedTexture2D;
