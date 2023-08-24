@@ -1,6 +1,6 @@
 #include "ImageReaderFactory.h"
 #include "ImageReaderLocal.h"
-#include "ImageReaderHttp.h"
+#include "ImageReaderHTTP.h"
 
 TSharedPtr<IImageReader, ESPMode::ThreadSafe> FImageReaderFactory::CreateReader(const FString& ImageURI)
 {
