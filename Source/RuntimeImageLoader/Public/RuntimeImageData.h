@@ -6,10 +6,9 @@
 #include "PixelFormat.h"
 #include "ImageCore.h"
 #include "Launch/Resources/Version.h"
-
-#if ENGINE_MAJOR_VERSION < 5
 #include "Engine/Texture.h"
-#else
+
+#if ENGINE_MAJOR_VERSION == 5
 #include "Engine/TextureDefines.h"
 #endif
 
@@ -19,6 +18,7 @@ struct RUNTIMEIMAGELOADER_API FRuntimeImageData : public FImage
 
     int32 NumMips = 1;
     bool SRGB = true;
+    TextureFilter FilterMode = TextureFilter::TF_Default;
     ETextureSourceFormat TextureSourceFormat = TSF_Invalid;
     TextureCompressionSettings CompressionSettings;
     EPixelFormat PixelFormat = PF_B8G8R8A8;

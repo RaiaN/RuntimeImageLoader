@@ -21,7 +21,6 @@ class UTextureCube;
 class IImageReader;
 
 
-
 USTRUCT(BlueprintType)
 struct RUNTIMEIMAGELOADER_API FInputImageDescription
 {
@@ -31,10 +30,10 @@ struct RUNTIMEIMAGELOADER_API FInputImageDescription
     FInputImageDescription(const FString& InputImageFilename): ImageFilename(InputImageFilename) {}
     FInputImageDescription(TArray<uint8>&& InputImageBytes) : ImageBytes(InputImageBytes) {}
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     FString ImageFilename = TEXT("");
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     TArray<uint8> ImageBytes;
 };
 
@@ -47,13 +46,17 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
     bool bForUI = true;
 
-    bool bOnlyPixels = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
+    TEnumAsByte<TextureFilter> FilterMode = TextureFilter::TF_Default;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
     int32 PercentSizeX = 100;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
     int32 PercentSizeY = 100;
+
+    // Hidden as there is method in RuntimeImageLoader that sets this flag
+    bool bOnlyPixels = false;
 
     bool IsPercentSizeValid() const
     {
