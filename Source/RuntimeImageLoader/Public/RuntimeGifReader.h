@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Async/Future.h"
 #include "HAL/Runnable.h"
 #include "Containers/Queue.h"
 #include "RuntimeGifReader.generated.h"
