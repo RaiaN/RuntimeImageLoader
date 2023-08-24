@@ -1,7 +1,9 @@
 // Copyright 2023 Peter Leontev. All Rights Reserved.
 
 #include "RuntimeGifReader.h"
+#include "HAL/RunnableThread.h"
 #include "Helpers/GifLoader.h"
+#include "Async/Async.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 #include "RuntimeImageLoaderLog.h"
 
