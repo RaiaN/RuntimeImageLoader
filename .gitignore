@@ -25,8 +25,8 @@
 # Compiled Static libraries
 *.lai
 *.la
-*.a
-*.lib
+# *.a
+# *.lib
 
 # Executables
 *.exe
@@ -75,7 +75,3 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
-
-# Include .dll and .lib files in specific folder structure
-!Source/ThirdParty/*/**.a
-!Source/ThirdParty/*/**.lib
