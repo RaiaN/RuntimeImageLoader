@@ -9,22 +9,26 @@ public class RuntimeGifLibrary : ModuleRules
 	{
 		Type = ModuleType.External;
 
-		//if (Target.Platform == UnrealTargetPlatform.Win64)
+        PublicDefinitions.Add("WITH_LIBNSGIF=1");
+
+        string IncPath = Path.Combine(ModuleDirectory, "include");
+        PublicSystemIncludePaths.Add(IncPath);
+
+        if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			PublicDefinitions.Add("WITH_LIBNSGIF=1");
-
-			string IncPath = Path.Combine(ModuleDirectory, "include");
-			PublicSystemIncludePaths.Add(IncPath);
-
-			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "x64", "Release", "libnsgif.lib"));
+			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Win64", "libnsgif.lib"));
 		}
-		if (Target.Platform == UnrealTargetPlatform.Linux)
+		else if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-            // TODO
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libnsgif.a"));
+        }
+        else if (Target.Platform == UnrealTargetPlatform.Mac)
+        {
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Mac", "libnsgif.a"));
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
-			// TODO
-		}
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Android", "libnsgif.a"));
+        }
     }
 }
