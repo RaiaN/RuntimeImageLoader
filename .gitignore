@@ -77,5 +77,5 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Include .dll and .lib files in specific folder structure
-!Source/ThirdParty/*/x64/*/*.dll
-!Source/ThirdParty/*/x64/*/*.lib
+!Source/ThirdParty/*/**.a
+!Source/ThirdParty/*/**.lib
