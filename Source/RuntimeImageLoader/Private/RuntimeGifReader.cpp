@@ -9,14 +9,13 @@
 
 DEFINE_LOG_CATEGORY(RuntimeGifReader);
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(RuntimeGifReader)
-
 
 URuntimeGifReader* URuntimeGifReader::LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode, bool bSynchronous)
 {
 	FGifReadRequest Request;
 	{
 		Request.InputGif.ImageFilename = GIFFilename;
+		Request.FilterMode = InFilterMode;
 	}
 
 	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
@@ -30,6 +29,7 @@ URuntimeGifReader* URuntimeGifReader::LoadGIFFromBytes(TArray<uint8>& GifBytes, 
 	FGifReadRequest Request;
 	{
 		Request.InputGif.ImageBytes = MoveTemp(GifBytes);
+		Request.FilterMode = InFilterMode;
 	}
 
 	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
@@ -109,7 +109,10 @@ void URuntimeGifReader::ProcessRequest()
 		return;
 	}
 
-	ReadResult.OutTexture = UAnimatedTexture2D::Create(Decoder->GetWidth(), Decoder->GetHeight());
+	FAnimatedTexture2DCreateInfo CreateInfo;
+	CreateInfo.Filter = Request.FilterMode;
+
+	ReadResult.OutTexture = UAnimatedTexture2D::Create(Decoder->GetWidth(), Decoder->GetHeight(), CreateInfo);
 	if (!IsValid(ReadResult.OutTexture))
 	{
 		ReadResult.OutError = FString::Printf(TEXT("Error: Failed to Create Animated Texture Gif."));

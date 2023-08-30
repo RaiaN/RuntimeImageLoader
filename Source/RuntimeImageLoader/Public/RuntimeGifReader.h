@@ -6,7 +6,7 @@
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Engine/Texture.h"
 #include "Async/Future.h"
-#include "Templates/SharedPointerFwd.h"
+#include "Templates/SharedPointer.h"
 #include "Helpers/GIFLoader.h"
 #include "InputImageDescription.h"
 #include "RuntimeGifReader.generated.h"
@@ -44,10 +44,10 @@ class RUNTIMEIMAGELOADER_API URuntimeGifReader : public UBlueprintAsyncActionBas
 public:
 	/** GIF */
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-    static URuntimeGifReader* LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode, bool bSynchronous = false);
+    static URuntimeGifReader* LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode = TextureFilter::TF_Trilinear, bool bSynchronous = false);
 
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-	static URuntimeGifReader* LoadGIFFromBytes(UPARAM(ref) TArray<uint8>& GifBytes, TEnumAsByte<enum TextureFilter> InFilterMode, bool bSynchronous = false);
+	static URuntimeGifReader* LoadGIFFromBytes(UPARAM(ref) TArray<uint8>& GifBytes, TEnumAsByte<enum TextureFilter> InFilterMode = TextureFilter::TF_Trilinear, bool bSynchronous = false);
 
 public:
 	// Bind to these events when you want to use async API from C++
