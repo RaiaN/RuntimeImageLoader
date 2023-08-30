@@ -1,10 +1,10 @@
 // Copyright 2023 Peter Leontev. All Rights Reserved.
 
 #include "AnimatedTextureResource.h"
+#include "DeviceProfiles/DeviceProfile.h"
+#include "DeviceProfiles/DeviceProfileManager.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 
-#include "DeviceProfiles/DeviceProfile.h"	// Engine
-#include "DeviceProfiles/DeviceProfileManager.h"	// Engine
 
 FAnimatedTextureResource::FAnimatedTextureResource(UAnimatedTexture2D* InOwner) :Owner(InOwner)
 {
@@ -66,7 +66,24 @@ void FAnimatedTextureResource::InitRHI()
 	uint32 NumMips = 1;
 	FString Name = Owner->GetName();
 	FRHIResourceCreateInfo CreateInfo(*Name);
-	TextureRHI = RHICreateTexture2D(GetSizeX(), GetSizeY(), PF_B8G8R8A8, NumMips, 1, Flags, CreateInfo);
+	
+#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
+    TextureRHI = RHICreateTexture(
+        FRHITextureCreateDesc::Create2D(CreateInfo.DebugName)
+        .SetExtent(GetSizeX(), GetSizeY())
+        .SetFormat(PF_B8G8R8A8)
+        .SetNumMips(NumMips)
+        .SetNumSamples(1)
+        .SetFlags(Flags)
+        .SetInitialState(ERHIAccess::Unknown)
+        .SetExtData(CreateInfo.ExtData)
+        .SetGPUMask(CreateInfo.GPUMask)
+        .SetClearValue(CreateInfo.ClearValueBinding)
+    );
+#else
+    TextureRHI = RHICreateTexture2D(GetSizeX(), GetSizeY(), PF_B8G8R8A8, NumMips, 1, Flags, CreateInfo);
+#endif
+
 	TextureRHI->SetName(Owner->GetFName());
 	RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, TextureRHI);
 }

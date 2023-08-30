@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "RuntimeImageData.h"
 #include "Templates/RefCounting.h"
 
