@@ -3,6 +3,7 @@
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 #include "RenderingThread.h"
 #include "RHICommandList.h"
+#include "RHI.h"
 #include "AnimatedTextureResource.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAnimatedTexture, Log, All);
@@ -86,20 +87,6 @@ UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, con
 	}
 }
 
-void UAnimatedTexture2D::Init(int32 InSizeX, int32 InSizeY, EPixelFormat InFormat/*=2*/, bool InIsResolveTarget/*=false*/)
-{
-	FScopeLock ResultsLock(&ResultsMutex);
-
-	SizeX = InSizeX;
-	SizeY = InSizeY;
-	Format = (EPixelFormat)InFormat;
-	NumMips = 1;
-	bIsResolveTarget = InIsResolveTarget;
-
-	// Initialize the resource.
-	UpdateResource();
-}
-
 void UAnimatedTexture2D::SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState)
 {
 	Decoder = MoveTemp(DecoderState);
@@ -157,4 +144,30 @@ void UAnimatedTexture2D::PlayFromStart()
 void UAnimatedTexture2D::Stop()
 {
 	bPlaying = false;
+}
+
+void UAnimatedTexture2D::Init(int32 InSizeX, int32 InSizeY, EPixelFormat InFormat/*=2*/, bool InIsResolveTarget/*=false*/)
+{
+	FScopeLock ResultsLock(&ResultsMutex);
+
+	SizeX = InSizeX;
+	SizeY = InSizeY;
+	Format = (EPixelFormat)InFormat;
+	NumMips = 1;
+	bIsResolveTarget = InIsResolveTarget;
+
+	// Initialize the resource.
+	UpdateResource();
+}
+
+const uint8* UAnimatedTexture2D::GetFirstFrameData() const
+{
+	check (Decoder.IsValid());
+
+	return (const uint8*)Decoder->GetNextFrame(CurrentFrame);
+}
+
+uint32 UAnimatedTexture2D::GetFrameSize() const
+{
+	return CalculateImageBytes(SizeX, SizeY, 1, Format);
 }

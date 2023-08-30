@@ -1,9 +1,26 @@
 // Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #include "AnimatedTextureResource.h"
+#include "Containers/ResourceArray.h"
 #include "DeviceProfiles/DeviceProfile.h"
 #include "DeviceProfiles/DeviceProfileManager.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
+
+struct FGifDataResource : public FResourceBulkDataInterface
+{
+public:
+	FGifDataResource(void* InMipData, int32 InDataSize)
+		: MipData(InMipData), DataSize(InDataSize)
+	{}
+
+	const void* GetResourceBulkData() const override { return MipData; }
+	uint32 GetResourceBulkDataSize() const override { return DataSize; }
+	void Discard() override {}
+
+private:
+	void* MipData;
+	int32 DataSize;
+};
 
 
 FAnimatedTextureResource::FAnimatedTextureResource(UAnimatedTexture2D* InOwner) :Owner(InOwner)
@@ -63,25 +80,32 @@ void FAnimatedTextureResource::InitRHI()
 	if (Owner->bNoTiling)
 		Flags |= TexCreate_NoTiling;
 
-	uint32 NumMips = 1;
-	FString Name = Owner->GetName();
+	const uint32 NumMips = 1;
+	const FString& Name = Owner->GetName();
+	const EPixelFormat ImageFormat = PF_B8G8R8A8;
+	
 	FRHIResourceCreateInfo CreateInfo(*Name);
+	{
+		FGifDataResource GifBulkData((void*)Owner->GetFirstFrameData(), Owner->GetFrameSize());
+		CreateInfo.BulkData = &GifBulkData;
+	}
 	
 #if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
     TextureRHI = RHICreateTexture(
         FRHITextureCreateDesc::Create2D(CreateInfo.DebugName)
         .SetExtent(GetSizeX(), GetSizeY())
-        .SetFormat(PF_B8G8R8A8)
+        .SetFormat(ImageFormat)
         .SetNumMips(NumMips)
         .SetNumSamples(1)
         .SetFlags(Flags)
         .SetInitialState(ERHIAccess::Unknown)
         .SetExtData(CreateInfo.ExtData)
+		.SetBulkData(CreateInfo.BulkData)
         .SetGPUMask(CreateInfo.GPUMask)
         .SetClearValue(CreateInfo.ClearValueBinding)
     );
 #else
-    TextureRHI = RHICreateTexture2D(GetSizeX(), GetSizeY(), PF_B8G8R8A8, NumMips, 1, Flags, CreateInfo);
+    TextureRHI = RHICreateTexture2D(GetSizeX(), GetSizeY(), ImageFormat, NumMips, 1, Flags, CreateInfo);
 #endif
 
 	TextureRHI->SetName(Owner->GetFName());

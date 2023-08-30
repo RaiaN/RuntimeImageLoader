@@ -148,7 +148,7 @@ bool FRuntimeGIFLoaderHelper::DecodeInternal(nsgif_t* gif, bool first)
 		else {
 			image = (const uint8*)bitmap;
 
-			// TODO: Optimize this loop later?
+			// TODO: Optimize this loop later? Use memcpy?
 
 			for (uint32_t i = 0; i < info->height * info->width; i++) {
 				uint32_t y = i / info->width;

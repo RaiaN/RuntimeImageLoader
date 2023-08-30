@@ -70,15 +70,6 @@ public:
 		Creates and initializes a new AnimatedTexture2D with the requested settings 
 	*/
 	static UAnimatedTexture2D* Create(int32 InSizeX, int32 InSizeY, const FAnimatedTexture2DCreateInfo& InCreateInfo = FAnimatedTexture2DCreateInfo());
-	/**
-	 * Initializes the texture with 1 mip-level and creates the render resource.
-	 *
-	 * @param InSizeX			- Width of the texture, in texels
-	 * @param InSizeY			- Height of the texture, in texels
-	 * @param InFormat			- Format of the texture, defaults to PF_B8G8R8A8
-	 * @param InIsResolveTarget	- Whether the texture can be used as a resolve target
-	 */
-	void Init(int32 InSizeX, int32 InSizeY, EPixelFormat InFormat = PF_B8G8R8A8, bool InIsResolveTarget = false);
 
 public:
 	void SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState);
@@ -98,6 +89,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RuntimeAnimatedTexture)
 	bool bLooping = true;
+
+public:
+	/* Used by AnimatedTextureResource when initializing the texture */
+	const uint8* GetFirstFrameData() const;
+	uint32 GetFrameSize() const;
+
+	virtual float GetSurfaceWidth() const override;
+	virtual float GetSurfaceHeight() const override;
 
 protected:
 	// FTickableGameObject Interface
@@ -122,13 +121,12 @@ protected:
 
 	void RenderFrameToTexture();
 
-public:
-	// UTexture Interface
-	virtual float GetSurfaceWidth() const override;
-	virtual float GetSurfaceHeight() const override;
-
+protected:
 	virtual FTextureResource* CreateResource() override;
 	virtual EMaterialValueType GetMaterialType() const override { return MCT_Texture2D; }
+
+private:
+	void Init(int32 InSizeX, int32 InSizeY, EPixelFormat InFormat = PF_B8G8R8A8, bool InIsResolveTarget = false);
 
 private:
 	/** The width of the texture. */
@@ -138,7 +136,7 @@ private:
 	int32 SizeY;
 
 	/** The format of the texture. */
-	UPROPERTY(transient)
+	UPROPERTY(Transient)
 	TEnumAsByte<enum EPixelFormat> Format;
 
 	/** Whether the texture can be used as a resolve target. */
