@@ -1,4 +1,4 @@
-// Copyright 2023 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #include "AnimatedTextureResource.h"
 #include "DeviceProfiles/DeviceProfile.h"
