@@ -2,22 +2,11 @@
 
 #include "RuntimeGifReader.h"
 #include "HAL/RunnableThread.h"
-#include "Helpers/GIFLoader.h"
 #include "Async/Async.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 #include "RuntimeImageLoaderLog.h"
 
-DEFINE_LOG_CATEGORY(RuntimeGifReader)
-
-/** 
-	@See UniquePtr method void operator()(T* Ptr) const
-*/
-URuntimeGifReader::URuntimeGifReader() = default;
-
-URuntimeGifReader::~URuntimeGifReader() = default;
-
-URuntimeGifReader::URuntimeGifReader(FVTableHelper& Helper)
-{}
+DEFINE_LOG_CATEGORY(RuntimeGifReader);
 
 // ------------------------------------------------------
 

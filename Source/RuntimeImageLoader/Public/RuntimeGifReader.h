@@ -6,6 +6,7 @@
 #include "Async/Future.h"
 #include "HAL/Runnable.h"
 #include "Containers/Queue.h"
+#include "Helpers/GIFLoader.h"
 #include "RuntimeGifReader.generated.h"
 
 class UAnimatedTexture2D;
@@ -28,11 +29,6 @@ UCLASS()
 class URuntimeGifReader : public UObject, public FRunnable
 {
 	GENERATED_BODY()
-
-public:
-	URuntimeGifReader();
-	~URuntimeGifReader();
-	URuntimeGifReader(FVTableHelper& Helper);
 
 public:
 	void Initialize();
@@ -68,10 +64,7 @@ protected:
 	/* ~FRunnable interface */
 
 private:
-	/**
-		@See UniquePtr method void operator()(T* Ptr) const
-	*/
-	TUniquePtr<class FRuntimeGIFLoaderHelper> Decoder;
+	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder;
 
 private:
 	TQueue<FString, EQueueMode::Mpsc> Requests;
