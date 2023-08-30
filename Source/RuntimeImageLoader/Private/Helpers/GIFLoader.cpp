@@ -1,7 +1,6 @@
 // Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #include "GIFLoader.h"
-#include "Misc/FileHelper.h"
 #include "RuntimeImageLoaderLog.h"
 
 DEFINE_LOG_CATEGORY(LibNsgifHelper);
