@@ -3,14 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Kismet/BlueprintAsyncActionBase.h"
 #include "Async/Future.h"
-#include "HAL/Runnable.h"
-#include "Containers/Queue.h"
+#include "Templates/SharedPointerFwd.h"
 #include "Helpers/GIFLoader.h"
+#include "InputImageDescription.h"
 #include "RuntimeGifReader.generated.h"
 
 class UAnimatedTexture2D;
-class FRuntimeGIFLoaderHelper;
+class IImageReader;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGifLoadingSuccessDelegate, UAnimatedTexture2D*, OutGifTexture);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGifLoadingFailureDelegate, FString, OutError);
+
+struct RUNTIMEIMAGELOADER_API FGifReadRequest
+{
+	FInputImageDescription InputGif;
+};
 
 USTRUCT()
 struct RUNTIMEIMAGELOADER_API FGifReadResult
@@ -26,65 +35,46 @@ public:
 };
 
 UCLASS()
-class URuntimeGifReader : public UObject, public FRunnable
+class RUNTIMEIMAGELOADER_API URuntimeGifReader : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
 
 public:
-	void Initialize();
-	void Deinitialize();
+	/** GIF */
+    UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
+    static URuntimeGifReader* LoadGIFAsync(const FString& GIFFilename);
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
+    static URuntimeGifReader* LoadGIFSync(const FString& GIFFilename);
+
+    UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
+	static URuntimeGifReader* LoadGIFFromBytesAsync(UPARAM(ref) TArray<uint8>& GifBytes);
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
+	static URuntimeGifReader* LoadGIFFromBytesSync(UPARAM(ref) TArray<uint8>& GifBytes);
 
 public:
-	void AddRequest(const FString& Request);
-	bool GetResult(FGifReadResult& OutResult);
-	void Clear();
-	void Stop();
-	bool IsWorkCompleted() const;
+	// Bind to these events when you want to use async API from C++
+	UPROPERTY(BlueprintAssignable)
+	FGifLoadingSuccessDelegate OnSuccess;
 
-	void Trigger();
-	void BlockTillAllRequestsFinished();
-	bool ProcessRequest(const FString& InGifFilename);
+	UPROPERTY(BlueprintAssignable)
+	FGifLoadingFailureDelegate OnFail;
 
 public:
-	DECLARE_DELEGATE_TwoParams(FOnGifLoaded, UAnimatedTexture2D*, const FString&);
-	FOnGifLoaded OnGifLoaded;
-
-	/** Handles GIF Texture requests coming from the Raw Data */
-	void Init(const FString& InGifFilename);
-	void Cancel();
+	/* Native API */
+	void SubmitRequest(FGifReadRequest&& InRequest, bool bSynchronous = false);
 
 private:
-	void OnPostGifDecode(bool bRes);
-
-protected:
-	/* FRunnable interface */
-	bool Init() override;
-	uint32 Run() override;
-	void Exit() override;
-	/* ~FRunnable interface */
+	void ProcessRequest();
 
 private:
+	FGifReadRequest Request;
+
+	TFuture<void> CurrentTask;
+	TSharedPtr<IImageReader, ESPMode::ThreadSafe> ImageReader;
 	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder;
 
-private:
-	TQueue<FString, EQueueMode::Mpsc> Requests;
-
-	UPROPERTY()
-	FGifReadResult PendingReadResult;
-
-	UPROPERTY()
-	TArray<FGifReadResult> Results;
-
-private:
-	FCriticalSection ResultsMutex;
-
-private:
-	TFuture<void> CurrentTask;
-
-private:
-	FRunnableThread* Thread = nullptr;
-	FEvent* ThreadSemaphore = nullptr;
-
-	FThreadSafeBool bCompletedWork = true;
-	FThreadSafeBool bStopThread = false;
+    UPROPERTY()
+    FGifReadResult ReadResult;
 };

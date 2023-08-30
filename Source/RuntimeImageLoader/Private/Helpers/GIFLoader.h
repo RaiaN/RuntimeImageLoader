@@ -31,7 +31,7 @@ public: /** Get Next Frame Texture Data*/
 
 	FString GetDecodeError() const;
 
-	bool DecodeGIF(const FString& FilePath);
+	bool DecodeGIF(TArray<uint8>&& GifBytes);
 
 protected: /** Bitmap Callbacks Methods */
 	static void* bitmap_create(int width, int height);

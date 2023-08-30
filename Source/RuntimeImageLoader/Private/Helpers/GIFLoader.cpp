@@ -30,7 +30,7 @@ void FRuntimeGIFLoaderHelper::Warning(const char* context)
 {
 	LastContext = ANSI_TO_TCHAR(context);
 
-	UE_LOG(LibNsgifHelper, Warning, TEXT("%s"), *GetDecodeError());
+	UE_LOG(LibNsgifHelper, Warning, TEXT("Decode error: %s"), *GetDecodeError());
 }
 
 
@@ -39,21 +39,16 @@ FString FRuntimeGIFLoaderHelper::GetDecodeError() const
 	return FString::Printf(TEXT("%s: %s"), *LastContext, nsgif_strerror(LastError));
 }
 
-bool FRuntimeGIFLoaderHelper::DecodeGIF(const FString& FilePath)
+bool FRuntimeGIFLoaderHelper::DecodeGIF(TArray<uint8>&& GifBytes)
 {
+	/* load file into memory */
+	Data = MoveTemp(GifBytes);
+	
 	/* create our gif animation */
 	LastError = nsgif_create(&bitmap_callbacks, NSGIF_BITMAP_FMT_R8G8B8A8, &Gif);
 	if (LastError != NSGIF_OK)
 	{
 		Warning("nsgif_create");
-		return false;
-	}
-
-	/* load file into memory */
-	if (!FFileHelper::LoadFileToArray(Data, *FilePath))
-	{
-		const FString FileError = FString::Printf(TEXT("LoadFileToArray: %s"), *FilePath);
-		Warning(TCHAR_TO_ANSI(*FileError));
 		return false;
 	}
 
@@ -91,6 +86,11 @@ bool FRuntimeGIFLoaderHelper::DecodeGIF(const FString& FilePath)
 
 	/* clean up */
 	nsgif_destroy(Gif);
+
+	if (TextureData.Num() == 0)
+	{
+		UE_LOG(LibNsgifHelper, Warning, TEXT("Failed to decode GIF! Please check input data is valid. Otherwise contact developers for an advice"));
+	}
 
 	return TextureData.Num() > 0;
 }
@@ -148,6 +148,9 @@ bool FRuntimeGIFLoaderHelper::DecodeInternal(nsgif_t* gif, bool first)
 		}
 		else {
 			image = (const uint8*)bitmap;
+
+			// TODO: Optimize this loop later?
+
 			for (uint32_t i = 0; i < info->height * info->width; i++) {
 				uint32_t y = i / info->width;
 				uint32_t x = i % info->width;

@@ -10,6 +10,7 @@
 #include "ImageCore.h"
 #include "Containers/Queue.h"
 #include "RuntimeImageData.h"
+#include "InputImageDescription.h"
 #include "RuntimeImageReader.generated.h"
 
 
@@ -19,23 +20,6 @@ class FEvent;
 class UTexture2D;
 class UTextureCube;
 class IImageReader;
-
-
-USTRUCT(BlueprintType)
-struct RUNTIMEIMAGELOADER_API FInputImageDescription
-{
-    GENERATED_BODY()
-
-    FInputImageDescription(){ ImageBytes.Empty(); }
-    FInputImageDescription(const FString& InputImageFilename): ImageFilename(InputImageFilename) {}
-    FInputImageDescription(TArray<uint8>&& InputImageBytes) : ImageBytes(InputImageBytes) {}
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
-    FString ImageFilename = TEXT("");
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
-    TArray<uint8> ImageBytes;
-};
 
 
 USTRUCT(BlueprintType)

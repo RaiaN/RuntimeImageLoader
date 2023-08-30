@@ -1,130 +1,151 @@
 // Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #include "RuntimeGifReader.h"
-#include "HAL/RunnableThread.h"
 #include "Async/Async.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
+#include "ImageReaders/ImageReaderFactory.h"
+#include "ImageReaders/IImageReader.h"
 #include "RuntimeImageLoaderLog.h"
 
 DEFINE_LOG_CATEGORY(RuntimeGifReader);
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(RuntimeGifReader)
+
+
+URuntimeGifReader* URuntimeGifReader::LoadGIFAsync(const FString& GIFFilename)
+{
+	FGifReadRequest Request;
+	{
+		Request.InputGif.ImageFilename = GIFFilename;
+	}
+
+	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
+	GifReader->SubmitRequest(MoveTemp(Request), false);
+
+	return GifReader;
+}
+
+URuntimeGifReader* URuntimeGifReader::LoadGIFSync(const FString& GIFFilename)
+{
+	FGifReadRequest Request;
+	{
+		Request.InputGif.ImageFilename = GIFFilename;
+	}
+
+	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
+	GifReader->SubmitRequest(MoveTemp(Request), true);
+
+	return GifReader;
+}
+
+URuntimeGifReader* URuntimeGifReader::LoadGIFFromBytesAsync(TArray<uint8>& GifBytes)
+{
+	FGifReadRequest Request;
+	{
+		Request.InputGif.ImageBytes = MoveTemp(GifBytes);
+	}
+
+	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
+	GifReader->SubmitRequest(MoveTemp(Request), false);
+
+	return GifReader;
+}
+
+
+URuntimeGifReader* URuntimeGifReader::LoadGIFFromBytesSync(TArray<uint8>& GifBytes)
+{
+	FGifReadRequest Request;
+	{
+		Request.InputGif.ImageBytes = MoveTemp(GifBytes);
+	}
+
+	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
+	GifReader->SubmitRequest(MoveTemp(Request), true);
+
+	return GifReader;
+}
+
 // ------------------------------------------------------
 
-void URuntimeGifReader::Initialize()
+void URuntimeGifReader::SubmitRequest(FGifReadRequest&& InRequest, bool bSynchronous)
 {
-	ThreadSemaphore = FPlatformProcess::GetSynchEventFromPool(false);
-	Thread = FRunnableThread::Create(this, TEXT("RuntimeImageReader"), 0, TPri_SlightlyBelowNormal);
-
-	UE_LOG(RuntimeGifReader, Log, TEXT("Gif reader thread started!"))
-}
-
-void URuntimeGifReader::Deinitialize()
-{
-	Clear();
-	Stop();
-
-	UE_LOG(RuntimeGifReader, Log, TEXT("Gif reader thread exited!"))
-}
-
-void URuntimeGifReader::AddRequest(const FString& GifFileName)
-{
-	Requests.Enqueue(GifFileName);
-
-	bCompletedWork.AtomicSet(false);
-}
-
-bool URuntimeGifReader::GetResult(FGifReadResult& OutResult)
-{
-	FScopeLock ResultsLock(&ResultsMutex);
-
-	if (Results.Num() > 0)
-	{
-		OutResult = Results.Pop();
-
-		return true;
-	}
-
-	return false;
-}
-
-void URuntimeGifReader::Clear()
-{
-	Requests.Empty();
-
-	{
-		FScopeLock ResultsLock(&ResultsMutex);
-		Results.Empty();
-	}
-
-	bCompletedWork = true;
-}
-
-void URuntimeGifReader::Stop()
-{
-	bStopThread = true;
-
-	Trigger();
-	Thread->WaitForCompletion();
-
-	FPlatformProcess::ReturnSynchEventToPool(ThreadSemaphore);
-}
-
-bool URuntimeGifReader::IsWorkCompleted() const
-{
-	return bCompletedWork;
-}
-
-void URuntimeGifReader::Trigger()
-{
-	ThreadSemaphore->Trigger();
-}
-
-void URuntimeGifReader::BlockTillAllRequestsFinished()
-{
-	while (!bCompletedWork && !bStopThread)
-	{
-		FString GifFilename;
-		while (Requests.Dequeue(GifFilename) && !bStopThread)
+	Request = MoveTemp(InRequest);
+	
+	CurrentTask = Async(
+		EAsyncExecution::ThreadPool,
+		[this]()
 		{
-			PendingReadResult.GifFilename = GifFilename;
-			if (PendingReadResult.GifFilename.Len() > 0)
-			{
-				UE_LOG(RuntimeGifReader, Log, TEXT("Reading Gif from file: %s"), *PendingReadResult.GifFilename);
-			}
+			ProcessRequest();
 
-			if (!ProcessRequest(GifFilename))
-			{
-				PendingReadResult.OutError = FString::Printf(TEXT("Error: Failed to Process Gif Request."));
-				UE_LOG(RuntimeGifReader, Warning, TEXT("Failed to process request"));
-			}
-
-			FScopeLock ResultsLock(&ResultsMutex);
-			Results.Add(PendingReadResult);
-
-			PendingReadResult = FGifReadResult();
+			AsyncTask(
+				ENamedThreads::GameThread, [this]()
+				{
+					if (ReadResult.OutError.IsEmpty())
+					{
+						OnSuccess.Broadcast(ReadResult.OutTexture);
+					}
+					else
+					{
+						OnFail.Broadcast(ReadResult.OutError);
+					}
+				}
+			);
 		}
+	);
 
-		bCompletedWork.AtomicSet(Requests.IsEmpty());
+	if (bSynchronous)
+	{
+		CurrentTask.Wait();
 	}
 }
 
-bool URuntimeGifReader::ProcessRequest(const FString& InGifFilename)
+void URuntimeGifReader::ProcessRequest()
 {
 	Decoder = MakeUnique<FRuntimeGIFLoaderHelper>();
 	check(Decoder.IsValid());
 
-	bool bResult = Decoder->DecodeGIF(InGifFilename);
+	TArray<uint8> ImageBuffer;
+
+	// read image data from using URI
+	// if not then read from bytes
+
+	const FString& GifFilename = Request.InputGif.ImageFilename;
+
+	if (GifFilename.Len() > 0)
+	{
+		ImageReader = FImageReaderFactory::CreateReader(GifFilename);
+		{
+			ImageBuffer = ImageReader->ReadImage(GifFilename);
+			if (ImageBuffer.Num() == 0)
+			{
+				ReadResult.OutError = FString::Printf(TEXT("Failed to read GIF: %s. Error: %s"), *GifFilename, *ImageReader->GetLastError());
+				return;
+			}
+
+		}
+
+		ImageReader = nullptr;
+	}
+	else if (Request.InputGif.ImageBytes.Num() > 0)
+	{
+		ImageBuffer = MoveTemp(Request.InputGif.ImageBytes);
+	}
+
+	check (ImageBuffer.Num() > 0);
+
+	bool bResult = Decoder->DecodeGIF(MoveTemp(ImageBuffer));
 	if (!bResult)
 	{
-		PendingReadResult.OutError = FString::Printf(TEXT("Error: Failed to read Gif File."));
-		return false;
+		ReadResult.OutError = FString::Printf(TEXT("Error: Failed to decode GIF: %s"), *Decoder->GetDecodeError());
+		return;
 	}
 
 	UAnimatedTexture2D* Texture = UAnimatedTexture2D::Create(Decoder->GetWidth(), Decoder->GetHeight());
 	if (!IsValid(Texture))
 	{
-		PendingReadResult.OutError = FString::Printf(TEXT("Error: Failed to Create Animated Texture Gif."));
-		UE_LOG(RuntimeGifReader, Error, TEXT("Gif Decoder Unable to Decode Gif"));
+		ReadResult.OutError = FString::Printf(TEXT("Error: Failed to Create Animated Texture Gif."));
+		UE_LOG(RuntimeGifReader, Error, TEXT("Error: Failed to Create Animated Texture Gif. Please check logs for any decoding related errors"));
+		return;
 	}
 
 	Texture->SetDecoder(MoveTemp(Decoder));
@@ -132,74 +153,5 @@ bool URuntimeGifReader::ProcessRequest(const FString& InGifFilename)
 	Texture->SRGB = true;
 	Texture->UpdateResource();
 
-	PendingReadResult.OutTexture = Texture;
-
-	return true;
-}
-
-void URuntimeGifReader::Init(const FString& InGifFilename)
-{
-	Decoder = MakeUnique<FRuntimeGIFLoaderHelper>();
-	check(Decoder.IsValid());
-
-	CurrentTask = Async(
-		EAsyncExecution::Thread,
-		[this, InGifFilename]()
-		{
-			bool bRes = Decoder->DecodeGIF(InGifFilename);
-
-			OnPostGifDecode(bRes);
-		}
-	);
-}
-
-void URuntimeGifReader::OnPostGifDecode(bool bRes)
-{
-	Async(
-		EAsyncExecution::TaskGraphMainThread,
-		[bRes, this]()
-		{
-			UAnimatedTexture2D* Texture = UAnimatedTexture2D::Create(Decoder->GetWidth(), Decoder->GetHeight());
-			if (!bRes || !IsValid(Texture))
-			{
-				UE_LOG(RuntimeGifReader, Error, TEXT("Gif Decoder Unable to Decode Gif"));
-				OnGifLoaded.Execute(Texture, Decoder->GetDecodeError());
-			}
-
-			Texture->SetDecoder(MoveTemp(Decoder));
-
-			Texture->SRGB = true;
-			Texture->UpdateResource();
-
-			OnGifLoaded.Execute(Texture, TEXT(""));
-		}
-	).Wait();
-}
-
-void URuntimeGifReader::Cancel()
-{
-	CurrentTask.Reset();
-}
-
-
-bool URuntimeGifReader::Init()
-{
-	return true;
-}
-
-uint32 URuntimeGifReader::Run()
-{
-	while (!bStopThread)
-	{
-		ThreadSemaphore->Wait();
-
-		BlockTillAllRequestsFinished();
-	}
-
-	return 0;
-}
-
-void URuntimeGifReader::Exit()
-{
-
+	ReadResult.OutTexture = Texture;
 }

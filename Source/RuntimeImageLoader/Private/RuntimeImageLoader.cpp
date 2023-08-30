@@ -9,24 +9,19 @@
 #include "Misc/FileHelper.h"
 #include "Interfaces/IPluginManager.h"
 #include "RuntimeImageUtils.h"
-#include "RuntimeGifReader.h"
-#include "Texture2DAnimation/AnimatedTexture2D.h"
-#include "Async/Async.h"
+#include "InputImageDescription.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
 {
     InitializeImageReader();
-    InitializeGifReader();
 }
 
 void URuntimeImageLoader::Deinitialize()
 {
     ImageReader->Deinitialize();
-    GifReader->Deinitialize();
     ImageReader = nullptr;
-    GifReader = nullptr;
 }
 
 bool URuntimeImageLoader::DoesSupportWorldType(EWorldType::Type WorldType) const
@@ -296,48 +291,6 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
     Requests.Enqueue(Request);
 }
 
-void URuntimeImageLoader::LoadGIF(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject)
-{
-    GifReader->OnGifLoaded.BindLambda(
-        [&OutTexture, &bSuccess, &OutError, LatentInfo](UAnimatedTexture2D* NewTexture, const FString& DecodeError)
-        {
-            FWeakObjectPtr CallbackTargetPtr = LatentInfo.CallbackTarget;
-            if (UObject* CallbackTarget = CallbackTargetPtr.Get())
-            {
-                UFunction* ExecutionFunction = CallbackTarget->FindFunction(LatentInfo.ExecutionFunction);
-                if (IsValid(ExecutionFunction))
-                {
-                    OutTexture = NewTexture;
-                    bSuccess = IsValid(OutTexture);
-                    OutError = DecodeError;
-
-                    int32 Linkage = LatentInfo.Linkage;
-                    if (Linkage != -1)
-                    {
-                        CallbackTarget->ProcessEvent(ExecutionFunction, &Linkage);
-                    }
-                }
-            }
-        }
-    );
-
-    GifReader->Init(GIFFilename);
-}
-
-void URuntimeImageLoader::LoadGIFSync(const FString& GIFFilename, UAnimatedTexture2D*& OutTexture, bool& bSuccess, FString& OutError)
-{
-    GifReader->BlockTillAllRequestsFinished();
-    GifReader->AddRequest(GIFFilename);
-    GifReader->BlockTillAllRequestsFinished();
-
-    FGifReadResult ReadResult;
-    GifReader->GetResult(ReadResult);
-
-    bSuccess = ReadResult.OutError.IsEmpty();
-    OutTexture = ReadResult.OutTexture;
-    OutError = ReadResult.OutError;
-}
-
 void URuntimeImageLoader::CancelAll()
 {
     check (IsInGameThread());
@@ -461,16 +414,4 @@ URuntimeImageReader* URuntimeImageLoader::InitializeImageReader()
 
     ensure(IsValid(ImageReader));
     return ImageReader;
-}
-
-URuntimeGifReader* URuntimeImageLoader::InitializeGifReader()
-{
-    if (!IsValid(GifReader))
-    {
-        GifReader = NewObject<URuntimeGifReader>(this);
-        GifReader->Initialize();
-    }
-
-    ensure(IsValid(GifReader));
-    return GifReader;
 }
