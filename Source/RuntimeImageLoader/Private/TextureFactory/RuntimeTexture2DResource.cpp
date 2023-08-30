@@ -19,8 +19,6 @@ FRuntimeTexture2DResource::~FRuntimeTexture2DResource()
 
 void FRuntimeTexture2DResource::InitRHI()
 {
-    // TODO: this should be reevaluated as runtime textures do not have mips just yet
-
     // Default to point filtering.
     ESamplerFilter Filter = ESamplerFilter::SF_Trilinear;
 

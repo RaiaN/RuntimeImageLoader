@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
+#include "Engine/Texture.h"
 #include "Async/Future.h"
 #include "Templates/SharedPointerFwd.h"
 #include "Helpers/GIFLoader.h"
@@ -19,6 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGifLoadingFailureDelegate, FString,
 struct RUNTIMEIMAGELOADER_API FGifReadRequest
 {
 	FInputImageDescription InputGif;
+    TEnumAsByte<TextureFilter> FilterMode = TextureFilter::TF_Default;
 };
 
 USTRUCT()
@@ -42,16 +44,10 @@ class RUNTIMEIMAGELOADER_API URuntimeGifReader : public UBlueprintAsyncActionBas
 public:
 	/** GIF */
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-    static URuntimeGifReader* LoadGIFAsync(const FString& GIFFilename);
-
-	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-    static URuntimeGifReader* LoadGIFSync(const FString& GIFFilename);
+    static URuntimeGifReader* LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode, bool bSynchronous = false);
 
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-	static URuntimeGifReader* LoadGIFFromBytesAsync(UPARAM(ref) TArray<uint8>& GifBytes);
-
-	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-	static URuntimeGifReader* LoadGIFFromBytesSync(UPARAM(ref) TArray<uint8>& GifBytes);
+	static URuntimeGifReader* LoadGIFFromBytes(UPARAM(ref) TArray<uint8>& GifBytes, TEnumAsByte<enum TextureFilter> InFilterMode, bool bSynchronous = false);
 
 public:
 	// Bind to these events when you want to use async API from C++
@@ -67,6 +63,7 @@ public:
 
 private:
 	void ProcessRequest();
+	void OnPostProcessRequest();
 
 private:
 	FGifReadRequest Request;

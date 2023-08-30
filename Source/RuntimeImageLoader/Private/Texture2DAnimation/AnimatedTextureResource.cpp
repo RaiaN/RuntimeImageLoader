@@ -2,8 +2,7 @@
 
 #include "AnimatedTextureResource.h"
 #include "Containers/ResourceArray.h"
-#include "DeviceProfiles/DeviceProfile.h"
-#include "DeviceProfiles/DeviceProfileManager.h"
+#include "Engine/Texture2D.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 
 struct FGifDataResource : public FResourceBulkDataInterface
@@ -62,9 +61,27 @@ void FAnimatedTextureResource::InitRHI()
 	ESamplerAddressMode AddressV = ConvertAddressMode(Owner->AddressY);
 	ESamplerAddressMode AddressW = AM_Wrap;
 
+	// Default to point filtering.
+	ESamplerFilter Filter = ESamplerFilter::SF_Trilinear;
+
+	switch (Owner->Filter)
+	{
+	case TF_Nearest:
+		Filter = ESamplerFilter::SF_Point;
+		break;
+	case TF_Bilinear:
+		Filter = ESamplerFilter::SF_Bilinear;
+		break;
+	case TF_Trilinear:
+		Filter = ESamplerFilter::SF_Trilinear;
+		break;
+	default:
+		break;
+	}
+
 	FSamplerStateInitializerRHI SamplerStateInitializer
 	(
-		(ESamplerFilter)UDeviceProfileManager::Get().GetActiveProfile()->GetTextureLODSettings()->GetSamplerFilter(Owner),
+		Filter,
 		AddressU,
 		AddressV,
 		AddressW
@@ -85,10 +102,9 @@ void FAnimatedTextureResource::InitRHI()
 	const EPixelFormat ImageFormat = PF_B8G8R8A8;
 	
 	FRHIResourceCreateInfo CreateInfo(*Name);
-	{
-		FGifDataResource GifBulkData((void*)Owner->GetFirstFrameData(), Owner->GetFrameSize());
-		CreateInfo.BulkData = &GifBulkData;
-	}
+
+	FGifDataResource GifBulkData((void*)Owner->GetFirstFrameData(), Owner->GetFrameSize());
+	CreateInfo.BulkData = &GifBulkData;
 	
 #if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
     TextureRHI = RHICreateTexture(
