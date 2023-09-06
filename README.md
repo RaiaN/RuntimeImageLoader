@@ -13,7 +13,7 @@
   </p>
 </p>
 
-If you want to receive updates via Epic Games Launcher then considering buying this plugin:
+If you want to receive updates via Epic Games Launcher then please buy Runtime Image Loader:
 https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
 
 Developer's UPDATE: There are no plans to support more advanced workflows, for example, image cache, mip generation, rare image formats and OS besides Windows and Android (currently experimental). However, I always welcome pull requests adding new features.**
@@ -22,6 +22,7 @@ Discord: https://discord.gg/Ujw7QVrWxG
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
+- Supports gif loading in .gif format at runtime
 - Allows to import HDR images aka Cubemaps (Windows only)
 - Can load an image over HTTP or from local file storage
 - Can load an image from Byte array (TArray<uint8>)
@@ -37,7 +38,7 @@ Discord: https://discord.gg/Ujw7QVrWxG
 ## Tested on
 - RHIs: DirectX 11&12, Vulkan
 - Unreal engine versions: 4.27, 5.0
-- Platforms: Windows, Android (experimental)
+- Platforms: Windows, Linux, Mac and Android (experimental)
 
 ## Blueprints
 
