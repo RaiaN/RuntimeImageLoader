@@ -20,9 +20,9 @@
 #include "RHI.h"
 #include "RenderUtils.h"
 #include "RHIDefinitions.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 
-#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
+#if ENGINE_MINOR_VERSION < 3
 #include "HDRLoader.h"
 #include "DDSLoader.h"
 #endif

@@ -2,7 +2,7 @@
 
 #include "CubemapUtils.h"
 #include "ImageCore.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 // transform world space vector to a space relative to the face
 static FVector TransformSideToWorldSpace(uint32 CubemapFace, FVector InDirection)

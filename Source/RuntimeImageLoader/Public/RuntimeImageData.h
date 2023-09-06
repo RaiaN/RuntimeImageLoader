@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "PixelFormat.h"
 #include "ImageCore.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "Engine/Texture.h"
 
 #if ENGINE_MAJOR_VERSION == 5

@@ -6,7 +6,7 @@
 #include "RHIResources.h"
 #include "RHIDefinitions.h"
 #include "Engine/Texture.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 #if ENGINE_MAJOR_VERSION == 5
 #include "Engine/TextureDefines.h"
 #endif

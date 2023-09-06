@@ -10,7 +10,7 @@
 #include "Engine/Texture2D.h"
 #include "Engine/TextureCube.h"
 #include "PixelFormat.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 #include "ImageReaders/ImageReaderFactory.h"
 #include "ImageReaders/IImageReader.h"

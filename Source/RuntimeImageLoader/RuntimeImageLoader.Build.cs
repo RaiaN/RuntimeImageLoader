@@ -10,7 +10,15 @@ public class RuntimeImageLoader : ModuleRules
 		var EngineDir = Path.GetFullPath(Target.RelativeEnginePath);
 
 		{
-            bEnforceIWYU = true;
+            if (Target.Version.MajorVersion == 5 && Target.Version.MinorVersion == 3)
+            {
+				IWYUSupport = IWYUSupport.Full;
+            }
+			else
+			{
+                bEnforceIWYU = true;
+            }
+            
             bUseUnity = false;
 
             PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
@@ -56,10 +64,15 @@ public class RuntimeImageLoader : ModuleRules
 				"FreeImage",
 				"HTTP",
                 "RuntimeGifLibrary",
-				"Projects"
+				"Projects",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
+
+		if (Target.Version.MajorVersion == 5 && Target.Version.MinorVersion == 3)
+		{
+			// PrivateDependencyModuleNames.Add("Launch");
+        }
 
         PrivateIncludePaths.AddRange(new string[]
         {
