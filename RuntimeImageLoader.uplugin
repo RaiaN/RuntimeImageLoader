@@ -2,14 +2,14 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "Runtime Image Loader",
-	"Description": "Load high-resolution images at runtime without hitches",
+	"FriendlyName": "Runtime Image & GIF Loader",
+	"Description": "Load high-resolution images and GIFs at runtime without hitches",
 	"Category": "Code Plugins",
-	"CreatedBy": "Peter Leontev",
-	"CreatedByURL": "https://peterleontev.com/",
+	"CreatedBy": "Unreal Solutions",
+	"CreatedByURL": "https://unrealsolutions.com/",
 	"DocsURL": "",
 	"MarketplaceURL" : "com.epicgames.launcher://ue/marketplace/product/e8d4771b882343199acaf995c32a5fea",
-	"SupportURL": "raianknight@gmail.com",
+	"SupportURL": "business@unrealsolutions.com",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -19,7 +19,7 @@
 			"Name": "RuntimeImageLoader",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Win32", "Mac", "Linux", "Android"]
+			"WhitelistPlatforms": [ "Win64", "Mac", "Linux", "Android"]
 		}
 	]
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.IO;
@@ -15,8 +15,10 @@ public class RuntimeImageLoader : ModuleRules
 
             PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         }
+		
+		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "../", "ThirdParty", "RuntimeGifLibrary", "include"));
 
-        PublicIncludePaths.AddRange(
+		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
 			}
@@ -53,6 +55,7 @@ public class RuntimeImageLoader : ModuleRules
 				"ImageCore",
 				"FreeImage",
 				"HTTP",
+                "RuntimeGifLibrary",
 				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
@@ -68,6 +71,6 @@ public class RuntimeImageLoader : ModuleRules
 			{
 				// ... add any modules that your module loads dynamically here ...
 			}
-			);
-	}
+		);
+    }
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #pragma once
 
@@ -11,13 +11,11 @@
 #include "Tickable.h"
 #include "Materials/MaterialInterface.h"
 #include "Subsystems/WorldSubsystem.h"
-
 #include "RuntimeImageReader.h"
 #include "RuntimeImageLoader.generated.h"
 
-
-class URuntimeImageReader;
-
+class UAnimatedTexture2D;
+class URuntimeGifReader;
 
 DECLARE_DELEGATE_OneParam(FOnRequestCompleted, const FImageReadResult&);
 
@@ -39,8 +37,6 @@ public:
     FOnRequestCompleted OnRequestCompleted;
 };
 
-
-
 /**
  * 
  */
@@ -54,25 +50,25 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadImageAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
 
-    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Bytes", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadImageFromBytesAsync(UPARAM(ref) TArray<uint8>& ImageBytes, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
     
-    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Cubemap", meta = (AutoCreateRefTerm = "TransformParams", Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadHDRIAsCubemapAsync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTextureCube*& OutTextureCube, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams"))
     void LoadImageSync(const FString& ImageFilename, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
 
-    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (AutoCreateRefTerm = "TransformParams"))
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Bytes", meta = (AutoCreateRefTerm = "TransformParams"))
     void LoadImageFromBytesSync(UPARAM(ref) TArray<uint8>& ImageBytes, const FTransformImageParams& TransformParams, UTexture2D*& OutTexture, bool& bSuccess, FString& OutError);
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadImagePixels(const FInputImageDescription& InputImage, const FTransformImageParams& TransformParams, TArray<FColor>& OutImagePixels, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
 
-    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
+    /** Utilities */
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
     void CancelAll();
 
-    /** Utilities */
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
     TArray<uint8> LoadFileToByteArray(const FString& ImageFilename);
 

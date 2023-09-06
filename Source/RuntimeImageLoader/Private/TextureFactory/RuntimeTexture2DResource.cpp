@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #include "RuntimeTexture2DResource.h"
 #include "Engine/Texture2D.h"
@@ -19,8 +19,6 @@ FRuntimeTexture2DResource::~FRuntimeTexture2DResource()
 
 void FRuntimeTexture2DResource::InitRHI()
 {
-    // TODO: this should be reevaluated as runtime textures do not have mips just yet
-
     // Default to point filtering.
     ESamplerFilter Filter = ESamplerFilter::SF_Trilinear;
 

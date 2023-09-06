@@ -1,4 +1,4 @@
-// Copyright Peter Leontev
+// Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #pragma once
 

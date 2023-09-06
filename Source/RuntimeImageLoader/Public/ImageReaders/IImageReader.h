@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #pragma once
 
@@ -8,6 +8,15 @@ class IImageReader
 {
 public:
     virtual TArray<uint8> ReadImage(const FString& ImageURI) = 0;
+    virtual FString GetLastError() const { return TEXT(""); };
+    virtual void Flush() = 0;
+    virtual void Cancel() = 0;
+};
+
+class IGIFReader
+{
+public:
+    virtual uint8* ReadGIF(const FString& ImageURI) = 0;
     virtual FString GetLastError() const { return TEXT(""); };
     virtual void Flush() = 0;
     virtual void Cancel() = 0;

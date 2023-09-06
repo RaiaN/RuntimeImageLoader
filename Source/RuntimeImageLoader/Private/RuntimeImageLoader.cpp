@@ -1,4 +1,4 @@
-// Copyright 2022 Peter Leontev. All Rights Reserved.
+// Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
 #include "RuntimeImageLoader.h"
 #include "Subsystems/SubsystemBlueprintLibrary.h"
@@ -9,6 +9,7 @@
 #include "Misc/FileHelper.h"
 #include "Interfaces/IPluginManager.h"
 #include "RuntimeImageUtils.h"
+#include "InputImageDescription.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
