@@ -29,7 +29,11 @@ FRuntimeTextureResource::~FRuntimeTextureResource()
     UE_LOG(LogRuntimeTextureResource, Verbose, TEXT("RuntimeTextureResource has been destroyed!"))
 }
 
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
 void FRuntimeTextureResource::InitRHI()
+#else
+void FRuntimeTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
+#endif
 {
     // implement in child classes
     check(false);

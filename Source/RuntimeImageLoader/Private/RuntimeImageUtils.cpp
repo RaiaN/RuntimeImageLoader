@@ -22,8 +22,10 @@
 #include "RHIDefinitions.h"
 #include "Launch/Resources/Version.h"
 
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
 #include "HDRLoader.h"
 #include "DDSLoader.h"
+#endif
 
 #include "Helpers/TGAHelpers.h"
 #include "Helpers/PNGHelpers.h"
@@ -394,29 +396,6 @@ namespace FRuntimeImageUtils
         //
         // HDR File
         //
-#if ENGINE_MAJOR_VERSION < 5
-	    FHDRLoadHelper HDRLoadHelper(Buffer, Length);
-	    if(HDRLoadHelper.IsValid())
-	    {
-		    TArray<uint8> DDSFile;
-		    HDRLoadHelper.ExtractDDSInRGBE(DDSFile);
-		    FDDSLoadHelper HDRDDSLoadHelper(DDSFile.GetData(), DDSFile.Num());
-
-            OutImage.Init2D(
-                HDRDDSLoadHelper.DDSHeader->dwWidth,
-                HDRDDSLoadHelper.DDSHeader->dwHeight,
-                TSF_BGRE8,
-                HDRDDSLoadHelper.GetDDSDataPointer()
-            );
-
-            OutImage.SRGB = false;
-            OutImage.GammaSpace = EGammaSpace::Linear;
-            OutImage.CompressionSettings = TC_HDR;
-
-            return true;
-	    }
-
-#else
         TSharedPtr<IImageWrapper> HdrImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::HDR);
         if (HdrImageWrapper.IsValid() && HdrImageWrapper->SetCompressed(Buffer, Length))
         {
@@ -453,7 +432,6 @@ namespace FRuntimeImageUtils
 
             return true;
         }
-#endif // #if ENGINE_MAJOR_VERSION < 5
 
         OutError = FString::Printf(TEXT("Failed to decode image. The format is not supported!"));
         return false;

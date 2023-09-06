@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Launch/Resources/Version.h"
 #include "RuntimeTextureResource.h"
 
 class UTextureCube;
@@ -16,5 +17,9 @@ public:
 	/**
 	 * Called when the resource is initialized. This is only called by the rendering thread.
 	 */
-	void InitRHI() override;
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
+	virtual void InitRHI() override;
+#else
+	virtual void InitRHI(FRHICommandListBase& RHICmdList) override;
+#endif
 };

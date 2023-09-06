@@ -18,7 +18,11 @@ FRuntimeTextureCubeResource::~FRuntimeTextureCubeResource()
     UE_LOG(LogRuntimeTextureCubeResource, Verbose, TEXT("RuntimeTextureCubeResource has been destroyed!"))
 }
 
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
 void FRuntimeTextureCubeResource::InitRHI()
+#else
+void FRuntimeTextureCubeResource::InitRHI(FRHICommandListBase& RHICmdList)
+#endif
 {
     // Create the sampler state RHI resource.
     FSamplerStateInitializerRHI SamplerStateInitializer

@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "TextureResource.h"
 #include "RHIDefinitions.h"
+#include "Launch/Resources/Version.h"
 
 class UTexture;
 
@@ -20,7 +21,11 @@ public:
     uint32 GetSizeX() const override { return SizeX; }
     uint32 GetSizeY() const override { return SizeY; }
 
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
     virtual void InitRHI() override;
+#else
+    virtual void InitRHI(FRHICommandListBase& RHICmdList) override;
+#endif
     virtual void ReleaseRHI() override;
 
 protected:

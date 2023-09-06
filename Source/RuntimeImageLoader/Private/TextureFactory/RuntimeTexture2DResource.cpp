@@ -17,7 +17,11 @@ FRuntimeTexture2DResource::~FRuntimeTexture2DResource()
     UE_LOG(LogRuntimeTexture2DResource, Verbose, TEXT("RuntimeTexture2DResource has been destroyed!"))
 }
 
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
 void FRuntimeTexture2DResource::InitRHI()
+#else
+void FRuntimeTexture2DResource::InitRHI(FRHICommandListBase& RHICmdList)
+#endif
 {
     // Default to point filtering.
     ESamplerFilter Filter = ESamplerFilter::SF_Trilinear;

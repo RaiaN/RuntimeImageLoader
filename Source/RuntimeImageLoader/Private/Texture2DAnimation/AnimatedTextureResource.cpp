@@ -54,7 +54,11 @@ static ESamplerAddressMode ConvertAddressMode(enum TextureAddress addr)
 	return ret;
 }
 
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
 void FAnimatedTextureResource::InitRHI()
+#else
+void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
+#endif
 {
 	// Create the sampler state RHI resource.
 	ESamplerAddressMode AddressU = ConvertAddressMode(Owner->AddressX);

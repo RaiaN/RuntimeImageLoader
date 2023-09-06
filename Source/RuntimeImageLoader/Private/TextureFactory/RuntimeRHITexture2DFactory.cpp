@@ -3,6 +3,7 @@
 #include "RuntimeRHITexture2DFactory.h"
 #include "Engine/Texture2D.h"
 #include "RHI.h"
+#include "DynamicRHI.h"
 #include "RHIDefinitions.h"
 #include "RHICommandList.h"
 #include "Containers/ResourceArray.h"
@@ -67,13 +68,16 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
 
     if (GRHISupportsAsyncTextureCreation)
     {
+        // TODO: Wait until completion?
+        FGraphEventRef CompletionEvent;
         RHITexture2D = RHIAsyncCreateTexture2D(
             ImageData.SizeX, ImageData.SizeY,
             ImageData.PixelFormat,
             ImageData.NumMips,
             TextureFlags,
             &Mip0Data,
-            1
+            1,
+            CompletionEvent
         );
     }
     else

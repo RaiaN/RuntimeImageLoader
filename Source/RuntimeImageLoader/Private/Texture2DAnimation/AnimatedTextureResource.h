@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "TextureResource.h"
-#include "Runtime/Launch/Resources/Version.h"
+#include "Launch/Resources/Version.h"
 #include "Templates/RefCounting.h"
 
 
@@ -30,7 +30,11 @@ public:
 	//~ Begin FTextureResource Interface.
 	virtual uint32 GetSizeX() const override;
 	virtual uint32 GetSizeY() const override;
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION < 3
 	virtual void InitRHI() override;
+#else
+	virtual void InitRHI(FRHICommandListBase& RHICmdList) override;
+#endif
 	virtual void ReleaseRHI() override;
 	/** Returns the Texture2DRHI, which can be used for locking/unlocking the mips. */
 	FTexture2DRHIRef GetTexture2DRHI();
