@@ -22,7 +22,7 @@ Discord: https://discord.gg/Ujw7QVrWxG
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
-- Supports gif loading in .gif format at runtime
+- Supports GIFs loading at runtime (.gif format)
 - Allows to import HDR images aka Cubemaps (Windows only)
 - Can load an image over HTTP or from local file storage
 - Can load an image from Byte array (TArray<uint8>)
