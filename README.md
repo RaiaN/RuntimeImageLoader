@@ -13,10 +13,11 @@
   </p>
 </p>
 
-If you want to receive updates via Epic Games Launcher then please buy Runtime Image Loader:
+**If you want to receive updates via Epic Games Launcher then please support developers by buying this plugin:**
 https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
 
-Developer's UPDATE: There are no plans to support more advanced workflows, for example, image cache, mip generation, rare image formats and OS besides Windows and Android (currently experimental). However, I always welcome pull requests adding new features.**
+Developer's UPDATE: This plugin has been update to support runtime GIF Loading. Enjoy! 
+Please note, there are no plans to support more advanced workflows, for example, image cache, mip generation and rare image formats. However, I always welcome pull requests adding new features.**
 
 Discord: https://discord.gg/Ujw7QVrWxG
 
