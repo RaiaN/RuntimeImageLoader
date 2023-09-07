@@ -69,15 +69,19 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
     if (GRHISupportsAsyncTextureCreation)
     {
         // TODO: Wait until completion?
+#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 2)
         FGraphEventRef CompletionEvent;
+#endif
         RHITexture2D = RHIAsyncCreateTexture2D(
             ImageData.SizeX, ImageData.SizeY,
             ImageData.PixelFormat,
             ImageData.NumMips,
             TextureFlags,
             &Mip0Data,
-            1,
-            CompletionEvent
+            1
+#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 2)
+            ,CompletionEvent
+#endif
         );
     }
     else
