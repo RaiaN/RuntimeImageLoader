@@ -36,10 +36,10 @@ Discord: https://discord.gg/Ujw7QVrWxG
 - Blueprint friendly
 - No static libraries or external dependencies (except for single-header libraries)
 
-## Tested on
-- RHIs: DirectX 11&12, Vulkan
-- Unreal engine versions: 4.27, 5.0
-- Platforms: Windows, Linux, Mac and Android (experimental)
+## Testing
+- Supported Unreal Engine versions: 5.1 - 5.3!
+- Platforms: Windows, Linux, Mac, Android (experimental)
+- RHIs: DirectX 11&12, Vulkan, Metal
 
 ## Blueprints
 
