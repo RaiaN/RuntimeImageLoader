@@ -171,7 +171,7 @@ namespace FRuntimeImageUtils
                     BitDepth = 8;
                 }
             }
-            else if (Format == ERGBFormat::RGBA)
+            else if (Format == ERGBFormat::RGBA || Format == ERGBFormat::BGRA)
             {
                 if (BitDepth <= 8)
                 {
