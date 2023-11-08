@@ -87,7 +87,7 @@ UAnimatedTexture2D* UAnimatedTexture2D::Create(int32 InSizeX, int32 InSizeY, con
 	}
 }
 
-void UAnimatedTexture2D::SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState)
+void UAnimatedTexture2D::SetDecoder(TUniquePtr<IGIFLoader> DecoderState)
 {
 	Decoder = MoveTemp(DecoderState);
 }

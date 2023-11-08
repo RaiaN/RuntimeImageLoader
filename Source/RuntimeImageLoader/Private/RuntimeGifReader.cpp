@@ -70,9 +70,6 @@ void URuntimeGifReader::SubmitRequest(FGifReadRequest&& InRequest, bool bSynchro
 
 void URuntimeGifReader::ProcessRequest()
 {
-	Decoder = MakeUnique<FRuntimeGIFLoaderHelper>();
-	check(Decoder.IsValid());
-
 	TArray<uint8> ImageBuffer;
 
 	// read image data from using URI
@@ -90,7 +87,6 @@ void URuntimeGifReader::ProcessRequest()
 				ReadResult.OutError = FString::Printf(TEXT("Failed to read GIF: %s. Error: %s"), *GifFilename, *ImageReader->GetLastError());
 				return;
 			}
-
 		}
 
 		ImageReader = nullptr;
@@ -101,6 +97,9 @@ void URuntimeGifReader::ProcessRequest()
 	}
 
 	check (ImageBuffer.Num() > 0);
+
+	Decoder = FGIFLoaderFactory::CreateLoader(GifFilename, ImageBuffer);
+	check(Decoder.IsValid());
 
 	bool bResult = Decoder->DecodeGIF(MoveTemp(ImageBuffer));
 	if (!bResult)

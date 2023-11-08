@@ -10,6 +10,7 @@ public class RuntimeGifLibrary : ModuleRules
 		Type = ModuleType.External;
 
         PublicDefinitions.Add("WITH_LIBNSGIF=1");
+        PublicDefinitions.Add("WITH_LIBWEBP=1");
 
         string IncPath = Path.Combine(ModuleDirectory, "include");
         PublicSystemIncludePaths.Add(IncPath);
@@ -17,18 +18,29 @@ public class RuntimeGifLibrary : ModuleRules
         if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Win64", "libnsgif.lib"));
-		}
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Win64", "libwebp.lib"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Win64", "libsharpyuv.lib"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Win64", "libwebpdecoder.lib"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Win64", "libwebpdemux.lib"));
+        }
 		else if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
             PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libnsgif.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libwebp.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libsharpyuv.a"));
         }
         else if (Target.Platform == UnrealTargetPlatform.Mac)
         {
             PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Mac", "libnsgif.a"));
+            // TODO:
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
 		{
             PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Android", "libnsgif.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libwebp.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libwebp.la"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libsharpyuv.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "Linux", "libsharpyuv.la"));
         }
     }
 }

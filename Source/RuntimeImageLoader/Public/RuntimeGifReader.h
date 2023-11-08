@@ -70,7 +70,7 @@ private:
 
 	TFuture<void> CurrentTask;
 	TSharedPtr<IImageReader, ESPMode::ThreadSafe> ImageReader;
-	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder;
+	TUniquePtr<IGIFLoader> Decoder;
 
     UPROPERTY()
     FGifReadResult ReadResult;

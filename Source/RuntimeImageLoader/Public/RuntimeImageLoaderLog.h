@@ -9,5 +9,6 @@
  */
 
 DECLARE_LOG_CATEGORY_EXTERN(RuntimeImageLoaderLibHandler, Log, All);
-DECLARE_LOG_CATEGORY_EXTERN(LibNsgifHelper, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LibNsGifHelper, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LibWebpGifHelper, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(RuntimeGifReader, Log, All);

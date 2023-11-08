@@ -72,7 +72,7 @@ public:
 	static UAnimatedTexture2D* Create(int32 InSizeX, int32 InSizeY, const FAnimatedTexture2DCreateInfo& InCreateInfo = FAnimatedTexture2DCreateInfo());
 
 public:
-	void SetDecoder(TUniquePtr<FRuntimeGIFLoaderHelper> DecoderState);
+	void SetDecoder(TUniquePtr<IGIFLoader> DecoderState);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = RuntimeAnimatedTexture, meta = (DisplayName = "X-axis Tiling Method"), AdvancedDisplay)
@@ -149,7 +149,7 @@ private:
 	ESamplerAddressMode SamplerAddressMode;
 
 private:
-	TUniquePtr<FRuntimeGIFLoaderHelper> Decoder;
+	TUniquePtr<IGIFLoader> Decoder;
 
 	float FrameDelay = 0.0f;
 	float FrameTime = 0.0f;
