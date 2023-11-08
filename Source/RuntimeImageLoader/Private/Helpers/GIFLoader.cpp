@@ -1,7 +1,5 @@
 // Copyright 2023 Unreal Solutions Ltd. All Rights Reserved.
 
-#pragma once
-
 #include "GIFLoader.h"
 #include "NSGIFLoader.h"
 #include "WEBPGIFLoader.h"

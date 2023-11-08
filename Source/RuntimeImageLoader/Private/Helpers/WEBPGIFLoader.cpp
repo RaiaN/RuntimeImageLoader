@@ -128,7 +128,7 @@ bool FWEBPGIFLoader::DecodeGIF(TArray<uint8>&& GifBytes)
             WebPAnimDecoderReset(Decoder);
         }
 
-        const WebPDemuxer* demuxer = WebPAnimDecoderGetDemuxer(Decoder);
+        // const WebPDemuxer* demuxer = WebPAnimDecoderGetDemuxer(Decoder);
         // ... (Do something using 'demuxer'; e.g. get EXIF/XMP/ICC data).
         WebPAnimDecoderDelete(Decoder);
 
