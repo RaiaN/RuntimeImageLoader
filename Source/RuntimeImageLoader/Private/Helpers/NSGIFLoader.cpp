@@ -35,7 +35,7 @@ void FNSGIFLoader::Warning(const char* context)
 
 FString FNSGIFLoader::GetDecodeError() const
 {
-	return FString::Printf(TEXT("%s: %s"), *LastContext, nsgif_strerror(LastError));
+	return FString::Printf(TEXT("FNsGifLoader: %s: %s"), *LastContext, nsgif_strerror(LastError));
 }
 
 bool FNSGIFLoader::DecodeGIF(TArray<uint8>&& GifBytes)

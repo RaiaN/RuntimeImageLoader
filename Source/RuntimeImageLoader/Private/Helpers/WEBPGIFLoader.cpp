@@ -26,7 +26,7 @@ const int32 FWEBPGIFLoader::GetTotalFrames() const
 
 FString FWEBPGIFLoader::GetDecodeError() const
 {
-    return LastError;
+    return FString::Printf(TEXT("WebpGifLoader: %s"), *LastError);
 }
 
 
@@ -153,6 +153,13 @@ bool FWEBPGIFLoader::DecodeGIF(TArray<uint8>&& GifBytes)
     return true;
 }
 
+
+bool FWEBPGIFLoader::HasValidWebpHeader(const TArray<uint8>& GifBytes)
+{
+    int32 WidthTemp, HeightTemp;
+
+    return WebPGetInfo(GifBytes.GetData(), GifBytes.Num(), &WidthTemp, &HeightTemp) == 1 ? true : false;
+}
 
 void FWEBPGIFLoader::SetError(const char* error)
 {

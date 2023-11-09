@@ -31,6 +31,8 @@ public: /** Get Next Frame Texture Data*/
     const FColor* GetNextFrame(int32 FrameIndex) override;
     bool DecodeGIF(TArray<uint8>&& GifBytes) override;
 
+	static bool HasValidWebpHeader(const TArray<uint8>& GifBytes);
+
 private:
 	void SetError(const char* error);
 

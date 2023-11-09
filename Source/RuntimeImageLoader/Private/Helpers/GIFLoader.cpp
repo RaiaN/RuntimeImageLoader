@@ -16,7 +16,11 @@ TUniquePtr<IGIFLoader> FGIFLoaderFactory::CreateLoader(const FString& GifURI, co
         return MakeUnique<FWEBPGIFLoader>();
     }
 
-    // figure out GIF format using libs API
+    if (FWEBPGIFLoader::HasValidWebpHeader(GifData))
+    {
+        return MakeUnique<FWEBPGIFLoader>();
+    }
 
-    return nullptr;
+    // construct .gif loader as it is more popular than .webp
+    return MakeUnique<FNSGIFLoader>();
 }
