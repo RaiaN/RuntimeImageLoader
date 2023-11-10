@@ -23,7 +23,7 @@ Discord: https://discord.gg/Ujw7QVrWxG
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
-- Supports gif loading in .gif format at runtime
+- Supports gif loading in .gif and .webp formats at runtime
 - Allows to import HDR images aka Cubemaps (Windows only)
 - Can load an image over HTTP or from local file storage
 - Can load an image from Byte array (TArray<uint8>)
@@ -38,8 +38,8 @@ Discord: https://discord.gg/Ujw7QVrWxG
 
 ## Testing
 - Supported Unreal Engine versions: 5.1 - 5.3!
-- Platforms: Windows, Linux, Mac, Android (experimental)
-- RHIs: DirectX 11&12, Vulkan, Metal
+- Platforms: Windows, Linux, Mac, Android, OculusVR (experimental)
+- RHIs: DirectX 11/12, Vulkan, Metal
 
 ## Blueprints
 
