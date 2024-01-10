@@ -19,7 +19,7 @@ https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader
 Developer's UPDATE: This plugin has been updated to support runtime GIF Loading. Enjoy! 
 Please note, there are no plans to support more advanced workflows, for example, image caching, mip generation and rare image formats. However, I always welcome pull requests adding new features.**
 
-Discord: https://discord.gg/Ujw7QVrWxG
+Discord: https://discord.gg/6UMSbdfdET
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
