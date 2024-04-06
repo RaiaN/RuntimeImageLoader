@@ -13,7 +13,7 @@
   </p>
 </p>
 
-**If you want to receive updates via Epic Games Launcher then please support developers by buying this plugin:**
+**Please support developers by buying this plugin on UE Marketplace or make a donation:**
 https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
 
 Developer's UPDATE: This plugin has been updated to support runtime GIF Loading. Enjoy! 
