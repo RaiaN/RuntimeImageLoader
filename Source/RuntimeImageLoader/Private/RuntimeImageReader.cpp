@@ -143,6 +143,7 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
         while (Requests.Dequeue(Request) && !bStopThread)
         {
             PendingReadResult.ImageFilename = Request.InputImage.ImageFilename;
+
             if (PendingReadResult.ImageFilename.Len() > 0)
             {
                 UE_LOG(LogRuntimeImageReader, Log, TEXT("Reading image from file: %s"), *PendingReadResult.ImageFilename);
@@ -194,6 +195,11 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
     else if (Request.InputImage.ImageBytes.Num() > 0)
     {
         ImageBuffer = MoveTemp(Request.InputImage.ImageBytes);
+    }
+    else 
+    {
+        PendingReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Make sure input data is valid!"), *Request.InputImage.ImageFilename);
+        return false;
     }
 
     // sanity check
