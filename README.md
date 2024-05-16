@@ -37,7 +37,7 @@ Discord: https://discord.gg/6UMSbdfdET
 - No static libraries or external dependencies (except for single-header libraries)
 
 ## Testing
-- Supported Unreal Engine versions: 5.1 - 5.3!
+- Supported Unreal Engine versions: 4.27 and 5.1+
 - Platforms: Windows, Linux, Mac, Android, OculusVR (experimental)
 - RHIs: DirectX 11/12, Vulkan, Metal
 
