@@ -21,10 +21,11 @@ FRuntimeTextureResource::FRuntimeTextureResource(UTexture* InTexture, FTextureRH
 
 FRuntimeTextureResource::~FRuntimeTextureResource()
 {
-    if (IsValid(Owner))
+    /*if (IsValid(Owner))
     {
         Owner->SetResource(nullptr);
-    }
+    }*/
+    TextureRHI.SafeRelease();
 
     UE_LOG(LogRuntimeTextureResource, Verbose, TEXT("RuntimeTextureResource has been destroyed!"))
 }

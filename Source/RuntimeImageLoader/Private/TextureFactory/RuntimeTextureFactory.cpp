@@ -20,6 +20,11 @@ UTexture2D* URuntimeTextureFactory::CreateTexture2D(const FConstructTextureTask&
         return FRuntimeImageUtils::CreateTexture(Task.ImageFilename, *Task.ImageData);
     }
     
+    if (IsEngineExitRequested())
+    {
+        return nullptr;
+    }
+
     CurrentTask = Async(
         EAsyncExecution::TaskGraphMainThread,
         [Task, &OutResult]()
