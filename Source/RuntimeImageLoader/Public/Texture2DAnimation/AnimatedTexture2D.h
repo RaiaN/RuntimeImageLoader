@@ -65,6 +65,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
 	float GetPlayRate() const { return PlayRate; }
 
+	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
+	int32 GetWidth() const { return (int32)GetSurfaceWidth(); }
+
+	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
+	int32 GetHeight() const { return (int32)GetSurfaceHeight(); }
+
 public:
 	/** @See Texture2DDynamic Class
 		Creates and initializes a new AnimatedTexture2D with the requested settings 
