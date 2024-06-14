@@ -143,7 +143,6 @@ void URuntimeImageReader::BlockTillAllRequestsFinished()
         while (Requests.Dequeue(Request) && !bStopThread)
         {
             PendingReadResult.ImageFilename = Request.InputImage.ImageFilename;
-
             if (PendingReadResult.ImageFilename.Len() > 0)
             {
                 UE_LOG(LogRuntimeImageReader, Log, TEXT("Reading image from file: %s"), *PendingReadResult.ImageFilename);
@@ -195,11 +194,6 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
     else if (Request.InputImage.ImageBytes.Num() > 0)
     {
         ImageBuffer = MoveTemp(Request.InputImage.ImageBytes);
-    }
-    else 
-    {
-        PendingReadResult.OutError = FString::Printf(TEXT("Failed to read %s image. Make sure input data is valid!"), *Request.InputImage.ImageFilename);
-        return false;
     }
 
     // sanity check
@@ -303,6 +297,14 @@ EPixelFormat URuntimeImageReader::DeterminePixelFormat(ERawImageFormat::Type Ima
 
 void URuntimeImageReader::ApplySizeFormatTransformations(FRuntimeImageData& ImageData, FTransformImageParams TransformParams)
 {
+    if (TransformParams.bFlipXY)
+    {
+        FImage DestImage;
+        FRuntimeImageUtils::TransposeImage90Degrees(ImageData, DestImage);
+
+        ImageData.Swap(DestImage);
+    }
+
     if (TransformParams.IsPercentSizeValid())
     {
         const int32 TransformedSizeX = FMath::Floor(ImageData.SizeX * TransformParams.PercentSizeX * 0.01f);

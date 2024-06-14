@@ -22,4 +22,6 @@ namespace FRuntimeImageUtils
         TEXT(".hdr"), TEXT(".tiff"), TEXT(".qoi"),
         TEXT(".jfif")
     };
+
+    void TransposeImage90Degrees(const FImageView& SrcImage, FImage& DestinationImage);
 }

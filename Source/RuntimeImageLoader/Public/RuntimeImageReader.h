@@ -39,6 +39,9 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
     int32 PercentSizeY = 100;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader"))
+    bool bFlipXY = false;
+
     // Hidden as there is method in RuntimeImageLoader that sets this flag
     bool bOnlyPixels = false;
 

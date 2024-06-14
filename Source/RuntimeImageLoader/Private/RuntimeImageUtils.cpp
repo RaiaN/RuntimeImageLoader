@@ -521,4 +521,27 @@ namespace FRuntimeImageUtils
 
         return NewTexture;
     }
+
+    void TransposeImage90Degrees(const FImageView& SourceImage, FImage& DestImage)
+    {
+        int32 SourceWidth = SourceImage.SizeX;
+        int32 SourceHeight = SourceImage.SizeY;
+
+        // Initialize the destination image with transposed dimensions
+        DestImage.Init(SourceHeight, SourceWidth, ERawImageFormat::BGRA8, EGammaSpace::Linear);
+
+        // Get pointers to the source and destination pixel data
+        const FColor* SourcePixels = reinterpret_cast<const FColor*>(SourceImage.RawData);
+        FColor* DestPixels = reinterpret_cast<FColor*>(DestImage.RawData.GetData());
+
+        for (int32 Y = 0; Y < SourceHeight; ++Y)
+        {
+            for (int32 X = 0; X < SourceWidth; ++X)
+            {
+                // Transpose the pixel
+                // DestPixels[Y + X * SourceHeight] = SourcePixels[X + Y * SourceWidth];
+                DestPixels[Y + (SourceWidth - X - 1) * SourceHeight] = SourcePixels[X + Y * SourceWidth];
+            }
+        }
+    }
 }
