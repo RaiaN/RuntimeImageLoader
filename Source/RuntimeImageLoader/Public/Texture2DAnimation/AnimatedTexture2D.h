@@ -71,6 +71,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
 	int32 GetHeight() const { return (int32)GetSurfaceHeight(); }
 
+	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
+	int32 GetSizeX() const { return GetWidth(); }
+
+	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
+	int32 GetSizeY() const { return GetHeight(); }
+
 public:
 	/** @See Texture2DDynamic Class
 		Creates and initializes a new AnimatedTexture2D with the requested settings 
