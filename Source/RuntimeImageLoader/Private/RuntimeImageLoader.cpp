@@ -11,6 +11,12 @@
 #include "RuntimeImageUtils.h"
 #include "InputImageDescription.h"
 
+THIRD_PARTY_INCLUDES_START
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+THIRD_PARTY_INCLUDES_END
+
+
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeImageLoader, Log, All);
 
 void URuntimeImageLoader::Initialize(FSubsystemCollectionBase& Collection)
@@ -289,6 +295,16 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
     }
 
     Requests.Enqueue(Request);
+}
+
+void URuntimeImageLoader::GetImageResolution(const FString& ImageFilename, int32& OutWidth, int32& OutHeight, int32& OutChannels, bool& bSuccess, FString& OutError)
+{
+    if (stbi_info(TCHAR_TO_ANSI(*ImageFilename), &OutWidth, &OutHeight, &OutChannels) != 1)
+    {
+        OutError = TEXT("Failed to get image dimensions! Try to load an image via LoadImage or LoadImageAsync! stb error (if any): ");
+        OutError += stbi_failure_reason();
+        return;
+    }
 }
 
 void URuntimeImageLoader::CancelAll()

@@ -65,6 +65,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader", meta = (Latent, LatentInfo = "LatentInfo", HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
     void LoadImagePixels(const FInputImageDescription& InputImage, const FTransformImageParams& TransformParams, TArray<FColor>& OutImagePixels, bool& bSuccess, FString& OutError, FLatentActionInfo LatentInfo, UObject* WorldContextObject = nullptr);
 
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
+    void GetImageResolution(const FString& ImageFilename, int32& OutWidth, int32& OutHeight, int32& OutChannels, bool& bSuccess, FString& OutError);
+    
     /** Utilities */
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
     void CancelAll();
