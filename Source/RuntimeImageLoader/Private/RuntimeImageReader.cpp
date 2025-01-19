@@ -231,6 +231,16 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
         return true;
     }
 
+    const int32 MaxTextureDim = GMaxTextureDimensions;
+    if (ImageData.SizeX > MaxTextureDim || ImageData.SizeY > MaxTextureDim)
+    {
+        PendingReadResult.OutError = FString::Printf(
+            TEXT("Image resolution is not supported: %d x %d VS Maximum supported by your system: %d x %d"),
+            ImageData.SizeX, ImageData.SizeY, MaxTextureDim, MaxTextureDim
+        );
+        return false;
+    }
+
     // sanity checks
     check(ImageData.RawData.Num() > 0);
     check(ImageData.TextureSourceFormat != TSF_Invalid);
