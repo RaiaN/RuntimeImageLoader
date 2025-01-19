@@ -52,7 +52,6 @@ struct RUNTIMEIMAGELOADER_API FImageReadRequest
 {
     FInputImageDescription InputImage;
     FTransformImageParams TransformParams;
-    bool bPixelsOnly;
 };
 
 USTRUCT()

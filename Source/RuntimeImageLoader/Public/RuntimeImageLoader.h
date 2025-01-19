@@ -67,13 +67,16 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader")
     void GetImageResolution(const FString& ImageFilename, int32& OutWidth, int32& OutHeight, int32& OutChannels, bool& bSuccess, FString& OutError);
+
+    UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Bytes")
+    void GetImageResolutionFromBytes(UPARAM(ref) TArray<uint8>& ImageBytes, int32& OutWidth, int32& OutHeight, int32& OutChannels, bool& bSuccess, FString& OutError);
     
     /** Utilities */
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
     void CancelAll();
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
-    TArray<uint8> LoadFileToByteArray(const FString& ImageFilename);
+    bool LoadImageToByteArray(const FString& ImageFilename, TArray<uint8>& OutImageBytes, FString& OutError);
 
     UFUNCTION(BlueprintCallable, Category = "Runtime Image Loader | Utilities")
     void FindImagesInDirectory(const FString& Directory, bool bIsRecursive, TArray<FString>& OutImageFilenames, bool& bSuccess, FString& OutError);

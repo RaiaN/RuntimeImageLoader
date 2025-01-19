@@ -299,12 +299,26 @@ void URuntimeImageLoader::LoadImagePixels(const FInputImageDescription& InputIma
 
 void URuntimeImageLoader::GetImageResolution(const FString& ImageFilename, int32& OutWidth, int32& OutHeight, int32& OutChannels, bool& bSuccess, FString& OutError)
 {
-    if (stbi_info(TCHAR_TO_ANSI(*ImageFilename), &OutWidth, &OutHeight, &OutChannels) != 1)
+    if (stbi_info(TCHAR_TO_ANSI(*ImageFilename), &OutWidth, &OutHeight, &OutChannels) == 1)
     {
-        OutError = TEXT("Failed to get image dimensions! Try to load an image via LoadImage or LoadImageAsync! stb error (if any): ");
-        OutError += stbi_failure_reason();
+        bSuccess = true;
         return;
     }
+
+    OutError = TEXT("Failed to get image dimensions! Try to load an image via LoadImage or LoadImageAsync! stb error (if any): ");
+    OutError += stbi_failure_reason();
+}
+
+void URuntimeImageLoader::GetImageResolutionFromBytes(UPARAM(ref) TArray<uint8>& ImageBytes, int32& OutWidth, int32& OutHeight, int32& OutChannels, bool& bSuccess, FString& OutError)
+{
+    if (stbi_info_from_memory(ImageBytes.GetData(), ImageBytes.Num(), &OutWidth, &OutHeight, &OutChannels) == 1)
+    {
+        bSuccess = true;
+        return;
+    }
+
+    OutError = TEXT("Failed to get image dimensions! Try to load an image via LoadImage or LoadImageAsync! stb error (if any): ");
+    OutError += stbi_failure_reason();
 }
 
 void URuntimeImageLoader::CancelAll()
@@ -324,11 +338,33 @@ void URuntimeImageLoader::CancelAll()
     ImageReader->Clear();
 }
 
-TArray<uint8> URuntimeImageLoader::LoadFileToByteArray(const FString& ImageFilename)
+bool URuntimeImageLoader::LoadImageToByteArray(const FString& ImageFilename, TArray<uint8>& OutImageBytes, FString& OutError)
 {
     TArray<uint8> OutData;
-    FFileHelper::LoadFileToArray(OutData, *ImageFilename);
-    return OutData;
+    
+    FImageReadRequest ReadRequest;
+    {
+        ReadRequest.InputImage = FInputImageDescription(ImageFilename);
+        ReadRequest.TransformParams.bOnlyPixels = true;
+    }
+
+    ImageReader->BlockTillAllRequestsFinished();
+    ImageReader->AddRequest(ReadRequest);
+    ImageReader->BlockTillAllRequestsFinished();
+
+    FImageReadResult ReadResult;
+    ImageReader->GetResult(ReadResult);
+
+    if (!ReadResult.OutError.IsEmpty())
+    {
+        OutError = FString::Printf(TEXT("Failed to load image. Error: %s"), *ReadResult.OutError);
+        return false;
+    }
+
+    OutImageBytes.SetNumUninitialized(ReadResult.OutImagePixels.Num() * sizeof(FColor));
+    FPlatformMemory::Memcpy(OutImageBytes.GetData(), ReadResult.OutImagePixels.GetData(), OutImageBytes.Num());
+
+    return true;
 }
 
 class FImageFileVisitor : public IPlatformFile::FDirectoryVisitor
