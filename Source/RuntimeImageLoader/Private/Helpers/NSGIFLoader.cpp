@@ -119,6 +119,7 @@ bool FNSGIFLoader::DecodeInternal(nsgif_t* gif, bool first)
 	const int32 TotalPixels = info->frame_count * info->width * info->height;
 	TextureData.Empty(TotalPixels);
 	TextureData.AddUninitialized(TotalPixels);
+	Timestamps.Reserve(info->frame_count);
 
 	// Decode the frames
 	while (true) {
@@ -133,8 +134,6 @@ bool FNSGIFLoader::DecodeInternal(nsgif_t* gif, bool first)
 			Warning("nsgif_frame_prepare");
 			return false;
 		}
-
-		Timestamps.Add(delay_cs * 10.f / 1000.f);
 
 		if (frame_new < frame_prev) {
 			// Must be an animation that loops. We only care about
@@ -169,6 +168,8 @@ bool FNSGIFLoader::DecodeInternal(nsgif_t* gif, bool first)
 			}
 		}
 
+		Timestamps.Emplace(delay_cs * 10.f / 1000.f);
+
 		if (delay_cs == NSGIF_INFINITE) 
 		{
 			// This frame is the last.
@@ -202,6 +203,10 @@ const FColor* FNSGIFLoader::GetNextFrame(int32 FrameIndex)
 
 const float FNSGIFLoader::GetNextFrameDelay(int32 FrameIndex)
 {
+	if (FrameIndex > GetTotalFrames() - 1)
+	{
+		FrameIndex = 0;
+	}
 	return Timestamps[FrameIndex];
 }
 #endif //WITH_LIBNSGIF
