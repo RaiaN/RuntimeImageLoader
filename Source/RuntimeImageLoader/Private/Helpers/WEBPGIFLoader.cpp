@@ -53,6 +53,10 @@ const FColor* FWEBPGIFLoader::GetNextFrame(int32 FrameIndex)
 
 const float FWEBPGIFLoader::GetNextFrameDelay(int32 FrameIndex)
 {
+    if (FrameIndex > GetTotalFrames() - 1)
+    {
+        FrameIndex = 0;
+    }
     return Timestamps[FrameIndex];
 }
 
@@ -110,11 +114,13 @@ bool FWEBPGIFLoader::DecodeGIF(TArray<uint8>&& GifBytes)
         const int32 TotalPixels = TotalFrameCount * Width * Height;
         TextureData.Empty(TotalPixels);
         TextureData.AddUninitialized(TotalPixels);
+        Timestamps.Reserve(TotalFrameCount);
 
         //AnimationInfo.loop_count
         for (uint32_t i = 0; i < 1; ++i) 
         {
             int32 FrameInd = 0;
+            int LastTimestamp = 0;
             const int32 FrameBytes = Width * Height * BYTES_PER_PIXEL;
 
             while (WebPAnimDecoderHasMoreFrames(Decoder)) 
@@ -126,7 +132,8 @@ bool FWEBPGIFLoader::DecodeGIF(TArray<uint8>&& GifBytes)
                     SetError("Failed to decode .webp frame. Please check input data is valid!");
                     return false;
                 }
-                Timestamps.Add(timestamp / 1000.f);
+                Timestamps.Emplace((timestamp - LastTimestamp) / 1000.f);
+                LastTimestamp = timestamp;
                
                 FPlatformMemory::Memcpy((uint8_t*)TextureData.GetData() + FrameInd * FrameBytes, DecodedData, FrameBytes);
                 ++FrameInd;
