@@ -86,7 +86,13 @@ bool FWEBPGIFLoader::DecodeGIF(TArray<uint8>&& GifBytes)
             SetError("Failed to initialize decoding options. Version mismatch. Please libwebp is valid!");
             return false;
         }
-        DecodingOptions.color_mode = MODE_RGBA;
+
+#if PLATFORM_WINDOWS
+        DecodingOptions.color_mode = MODE_BGRA;  // Unreal on Windows will most often use DirectX so prefer BGRA, otherwise devs should change this line!
+#else
+        DecodingOptions.color_mode = MODE_RGBA;  // Default to RGBA for other platforms (Mobile, Vulkan, etc.)
+#endif
+
 
         WebPData GifData;
         {
