@@ -36,7 +36,11 @@ void UAnimatedTexture2D::Tick(float DeltaTime)
 
 	if (!Decoder) return;
 
-	if (CurrentFrame > Decoder->GetTotalFrames() - 1 && bLooping) CurrentFrame = 0;
+	bool bIsOutsideBounds = (CurrentFrame < 0) || (CurrentFrame >= Decoder->GetTotalFrames() - 1);
+	if (bIsOutsideBounds && bLooping)
+	{
+		CurrentFrame = 0;
+	}
 
 	FrameTime += DeltaTime * PlayRate;
 	if (FrameTime < Decoder->GetNextFrameDelay(CurrentFrame))
