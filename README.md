@@ -13,7 +13,7 @@
   </p>
 </p>
 
-**Please support developers by buying this plugin on UE Marketplace or make a donation:**
+**Best way to let developers this plugin is useful is by buying it on UE Marketplace or contributing via PR:**
 https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
 
 Developer's UPDATE: This plugin has been updated to support runtime GIF Loading. Enjoy! 
