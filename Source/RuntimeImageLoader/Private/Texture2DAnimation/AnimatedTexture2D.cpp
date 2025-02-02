@@ -36,6 +36,8 @@ void UAnimatedTexture2D::Tick(float DeltaTime)
 
 	if (!Decoder) return;
 
+	if (CurrentFrame > Decoder->GetTotalFrames() - 1 && bLooping) CurrentFrame = 0;
+
 	FrameTime += DeltaTime * PlayRate;
 	if (FrameTime < Decoder->GetNextFrameDelay(CurrentFrame))
 		return;
@@ -140,6 +142,25 @@ void UAnimatedTexture2D::PlayFromStart()
 	bPlaying = true;
 	CurrentFrame = 0;
 }
+
+void UAnimatedTexture2D::StepForward()
+{
+	CurrentFrame++;
+	RenderFrameToTexture();
+}
+
+void UAnimatedTexture2D::StepBackward()
+{
+	CurrentFrame--;
+	RenderFrameToTexture();
+}
+
+void UAnimatedTexture2D::GotoFrame(const int32 NewFrame)
+{
+	CurrentFrame = NewFrame;
+	RenderFrameToTexture();
+}
+
 
 void UAnimatedTexture2D::Stop()
 {

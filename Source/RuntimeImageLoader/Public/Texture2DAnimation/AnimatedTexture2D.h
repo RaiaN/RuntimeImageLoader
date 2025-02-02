@@ -46,6 +46,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
 	void PlayFromStart();
+	
+	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
+	void StepForward();
+	
+	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
+	void StepBackward();
+
+	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
+	void GotoFrame(int32 NewFrame);
 
 	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
 	void Stop();
@@ -165,7 +174,7 @@ private:
 
 	float FrameDelay = 0.0f;
 	float FrameTime = 0.0f;
-	bool bPlaying = true;
+	bool bPlaying = false;
 
 private:
 	int32 CurrentFrame = 0;
