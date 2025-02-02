@@ -32,9 +32,14 @@ FTextureResource* UAnimatedTexture2D::CreateResource()
 void UAnimatedTexture2D::Tick(float DeltaTime)
 {
 	if (!bPlaying)
+	{
 		return;
+	}
 
-	if (!Decoder) return;
+	if (!Decoder)
+	{
+		return;
+	}
 
 	bool bIsOutsideBounds = (CurrentFrame < 0) || (CurrentFrame >= Decoder->GetTotalFrames() - 1);
 	if (bIsOutsideBounds && bLooping)
@@ -44,7 +49,9 @@ void UAnimatedTexture2D::Tick(float DeltaTime)
 
 	FrameTime += DeltaTime * PlayRate;
 	if (FrameTime < Decoder->GetNextFrameDelay(CurrentFrame))
+	{
 		return;
+	}
 
 	FrameTime = 0;
 
