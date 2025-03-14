@@ -39,8 +39,9 @@ struct RUNTIMEIMAGELOADER_API FTransformImageParams
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "Runtime Image Reader", UIMin = 0, UIMax = 100, ClampMin = 0, ClampMax = 100))
     int32 PercentSizeY = 100;
 
-    // Hidden as there is method in RuntimeImageLoader that sets this flag
+    // Hidden as there is method in RuntimeImageLoader that sets these flags
     bool bOnlyPixels = false;
+    bool bOnlyBytes = false;
 
     bool IsPercentSizeValid() const
     {
@@ -63,6 +64,9 @@ struct RUNTIMEIMAGELOADER_API FImageReadResult
 
     UPROPERTY()
     TArray<FColor> OutImagePixels;
+
+    // For pure bytes only
+    TArray<uint8> OutImageBytes;
     
     UPROPERTY()
     UTexture2D* OutTexture = nullptr;

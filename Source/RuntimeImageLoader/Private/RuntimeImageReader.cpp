@@ -205,6 +205,12 @@ bool URuntimeImageReader::ProcessRequest(FImageReadRequest& Request)
     // sanity check
     check(ImageBuffer.Num() > 0);
 
+    // early exit: return pure bytes
+    if (Request.TransformParams.bOnlyBytes)
+    {
+        PendingReadResult.OutImageBytes = MoveTemp(ImageBuffer);
+        return true;
+    }
 
     FRuntimeImageData ImageData;
     if (!FRuntimeImageUtils::ImportBufferAsImage(ImageBuffer.GetData(), ImageBuffer.Num(), ImageData, PendingReadResult.OutError))

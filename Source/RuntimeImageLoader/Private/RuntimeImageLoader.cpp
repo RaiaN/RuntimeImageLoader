@@ -345,7 +345,7 @@ bool URuntimeImageLoader::LoadImageToByteArray(const FString& ImageFilename, TAr
     FImageReadRequest ReadRequest;
     {
         ReadRequest.InputImage = FInputImageDescription(ImageFilename);
-        ReadRequest.TransformParams.bOnlyPixels = true;
+        ReadRequest.TransformParams.bOnlyBytes = true;
     }
 
     ImageReader->BlockTillAllRequestsFinished();
@@ -361,8 +361,7 @@ bool URuntimeImageLoader::LoadImageToByteArray(const FString& ImageFilename, TAr
         return false;
     }
 
-    OutImageBytes.SetNumUninitialized(ReadResult.OutImagePixels.Num() * sizeof(FColor));
-    FPlatformMemory::Memcpy(OutImageBytes.GetData(), ReadResult.OutImagePixels.GetData(), OutImageBytes.Num());
+    OutImageBytes = MoveTemp(ReadResult.OutImageBytes);
 
     return true;
 }
