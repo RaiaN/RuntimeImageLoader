@@ -14,6 +14,7 @@
 </p>
 
 This plugin can only be used in **personal non-commercial projects**, please read GPL-3.0 license. Any other questions? Please send email to business@unrealsolutions.com. 
+
 If you are game developer and you are poor (O_O) then you can STEAL just *one* copy for your game. Just mention it in the credits (O_O) and drop a link in Discord!
 
 If you represent a company then you have to buy **Professional license** here:
