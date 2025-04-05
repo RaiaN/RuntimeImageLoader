@@ -13,6 +13,8 @@
   </p>
 </p>
 
+This plugin can only be used in personal non-commercial projects. Any other questions? Please send email to business@unrealsolutions.com
+
 **Best way to let developers this plugin is useful is by buying it on FAB or contributing via PR:**
 https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
 
