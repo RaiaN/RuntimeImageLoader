@@ -18,9 +18,6 @@ This plugin can only be used in personal non-commercial projects. Any other ques
 If you represent a company then you have to buy **Professional license** here:
 https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
 
-Developer's UPDATE: This plugin has been updated to support runtime GIF Loading. Enjoy! 
-Please note, there are no plans to support more advanced workflows, for example, image caching, mip generation and rare image formats. However, I always welcome pull requests adding new features.**
-
 Discord: https://discord.gg/6UMSbdfdET
 
 ## Features
