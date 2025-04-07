@@ -14,6 +14,7 @@
 </p>
 
 [Discord](https://discord.gg/6UMSbdfdET)
+
 This plugin can only be used in **personal non-commercial projects**, please read GPL-3.0 license. Any other questions? Please send email to business@unrealsolutions.com. 
 
 If you are indie game developer and you are really poor (O_O) then you can STEAL just *one* copy for your game IN EXCHANGE for mentioning what your app / game is doing here:
