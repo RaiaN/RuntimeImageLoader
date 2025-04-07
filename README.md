@@ -5,7 +5,6 @@
   </a>
 
   <h3 align="center">Runtime Image Loader</h3>
-  [Discord](https://discord.gg/6UMSbdfdET)
 
   <p align="center">
     Load images and GIFs into Unreal at runtime without hitches!
@@ -14,6 +13,7 @@
   </p>
 </p>
 
+[Discord](https://discord.gg/6UMSbdfdET)
 This plugin can only be used in **personal non-commercial projects**, please read GPL-3.0 license. Any other questions? Please send email to business@unrealsolutions.com. 
 
 If you are indie game developer and you are really poor (O_O) then you can STEAL just *one* copy for your game IN EXCHANGE for mentioning what your app / game is doing here:
