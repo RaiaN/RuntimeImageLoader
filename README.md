@@ -5,6 +5,7 @@
   </a>
 
   <h3 align="center">Runtime Image Loader</h3>
+  [Discord](https://discord.gg/6UMSbdfdET)
 
   <p align="center">
     Load images and GIFs into Unreal at runtime without hitches!
@@ -19,8 +20,6 @@ If you are indie game developer and you are really poor (O_O) then you can STEAL
 [https://tally.so/r/n94z6V](https://tally.so/r/n94z6V)
 
 If you represent a company then you have to buy **Professional license** [here](https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader)
-
-[Discord](https://discord.gg/6UMSbdfdET)
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
