@@ -17,7 +17,7 @@
 
 This plugin can only be used in **personal non-commercial projects**, please read GPL-3.0 license. Any other questions? Please send email to business@unrealsolutions.com. 
 
-If you are indie game developer and you are really poor (O_O) then you can STEAL just *one* copy for your game IN EXCHANGE for mentioning what your app / game is doing here:
+If you are indie game developer and you are really poor (O_O) then you can DOWNLOAD just *one* copy for your game IN EXCHANGE for mentioning what your app / game is doing here:
 [https://tally.so/r/n94z6V](https://tally.so/r/n94z6V)
 
 If you represent a company then you have to buy **Professional license** [here](https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader)
