@@ -13,13 +13,14 @@
   </p>
 </p>
 
-**Best way to let developers this plugin is useful is by buying it on UE Marketplace or contributing via PR:**
-https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader 
+[Discord](https://discord.gg/6UMSbdfdET)
 
-Developer's UPDATE: This plugin has been updated to support runtime GIF Loading. Enjoy! 
-Please note, there are no plans to support more advanced workflows, for example, image caching, mip generation and rare image formats. However, I always welcome pull requests adding new features.**
+This plugin can only be used in **personal non-commercial projects**. Any other questions? Please send email to business@unrealsolutions.com. 
 
-Discord: https://discord.gg/6UMSbdfdET
+If you are indie game developer and you are really poor (O_O) then you can DOWNLOAD just *one* copy for your game IN EXCHANGE for mentioning what your app / game is doing here:
+[https://tally.so/r/n94z6V](https://tally.so/r/n94z6V)
+
+If you represent a company then you have to buy **Professional license** [here](https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader)
 
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
