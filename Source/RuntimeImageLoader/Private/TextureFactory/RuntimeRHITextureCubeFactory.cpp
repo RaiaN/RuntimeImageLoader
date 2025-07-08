@@ -108,7 +108,11 @@ void FRuntimeRHITextureCubeFactory::FinalizeRHITexture2D()
     FGraphEventRef UpdateResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [this, &NewTextureResource]()
         {
+#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 5)
+            NewTextureResource->InitResource(GRHICommandList.GetImmediateCommandList());
+#else
             NewTextureResource->InitResource();
+#endif
             RHIUpdateTextureReference(NewTextureCube->TextureReference.TextureReferenceRHI, RHITextureCube);
             NewTextureResource->SetTextureReference(NewTextureCube->TextureReference.TextureReferenceRHI);
 

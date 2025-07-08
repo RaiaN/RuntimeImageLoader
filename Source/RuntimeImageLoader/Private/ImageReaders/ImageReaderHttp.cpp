@@ -76,7 +76,9 @@ void FImageReaderHttp::HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResp
     }
     else
     {
-        OutError = FString::Printf(TEXT("Error code: %d, Content: %d"), HttpResponse->GetResponseCode(), *HttpResponse->GetContentAsString());
+        int32 ResponseCode = HttpResponse->GetResponseCode();
+        FString Response = HttpResponse->GetContentAsString();
+        OutError = FString::Printf(TEXT("Error code: %d, Content: %s"), ResponseCode, *Response);
     }
 
     if (DownloadFuture && !DownloadFuture->IsComplete())
