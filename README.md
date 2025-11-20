@@ -13,7 +13,7 @@
   </p>
 </p>
 
-[Discord](https://discord.gg/6UMSbdfdET)
+Join [Discord](https://discord.com/invite/pBDSCBcdgv)!
 
 Please share what you are doing here if you are using this plugin:
 [https://tally.so/r/n94z6V](https://tally.so/r/n94z6V)
