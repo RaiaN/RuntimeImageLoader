@@ -18,8 +18,6 @@ Join [Discord](https://discord.com/invite/pBDSCBcdgv)!
 Please share what you are doing here if you are using this plugin:
 [https://tally.so/r/n94z6V](https://tally.so/r/n94z6V)
 
-If you represent a company then you have to buy **Professional license** [here](https://www.unrealengine.com/marketplace/en-US/product/runtime-image-loader)
-
 ## Features
 - Supports loading of up to 8k resolution images in hitch-less manner
 - Supports gif loading in .gif and .webp formats at runtime
