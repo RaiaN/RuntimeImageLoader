@@ -141,6 +141,9 @@ void URuntimeGifReader::CreateTextureOnGameThread(int32 Width, int32 Height, con
 {
 	check(IsInGameThread());
 
+	UE_LOG(RuntimeGifReader, Log, TEXT("CreateTextureOnGameThread: Creating texture %dx%d, Decoder valid=%d"), 
+		Width, Height, Decoder.IsValid());
+
 	ReadResult.OutTexture = UAnimatedTexture2D::Create(Width, Height, CreateInfo);
 	if (!IsValid(ReadResult.OutTexture))
 	{
@@ -149,10 +152,20 @@ void URuntimeGifReader::CreateTextureOnGameThread(int32 Width, int32 Height, con
 		return;
 	}
 
+	UE_LOG(RuntimeGifReader, Log, TEXT("CreateTextureOnGameThread: Texture created, setting decoder..."));
+
 	ReadResult.OutTexture->SetDecoder(MoveTemp(Decoder));
+
+	UE_LOG(RuntimeGifReader, Log, TEXT("CreateTextureOnGameThread: Decoder set, calling UpdateResource..."));
 
 	ReadResult.OutTexture->SRGB = true;
 	ReadResult.OutTexture->UpdateResource();
+
+	// Auto-start playback
+	ReadResult.OutTexture->PlayFromStart();
+
+	UE_LOG(RuntimeGifReader, Log, TEXT("CreateTextureOnGameThread: Complete. Texture ready, bPlaying=%d"), 
+		ReadResult.OutTexture->IsPlaying());
 }
 
 void URuntimeGifReader::OnPostProcessRequest()
@@ -162,10 +175,13 @@ void URuntimeGifReader::OnPostProcessRequest()
 		{
 			if (ReadResult.OutError.IsEmpty())
 			{
+				UE_LOG(RuntimeGifReader, Log, TEXT("OnPostProcessRequest: Broadcasting success. Texture valid=%d, bPlaying=%d"), 
+					IsValid(ReadResult.OutTexture), ReadResult.OutTexture ? ReadResult.OutTexture->IsPlaying() : false);
 				OnSuccess.Broadcast(ReadResult.OutTexture);
 			}
 			else
 			{
+				UE_LOG(RuntimeGifReader, Error, TEXT("OnPostProcessRequest: Broadcasting failure. Error: %s"), *ReadResult.OutError);
 				OnFail.Broadcast(ReadResult.OutError);
 			}
 		}

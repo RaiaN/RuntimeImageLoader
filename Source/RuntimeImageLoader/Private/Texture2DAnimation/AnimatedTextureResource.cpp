@@ -5,6 +5,8 @@
 #include "Engine/Texture2D.h"
 #include "Texture2DAnimation/AnimatedTexture2D.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogAnimatedTextureResource, Log, All);
+
 struct FGifDataResource : public FResourceBulkDataInterface
 {
 public:
@@ -105,7 +107,18 @@ void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
 	const FString& Name = Owner->GetName();
 	const EPixelFormat ImageFormat = PF_B8G8R8A8;
 	
-	FGifDataResource GifBulkData((void*)Owner->GetFirstFrameData(), Owner->GetFrameSize());
+	const uint8* FirstFrameData = Owner->GetFirstFrameData();
+	const uint32 FrameSize = Owner->GetFrameSize();
+	
+	UE_LOG(LogAnimatedTextureResource, Log, TEXT("InitRHI: Name=%s, Size=%ux%u, FirstFrameData=%p, FrameSize=%u"), 
+		*Name, GetSizeX(), GetSizeY(), FirstFrameData, FrameSize);
+	
+	if (!FirstFrameData)
+	{
+		UE_LOG(LogAnimatedTextureResource, Warning, TEXT("InitRHI: FirstFrameData is null! Decoder may not be set yet. Texture will be created without initial data."));
+	}
+	
+	FGifDataResource GifBulkData((void*)FirstFrameData, FrameSize);
 	
 #if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
     TextureRHI = RHICreateTexture(
@@ -116,11 +129,11 @@ void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
         .SetNumSamples(1)
         .SetFlags(Flags)
         .SetInitialState(ERHIAccess::Unknown)
-        .SetBulkData(&GifBulkData)
+        .SetBulkData(FirstFrameData ? &GifBulkData : nullptr)
     );
 #elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 0)
 	FRHIResourceCreateInfo CreateInfo(*Name);
-	CreateInfo.BulkData = &GifBulkData;
+	CreateInfo.BulkData = FirstFrameData ? &GifBulkData : nullptr;
     TextureRHI = RHICreateTexture(
         FRHITextureCreateDesc::Create2D(CreateInfo.DebugName)
         .SetExtent(GetSizeX(), GetSizeY())
@@ -136,11 +149,20 @@ void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
     );
 #else
 	FRHIResourceCreateInfo CreateInfo(*Name);
-	CreateInfo.BulkData = &GifBulkData;
+	CreateInfo.BulkData = FirstFrameData ? &GifBulkData : nullptr;
     TextureRHI = RHICreateTexture2D(GetSizeX(), GetSizeY(), ImageFormat, NumMips, 1, Flags, CreateInfo);
 #endif
 
-	TextureRHI->SetName(Owner->GetFName());
+	if (TextureRHI)
+	{
+		TextureRHI->SetName(Owner->GetFName());
+		UE_LOG(LogAnimatedTextureResource, Log, TEXT("InitRHI: TextureRHI created successfully"));
+	}
+	else
+	{
+		UE_LOG(LogAnimatedTextureResource, Error, TEXT("InitRHI: Failed to create TextureRHI!"));
+		return;
+	}
 
 #if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
 	RHICmdList.UpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, TextureRHI);
@@ -149,6 +171,8 @@ void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
 #else
 	RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, TextureRHI);
 #endif
+
+	UE_LOG(LogAnimatedTextureResource, Log, TEXT("InitRHI: Complete"));
 }
 
 void FAnimatedTextureResource::ReleaseRHI()
