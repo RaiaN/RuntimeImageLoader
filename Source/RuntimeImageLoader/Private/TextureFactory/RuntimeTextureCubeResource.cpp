@@ -6,8 +6,8 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeTextureCubeResource, Log, All);
 
-FRuntimeTextureCubeResource::FRuntimeTextureCubeResource(UTextureCube* InOwner, FTextureCubeRHIRef RHITextureCube)
-: FRuntimeTextureResource(CastChecked<UTexture>(InOwner), TRefCountPtr<FRHITexture>(RHITextureCube))
+FRuntimeTextureCubeResource::FRuntimeTextureCubeResource(UTextureCube* InOwner, FTextureRHIRef RHITextureCube)
+: FRuntimeTextureResource(CastChecked<UTexture>(InOwner), RHITextureCube)
 {
 
     UE_LOG(LogRuntimeTextureCubeResource, Verbose, TEXT("RuntimeTextureCubeResource has been created!"))

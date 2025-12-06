@@ -68,10 +68,30 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
 
     if (GRHISupportsAsyncTextureCreation)
     {
-        // TODO: Wait until completion?
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 2)
         FGraphEventRef CompletionEvent;
-#endif
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+        RHITexture2D = RHIAsyncCreateTexture2D(
+            ImageData.SizeX, ImageData.SizeY,
+            ImageData.PixelFormat,
+            ImageData.NumMips,
+            TextureFlags,
+            ERHIAccess::Unknown,
+            &Mip0Data,
+            1,
+            TEXT("RuntimeImageReaderTextureData"),
+            CompletionEvent
+        );
+#elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 2)
+        RHITexture2D = RHIAsyncCreateTexture2D(
+            ImageData.SizeX, ImageData.SizeY,
+            ImageData.PixelFormat,
+            ImageData.NumMips,
+            TextureFlags,
+            &Mip0Data,
+            1,
+            CompletionEvent
+        );
+#else
         RHITexture2D = RHIAsyncCreateTexture2D(
             ImageData.SizeX, ImageData.SizeY,
             ImageData.PixelFormat,
@@ -79,22 +99,30 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
             TextureFlags,
             &Mip0Data,
             1
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 2)
-            ,CompletionEvent
-#endif
         );
+#endif
     }
     else
     {
         FTextureDataResource TextureData(Mip0Data, ImageData.RawData.Num());
 
-        FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReaderTextureData"));
-        CreateInfo.BulkData = &TextureData;
-
         FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-            [this, &CreateInfo, TextureFlags]()
+            [this, &TextureData, TextureFlags]()
             {
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+                RHITexture2D = RHICreateTexture(
+                    FRHITextureCreateDesc::Create2D(TEXT("RuntimeImageReaderTextureData"))
+                    .SetExtent(ImageData.SizeX, ImageData.SizeY)
+                    .SetFormat(ImageData.PixelFormat)
+                    .SetNumMips(ImageData.NumMips)
+                    .SetNumSamples(1)
+                    .SetFlags(TextureFlags)
+                    .SetInitialState(ERHIAccess::Unknown)
+                    .SetBulkData(&TextureData)
+                );
+#elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 0)
+                FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReaderTextureData"));
+                CreateInfo.BulkData = &TextureData;
                 RHITexture2D = RHICreateTexture(
                     FRHITextureCreateDesc::Create2D(CreateInfo.DebugName)
                     .SetExtent(ImageData.SizeX, ImageData.SizeY)
@@ -109,6 +137,8 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
                     .SetClearValue(CreateInfo.ClearValueBinding)
                 );
 #else
+                FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReaderTextureData"));
+                CreateInfo.BulkData = &TextureData;
                 RHITexture2D = RHICreateTexture2D(
                     ImageData.SizeX, ImageData.SizeY,
                     ImageData.PixelFormat,
@@ -142,10 +172,20 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Mobile()
     ensureMsgf(ImageData.SizeY > 0, TEXT("ImageData.SizeY must be > 0"));
 
     FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-        [this, &TextureFlags]()
+        [this, TextureFlags]()
         {
-            FRHIResourceCreateInfo DummyCreateInfo(TEXT("DummyCreateInfo"));
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+            RHITexture2D = RHICreateTexture(
+                FRHITextureCreateDesc::Create2D(TEXT("RuntimeImageReaderMobileTexture"))
+                .SetExtent(ImageData.SizeX, ImageData.SizeY)
+                .SetFormat(ImageData.PixelFormat)
+                .SetNumMips(ImageData.NumMips)
+                .SetNumSamples(1)
+                .SetFlags(TextureFlags)
+                .SetInitialState(ERHIAccess::Unknown)
+            );
+#elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 0)
+            FRHIResourceCreateInfo DummyCreateInfo(TEXT("RuntimeImageReaderMobileTexture"));
             RHITexture2D = RHICreateTexture(
                 FRHITextureCreateDesc::Create2D(DummyCreateInfo.DebugName)
                 .SetExtent(ImageData.SizeX, ImageData.SizeY)
@@ -160,6 +200,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Mobile()
                 .SetClearValue(DummyCreateInfo.ClearValueBinding)
             );
 #else
+            FRHIResourceCreateInfo DummyCreateInfo(TEXT("RuntimeImageReaderMobileTexture"));
             RHITexture2D = RHICreateTexture2D(
                 ImageData.SizeX, ImageData.SizeY,
                 ImageData.PixelFormat,
@@ -206,12 +247,18 @@ void FRuntimeRHITexture2DFactory::FinalizeRHITexture2D()
     FGraphEventRef UpdateResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [this, &NewTextureResource]()
         {
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 5)
-            NewTextureResource->InitResource(GRHICommandList.GetImmediateCommandList());
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 6)
+            FRHICommandListImmediate& RHICmdList = FRHICommandListImmediate::Get();
+            NewTextureResource->InitResource(RHICmdList);
 #else
             NewTextureResource->InitResource();
 #endif
+
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+            FRHICommandListImmediate::Get().UpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
+#else
             RHIUpdateTextureReference(NewTexture->TextureReference.TextureReferenceRHI, RHITexture2D);
+#endif
             NewTextureResource->SetTextureReference(NewTexture->TextureReference.TextureReferenceRHI);
 
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread

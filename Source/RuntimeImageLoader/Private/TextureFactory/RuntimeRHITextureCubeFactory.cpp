@@ -67,15 +67,24 @@ FTextureCubeRHIRef FRuntimeRHITextureCubeFactory::CreateTextureCubeRHI_Windows()
 
     ETextureCreateFlags TextureFlags = TexCreate_ShaderResource | (ImageData.SRGB ? TexCreate_SRGB : TexCreate_None);
 
-    FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReader_TextureCubeData"));
-
     FTextureCubeDataResource TextureCubeData((void*)ImageData.RawData.GetData(), ImageData.RawData.Num());
-    CreateInfo.BulkData = &TextureCubeData;
 
     FGraphEventRef CreateTextureTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
-        [this, &TextureCubeRHI, &CreateInfo, TextureFlags]()
+        [this, &TextureCubeRHI, &TextureCubeData, TextureFlags]()
         {
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+            TextureCubeRHI = RHICreateTexture(
+                FRHITextureCreateDesc::CreateCube(TEXT("RuntimeImageReader_TextureCubeData"))
+                .SetExtent(ImageData.SizeX)
+                .SetFormat(ImageData.PixelFormat)
+                .SetNumMips(1)
+                .SetFlags(TextureFlags)
+                .SetInitialState(ERHIAccess::Unknown)
+                .SetBulkData(&TextureCubeData)
+            );
+#elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 0)
+            FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReader_TextureCubeData"));
+            CreateInfo.BulkData = &TextureCubeData;
             TextureCubeRHI = RHICreateTexture(
                 FRHITextureCreateDesc::CreateCube(CreateInfo.DebugName)
                 .SetExtent(ImageData.SizeX)
@@ -89,6 +98,8 @@ FTextureCubeRHIRef FRuntimeRHITextureCubeFactory::CreateTextureCubeRHI_Windows()
                 .SetClearValue(CreateInfo.ClearValueBinding)
             );
 #else
+            FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReader_TextureCubeData"));
+            CreateInfo.BulkData = &TextureCubeData;
             TextureCubeRHI = RHICreateTextureCube(
                 ImageData.SizeX, ImageData.PixelFormat, 1, TextureFlags, CreateInfo);
 #endif
@@ -108,12 +119,18 @@ void FRuntimeRHITextureCubeFactory::FinalizeRHITexture2D()
     FGraphEventRef UpdateResourceTask = FFunctionGraphTask::CreateAndDispatchWhenReady(
         [this, &NewTextureResource]()
         {
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 5)
-            NewTextureResource->InitResource(GRHICommandList.GetImmediateCommandList());
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 6)
+            FRHICommandListImmediate& RHICmdList = FRHICommandListImmediate::Get();
+            NewTextureResource->InitResource(RHICmdList);
 #else
             NewTextureResource->InitResource();
 #endif
+
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+            FRHICommandListImmediate::Get().UpdateTextureReference(NewTextureCube->TextureReference.TextureReferenceRHI, RHITextureCube);
+#else
             RHIUpdateTextureReference(NewTextureCube->TextureReference.TextureReferenceRHI, RHITextureCube);
+#endif
             NewTextureResource->SetTextureReference(NewTextureCube->TextureReference.TextureReferenceRHI);
 
         }, TStatId(), nullptr, ENamedThreads::ActualRenderingThread

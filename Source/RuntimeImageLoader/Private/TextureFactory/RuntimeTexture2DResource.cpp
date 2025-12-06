@@ -5,8 +5,8 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogRuntimeTexture2DResource, Log, All);
 
-FRuntimeTexture2DResource::FRuntimeTexture2DResource(UTexture2D* InOwner, FTexture2DRHIRef InRHITexture2D, TextureFilter InFilterMode)
-: FRuntimeTextureResource(CastChecked<UTexture>(InOwner), TRefCountPtr<FRHITexture>(InRHITexture2D)),
+FRuntimeTexture2DResource::FRuntimeTexture2DResource(UTexture2D* InOwner, FTextureRHIRef InRHITexture2D, TextureFilter InFilterMode)
+: FRuntimeTextureResource(CastChecked<UTexture>(InOwner), InRHITexture2D),
     FilterMode(InFilterMode)
 {
     UE_LOG(LogRuntimeTexture2DResource, Verbose, TEXT("RuntimeTexture2DResource has been created!"))

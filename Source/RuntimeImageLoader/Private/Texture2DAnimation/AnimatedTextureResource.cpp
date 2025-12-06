@@ -105,12 +105,22 @@ void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
 	const FString& Name = Owner->GetName();
 	const EPixelFormat ImageFormat = PF_B8G8R8A8;
 	
-	FRHIResourceCreateInfo CreateInfo(*Name);
-
 	FGifDataResource GifBulkData((void*)Owner->GetFirstFrameData(), Owner->GetFrameSize());
-	CreateInfo.BulkData = &GifBulkData;
 	
-#if (ENGINE_MAJOR_VERSION >= 5) && (ENGINE_MINOR_VERSION > 0)
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+    TextureRHI = RHICreateTexture(
+        FRHITextureCreateDesc::Create2D(*Name)
+        .SetExtent(GetSizeX(), GetSizeY())
+        .SetFormat(ImageFormat)
+        .SetNumMips(NumMips)
+        .SetNumSamples(1)
+        .SetFlags(Flags)
+        .SetInitialState(ERHIAccess::Unknown)
+        .SetBulkData(&GifBulkData)
+    );
+#elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 0)
+	FRHIResourceCreateInfo CreateInfo(*Name);
+	CreateInfo.BulkData = &GifBulkData;
     TextureRHI = RHICreateTexture(
         FRHITextureCreateDesc::Create2D(CreateInfo.DebugName)
         .SetExtent(GetSizeX(), GetSizeY())
@@ -125,16 +135,29 @@ void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
         .SetClearValue(CreateInfo.ClearValueBinding)
     );
 #else
+	FRHIResourceCreateInfo CreateInfo(*Name);
+	CreateInfo.BulkData = &GifBulkData;
     TextureRHI = RHICreateTexture2D(GetSizeX(), GetSizeY(), ImageFormat, NumMips, 1, Flags, CreateInfo);
 #endif
 
 	TextureRHI->SetName(Owner->GetFName());
+
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+	RHICmdList.UpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, TextureRHI);
+#elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 3)
 	RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, TextureRHI);
+#else
+	RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, TextureRHI);
+#endif
 }
 
 void FAnimatedTextureResource::ReleaseRHI()
 {
+#if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
+	FRHICommandListImmediate::Get().UpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+#else
 	RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+#endif
 	FTextureResource::ReleaseRHI();
 }
 

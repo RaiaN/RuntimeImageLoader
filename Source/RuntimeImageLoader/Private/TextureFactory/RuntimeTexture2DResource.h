@@ -17,7 +17,7 @@ class UTexture2D;
 class FRuntimeTexture2DResource : public FRuntimeTextureResource
 {
 public:
-	FRuntimeTexture2DResource(UTexture2D* InOwner, FTexture2DRHIRef InRHITexture2D, TextureFilter InFilterMode);
+	FRuntimeTexture2DResource(UTexture2D* InOwner, FTextureRHIRef InRHITexture2D, TextureFilter InFilterMode);
 	~FRuntimeTexture2DResource();
 	
 	/**

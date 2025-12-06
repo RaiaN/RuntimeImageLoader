@@ -11,7 +11,7 @@ class UTextureCube;
 class FRuntimeTextureCubeResource : public FRuntimeTextureResource
 {
 public:
-	FRuntimeTextureCubeResource(UTextureCube* InOwner, FTextureCubeRHIRef RHITextureCube);
+	FRuntimeTextureCubeResource(UTextureCube* InOwner, FTextureRHIRef RHITextureCube);
 	~FRuntimeTextureCubeResource();
 	
 	/**
