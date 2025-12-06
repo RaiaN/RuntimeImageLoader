@@ -77,7 +77,7 @@ Load images easily in your Blueprints:
 | **Linux** | ✅ Full Support | Vulkan |
 | **macOS** | ✅ Full Support | Metal |
 | **Android** | ✅ Full Support | Vulkan |
-| **Oculus VR** | 🧪 Experimental | — |
+| **Oculus VR** | ✅ Full Support | Vulkan |
 
 ### Supported Engine Versions
 
