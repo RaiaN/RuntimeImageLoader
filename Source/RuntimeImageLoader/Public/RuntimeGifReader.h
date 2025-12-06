@@ -21,6 +21,9 @@ struct RUNTIMEIMAGELOADER_API FGifReadRequest
 {
 	FInputImageDescription InputGif;
     TEnumAsByte<TextureFilter> FilterMode = TextureFilter::TF_Default;
+	
+	/** If true, the GIF will automatically start playing after loading. Default is true. */
+	bool bAutoPlay = true;
 };
 
 USTRUCT()
@@ -44,10 +47,10 @@ class RUNTIMEIMAGELOADER_API URuntimeGifReader : public UBlueprintAsyncActionBas
 public:
 	/** GIF */
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-    static URuntimeGifReader* LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode = TextureFilter::TF_Trilinear, bool bSynchronous = false);
+    static URuntimeGifReader* LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode = TextureFilter::TF_Trilinear, bool bAutoPlay = true, bool bSynchronous = false);
 
     UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Gif Reader")
-	static URuntimeGifReader* LoadGIFFromBytes(UPARAM(ref) TArray<uint8>& GifBytes, TEnumAsByte<enum TextureFilter> InFilterMode = TextureFilter::TF_Trilinear, bool bSynchronous = false);
+	static URuntimeGifReader* LoadGIFFromBytes(UPARAM(ref) TArray<uint8>& GifBytes, TEnumAsByte<enum TextureFilter> InFilterMode = TextureFilter::TF_Trilinear, bool bAutoPlay = true, bool bSynchronous = false);
 
 public:
 	// Bind to these events when you want to use async API from C++

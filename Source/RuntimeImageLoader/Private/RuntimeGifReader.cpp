@@ -10,12 +10,13 @@
 DEFINE_LOG_CATEGORY(RuntimeGifReader);
 
 
-URuntimeGifReader* URuntimeGifReader::LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode, bool bSynchronous)
+URuntimeGifReader* URuntimeGifReader::LoadGIF(const FString& GIFFilename, TEnumAsByte<enum TextureFilter> InFilterMode, bool bAutoPlay, bool bSynchronous)
 {
 	FGifReadRequest Request;
 	{
 		Request.InputGif.ImageFilename = GIFFilename;
 		Request.FilterMode = InFilterMode;
+		Request.bAutoPlay = bAutoPlay;
 	}
 
 	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
@@ -24,12 +25,13 @@ URuntimeGifReader* URuntimeGifReader::LoadGIF(const FString& GIFFilename, TEnumA
 	return GifReader;
 }
 
-URuntimeGifReader* URuntimeGifReader::LoadGIFFromBytes(TArray<uint8>& GifBytes, TEnumAsByte<enum TextureFilter> InFilterMode, bool bSynchronous)
+URuntimeGifReader* URuntimeGifReader::LoadGIFFromBytes(TArray<uint8>& GifBytes, TEnumAsByte<enum TextureFilter> InFilterMode, bool bAutoPlay, bool bSynchronous)
 {
 	FGifReadRequest Request;
 	{
 		Request.InputGif.ImageBytes = MoveTemp(GifBytes);
 		Request.FilterMode = InFilterMode;
+		Request.bAutoPlay = bAutoPlay;
 	}
 
 	URuntimeGifReader* GifReader = NewObject<URuntimeGifReader>();
@@ -161,8 +163,16 @@ void URuntimeGifReader::CreateTextureOnGameThread(int32 Width, int32 Height, con
 	ReadResult.OutTexture->SRGB = true;
 	ReadResult.OutTexture->UpdateResource();
 
-	// Auto-start playback
-	ReadResult.OutTexture->PlayFromStart();
+	// Auto-start playback if enabled
+	if (Request.bAutoPlay)
+	{
+		ReadResult.OutTexture->PlayFromStart();
+		UE_LOG(RuntimeGifReader, Log, TEXT("CreateTextureOnGameThread: Auto-play enabled, started playback"));
+	}
+	else
+	{
+		UE_LOG(RuntimeGifReader, Log, TEXT("CreateTextureOnGameThread: Auto-play disabled. Call Play() or PlayFromStart() on the texture to start playback."));
+	}
 
 	UE_LOG(RuntimeGifReader, Log, TEXT("CreateTextureOnGameThread: Complete. Texture ready, bPlaying=%d"), 
 		ReadResult.OutTexture->IsPlaying());
