@@ -6,8 +6,8 @@
 
 ### Load images and GIFs into Unreal Engine at runtime — without hitches!
 
-[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.1%2B-blue?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
-[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-4.27-lightgrey?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
+[![Unreal Engine](https://img.shields.io/badge/5.1%2B-blue?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
+[![Unreal Engine](https://img.shields.io/badge/4.27-lightgrey?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
 [![Platform](https://img.shields.io/badge/Platforms-Win%20%7C%20Linux%20%7C%20Mac%20%7C%20Android-green?style=for-the-badge)](#supported-platforms)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
