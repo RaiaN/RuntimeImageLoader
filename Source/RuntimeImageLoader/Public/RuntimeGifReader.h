@@ -64,6 +64,7 @@ public:
 private:
 	void ProcessRequest();
 	void OnPostProcessRequest();
+	void CreateTextureOnGameThread(int32 Width, int32 Height, const struct FAnimatedTexture2DCreateInfo& CreateInfo);
 
 private:
 	FGifReadRequest Request;

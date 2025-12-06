@@ -108,10 +108,40 @@ void URuntimeGifReader::ProcessRequest()
 		return;
 	}
 
+	// UAnimatedTexture2D inherits from FTickableGameObject which must be created on the game thread
+	// Defer texture creation to game thread while keeping GIF decoding on background thread
 	FAnimatedTexture2DCreateInfo CreateInfo;
 	CreateInfo.Filter = Request.FilterMode;
 
-	ReadResult.OutTexture = UAnimatedTexture2D::Create(Decoder->GetWidth(), Decoder->GetHeight(), CreateInfo);
+	const int32 Width = Decoder->GetWidth();
+	const int32 Height = Decoder->GetHeight();
+
+	if (IsInGameThread())
+	{
+		// Already on game thread, create directly
+		CreateTextureOnGameThread(Width, Height, CreateInfo);
+	}
+	else
+	{
+		// Schedule texture creation on game thread and wait for it
+		FEvent* CompletionEvent = FPlatformProcess::GetSynchEventFromPool(false);
+		
+		AsyncTask(ENamedThreads::GameThread, [this, Width, Height, CreateInfo, CompletionEvent]()
+		{
+			CreateTextureOnGameThread(Width, Height, CreateInfo);
+			CompletionEvent->Trigger();
+		});
+
+		CompletionEvent->Wait();
+		FPlatformProcess::ReturnSynchEventToPool(CompletionEvent);
+	}
+}
+
+void URuntimeGifReader::CreateTextureOnGameThread(int32 Width, int32 Height, const FAnimatedTexture2DCreateInfo& CreateInfo)
+{
+	check(IsInGameThread());
+
+	ReadResult.OutTexture = UAnimatedTexture2D::Create(Width, Height, CreateInfo);
 	if (!IsValid(ReadResult.OutTexture))
 	{
 		ReadResult.OutError = FString::Printf(TEXT("Error: Failed to Create Animated Texture Gif."));
