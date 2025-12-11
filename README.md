@@ -4,6 +4,10 @@
 
 # Runtime Image Loader
 
+**Using this plugin?** We'd love to hear about your project!
+
+[![Share Your Project](https://img.shields.io/badge/Share%20Your%20Project-📝-orange?style=for-the-badge)](https://tally.so/r/n94z6V)
+
 ### Load images and GIFs into Unreal Engine at runtime — without hitches!
 
 [![Unreal Engine](https://img.shields.io/badge/5.1%2B-blue?style=for-the-badge&logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
@@ -100,10 +104,6 @@ Load images easily in your Blueprints:
 <div align="center">
 
 [![Discord](https://img.shields.io/badge/Join%20our-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/pBDSCBcdgv)
-
-**Using this plugin?** We'd love to hear about your project!
-
-[![Share Your Project](https://img.shields.io/badge/Share%20Your%20Project-📝-orange?style=for-the-badge)](https://tally.so/r/n94z6V)
 
 </div>
 
