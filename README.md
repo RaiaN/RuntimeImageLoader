@@ -80,7 +80,7 @@ Load images easily in your Blueprints:
 | **Windows** | ✅ Full Support | DirectX 11/12, Vulkan |
 | **Linux** | ✅ Full Support | Vulkan |
 | **macOS** | ✅ Full Support | Metal |
-| **Android** | ✅ Full Support | Vulkan |
+| **Android** | ✅ Full Support | OpenGL, Vulkan |
 | **Oculus VR** | ✅ Full Support | Vulkan |
 
 ### Supported Engine Versions
@@ -96,6 +96,7 @@ Load images easily in your Blueprints:
 - DirectX 12
 - Vulkan
 - Metal
+- OpenGL
 
 ---
 
