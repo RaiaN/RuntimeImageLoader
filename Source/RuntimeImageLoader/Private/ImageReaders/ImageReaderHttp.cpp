@@ -68,7 +68,12 @@ void FImageReaderHttp::Cancel()
 
 void FImageReaderHttp::HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded)
 {
-    bool bSuccess = HttpResponse->GetResponseCode() == 200;
+    bool bSuccess = false;
+	
+	if (HttpResponse != nullptr)
+	{
+    bSuccess = (HttpResponse->GetResponseCode() == 200);
+	}
     
     if (bSuccess)
     {
@@ -76,9 +81,16 @@ void FImageReaderHttp::HandleImageRequest(FHttpRequestPtr HttpRequest, FHttpResp
     }
     else
     {
+        if (HttpResponse != nullptr) 
+		{
         int32 ResponseCode = HttpResponse->GetResponseCode();
         FString Response = HttpResponse->GetContentAsString();
         OutError = FString::Printf(TEXT("Error code: %d, Content: %s"), ResponseCode, *Response);
+        }
+		else
+		{
+		OutError = FString::Printf(TEXT("Connection issue"));
+		}
     }
 
     if (DownloadFuture && !DownloadFuture->IsComplete())
