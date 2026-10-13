@@ -1,6 +1,6 @@
 // Copyright 2023 Petr Leontev. All Rights Reserved.
 
-#include "GIFLoader.h"
+#include "Helpers/GIFLoader.h"
 #include "NSGIFLoader.h"
 #include "WEBPGIFLoader.h"
 

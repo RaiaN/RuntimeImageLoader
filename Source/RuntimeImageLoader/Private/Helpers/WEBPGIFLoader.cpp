@@ -158,7 +158,13 @@ bool FWEBPGIFLoader::DecodeGIF(TArray<uint8>&& GifBytes)
 
     TextureData.SetNumZeroed(GetWidth() * GetHeight());
 
-    uint8_t* DecodedData = WebPDecodeRGBA(GifBytes.GetData(), GifBytes.Num(), &Width, &Height);
+    uint8_t* DecodedData = nullptr;
+
+#if PLATFORM_WINDOWS || PLATFORM_LINUX
+    DecodedData = WebPDecodeBGRA(GifBytes.GetData(), GifBytes.Num(), &Width, &Height);  // Unreal on Windows will most often use DirectX so prefer BGRA, otherwise devs should change this line!
+#else
+    DecodedData = WebPDecodeRGBA(GifBytes.GetData(), GifBytes.Num(), &Width, &Height);  // Default to RGBA for other platforms (Mobile, Vulkan, etc.)
+#endif
     if (DecodedData == nullptr)
     {
         SetError("Failed to decode .webp file. Please check input data is valid!");

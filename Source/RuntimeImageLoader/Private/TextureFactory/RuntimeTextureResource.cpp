@@ -44,7 +44,7 @@ void FRuntimeTextureResource::ReleaseRHI()
 {
     if (IsValid(Owner))
     {
-        RHIUpdateTextureReference(Owner->TextureReference.TextureReferenceRHI, nullptr);
+        RHIClearTextureReference(Owner->TextureReference.TextureReferenceRHI);
     }
     FTextureResource::ReleaseRHI();
 

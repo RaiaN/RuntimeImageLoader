@@ -179,7 +179,7 @@ void UAnimatedTexture2D::RenderFrameToTexture()
 			Region.Width = TexWidth;
 			Region.Height = TexHeight;
 
-			RHIUpdateTexture2D(Texture2DRHI, 0, Region, SrcPitch, CommandData.RawData);
+			RHICmdList.UpdateTexture2D(Texture2DRHI, 0, Region, SrcPitch, CommandData.RawData);
 		}
 	);
 }

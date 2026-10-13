@@ -178,7 +178,7 @@ bool FNSGIFLoader::DecodeInternal(nsgif_t* gif, bool first)
 		}
 	}
 
-	return true;
+	//return true;
 }
 
 const FColor* FNSGIFLoader::GetNextFrame(int32 FrameIndex)

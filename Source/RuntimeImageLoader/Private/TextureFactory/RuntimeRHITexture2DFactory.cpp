@@ -110,7 +110,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
             [this, &TextureData, TextureFlags]()
             {
 #if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
-                RHITexture2D = RHICreateTexture(
+                RHITexture2D = FRHICommandListImmediate::Get().CreateTexture(
                     FRHITextureCreateDesc::Create2D(TEXT("RuntimeImageReaderTextureData"))
                     .SetExtent(ImageData.SizeX, ImageData.SizeY)
                     .SetFormat(ImageData.PixelFormat)
@@ -118,7 +118,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Windows()
                     .SetNumSamples(1)
                     .SetFlags(TextureFlags)
                     .SetInitialState(ERHIAccess::Unknown)
-                    .SetBulkData(&TextureData)
+                    .SetInitActionBulkData(&TextureData)
                 );
 #elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 0)
                 FRHIResourceCreateInfo CreateInfo(TEXT("RuntimeImageReaderTextureData"));
@@ -175,7 +175,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Mobile()
         [this, TextureFlags]()
         {
 #if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
-            RHITexture2D = RHICreateTexture(
+            RHITexture2D = FRHICommandListImmediate::Get().CreateTexture(
                 FRHITextureCreateDesc::Create2D(TEXT("RuntimeImageReaderMobileTexture"))
                 .SetExtent(ImageData.SizeX, ImageData.SizeY)
                 .SetFormat(ImageData.PixelFormat)
@@ -220,7 +220,7 @@ FTexture2DRHIRef FRuntimeRHITexture2DFactory::CreateRHITexture2D_Mobile()
                 TextureRegion2D.Height = ImageData.SizeY;
             }
 
-            RHIUpdateTexture2D(
+            FRHICommandListImmediate::Get().UpdateTexture2D(
                 RHITexture2D, 0, TextureRegion2D,
                 TextureRegion2D.Width * GPixelFormats[ImageData.PixelFormat].BlockBytes,
                 ImageData.RawData.GetData()

@@ -85,6 +85,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = RuntimeAnimatedTexture)
 	int32 GetSizeY() const { return GetHeight(); }
+	
+	/* Bare minimum functions to allow opening a still frame in the image editor */
+	virtual ETextureClass GetTextureClass() const override { return ETextureClass::TwoD; };
+	virtual float GetSurfaceDepth() const override { return 0.0f; };
+	virtual uint32 GetSurfaceArraySize() const override { return 0; };
 
 public:
 	/** @See Texture2DDynamic Class

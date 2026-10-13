@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GIFLoader.h"
+#include "Helpers/GIFLoader.h"
 
 THIRD_PARTY_INCLUDES_START
 #include "webp/decode.h"

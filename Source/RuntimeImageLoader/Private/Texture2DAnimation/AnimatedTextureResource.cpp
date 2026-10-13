@@ -121,16 +121,19 @@ void FAnimatedTextureResource::InitRHI(FRHICommandListBase& RHICmdList)
 	FGifDataResource GifBulkData((void*)FirstFrameData, FrameSize);
 	
 #if (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION >= 7)
-    TextureRHI = RHICreateTexture(
-        FRHITextureCreateDesc::Create2D(*Name)
-        .SetExtent(GetSizeX(), GetSizeY())
-        .SetFormat(ImageFormat)
-        .SetNumMips(NumMips)
-        .SetNumSamples(1)
-        .SetFlags(Flags)
-        .SetInitialState(ERHIAccess::Unknown)
-        .SetBulkData(FirstFrameData ? &GifBulkData : nullptr)
-    );
+	if (FirstFrameData)
+	{
+		TextureRHI = RHICmdList.CreateTexture(
+			FRHITextureCreateDesc::Create2D(*Name)
+			.SetExtent(GetSizeX(), GetSizeY())
+			.SetFormat(ImageFormat)
+			.SetNumMips(NumMips)
+			.SetNumSamples(1)
+			.SetFlags(Flags)
+			.SetInitialState(ERHIAccess::Unknown)
+			.SetInitActionBulkData(FirstFrameData ? &GifBulkData : nullptr)
+		);
+	}
 #elif (ENGINE_MAJOR_VERSION == 5) && (ENGINE_MINOR_VERSION > 0)
 	FRHIResourceCreateInfo CreateInfo(*Name);
 	CreateInfo.BulkData = FirstFrameData ? &GifBulkData : nullptr;
